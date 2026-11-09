@@ -1,0 +1,8 @@
+__pycache__/
+.venv/
+.cache/
+dist/*.zip
+dist/*.sha256
+dist/*.lua
+tests/output/
+
