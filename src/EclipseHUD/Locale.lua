@@ -1,0 +1,42 @@
+local _, E = ...
+local zh = GetLocale() == "zhCN"
+local strings = {
+    ["Class Combat HUD"] = "职业战斗界面",
+    ["Enabled"] = "启用界面",
+    ["Lock position"] = "锁定位置",
+    ["Combat only"] = "仅战斗中显示",
+    ["Resources"] = "生命与资源",
+    ["Primary abilities"] = "主要技能",
+    ["Utility abilities"] = "辅助技能",
+    ["Target effects"] = "目标持续效果",
+    ["Nameplate effects"] = "姓名板持续效果",
+    ["Player effects"] = "自身增益与触发",
+    ["Cast bar"] = "施法条",
+    ["Pet and class resource"] = "宠物与职业资源",
+    ["Artwork"] = "装饰材质",
+    ["Rune animation"] = "符文动画",
+    ["Utility on hover"] = "鼠标悬停展开辅助技能",
+    ["Scale"] = "缩放",
+    ["Horizontal position"] = "水平位置",
+    ["Vertical position"] = "垂直位置",
+    ["Opacity"] = "透明度",
+    ["Open aura editor"] = "打开光环编辑器",
+    ["Reset this class"] = "重置当前职业",
+    ["Changes apply after combat."] = "设置将在脱离战斗后生效。",
+    ["Drag the center seal to move. Right-click it for settings."] = "拖动中央印记移动，右键打开设置。",
+    ["Each class keeps its own settings."] = "每个职业独立保存设置。",
+    ["Import Eclipse-Class-Combat-HUD.txt through /fa first."] = "请先通过 /fa 导入 Eclipse-Class-Combat-HUD.txt。",
+    ["Preview in /fa; only learned abilities appear in play."] = "在 /fa 中预览；实战仅显示已学技能。",
+    ["Warlock"] = "术士", ["Warrior"] = "战士", ["Mage"] = "法师",
+    ["Priest"] = "牧师", ["Rogue"] = "盗贼", ["Druid"] = "德鲁伊",
+    ["Hunter"] = "猎人", ["Shaman"] = "萨满祭司", ["Paladin"] = "圣骑士",
+}
+function E.L(text) return zh and strings[text] or text end
+E.modules = {
+    {"resources", "Resources"}, {"primary", "Primary abilities"},
+    {"utility", "Utility abilities"}, {"dots", "Target effects"},
+    {"buffs", "Player effects"}, {"cast", "Cast bar"},
+    {"pet", "Pet and class resource"}, {"art", "Artwork"},
+    {"motion", "Rune animation"},
+    {"nameplates", "Nameplate effects"},
+}
