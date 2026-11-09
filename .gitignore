@@ -4,5 +4,6 @@ __pycache__/
 dist/*.zip
 dist/*.sha256
 dist/*.lua
+dist/*.json
 tests/output/
 
