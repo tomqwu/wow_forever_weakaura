@@ -317,16 +317,16 @@ class source that was not provided.
 
 ### 11. Preview, verification and delivery
 
-- [ ] **11.1** Preview idle, hostile-target, combat, delayed close and leveling
+- [x] **11.1** Preview idle, hostile-target, combat, delayed close and leveling
   states. Show only scenario-appropriate spell candidates; label sample values.
   A static maximum-level gallery is not runtime evidence. **U/A**
-- [ ] **11.2** Test behavior using mocked public/restricted values, plus native
+- [x] **11.2** Test behavior using mocked public/restricted values, plus native
   FA trigger/appearance validators. Add focused regressions for the reported
   level-23 Warlock and the position/idle failures. **A**
 - [ ] **11.3** Perform live validation before marking runtime parity verified:
   learned spells, combat cooldowns, target auras, movement, animation, cast-bar
   restoration, audio, reload and normal logout persistence. **A**
-- [ ] **11.4** Update version/package/docs coherently, verify CI and published
+- [x] **11.4** Update version/package/docs coherently, verify CI and published
   ZIP bytes, and list any remaining gaps explicitly. Never overwrite a release. **A**
 
 ## Implementation order
@@ -364,7 +364,7 @@ plan update does not create a new runtime release.
 | 2026-11-09 | 11.3 | Pending game-client acceptance | No game installation or SavedVariables modified. Requires installing the new companion and updating the existing top-level import; `/eclipse spells` supplies actual learned/native diagnostics. Live spellbook comparison, placement, native audio, combat/taint, ownership and persistence remain open in `docs/validation.md`. |
 | 2026-11-09 | 11.2 final lifecycle review | Added late-binding/world-leave regressions | Newly eligible ordinary regions may be created after load flags change, so their init callbacks coalesce a layout pass after registration; fresh slots cannot remain stacked at center. Late layout/notifications cannot re-enable world-leave controls or native flags. FX ordering follows FA's actual controlled-child ordering behind foreground UI. Selection/state suites now 50/22 assertions. |
 | 2026-11-09 | 11.2 visual/audio follow-up | Sparse learned slots and controller gates corrected | Compact each wing by visible learned rank while retaining logical priority order; browser captures wait for loaded artwork. Ready observers ignore the HUD's combat-only visual gate so combat entry cannot announce every already-ready skill. Native buff overflow also excludes breathing/summoning. Initial branch CI passed; final follow-up reruns CI before merge. |
-| 2026-11-09 | 11.4 | Versioned delivery prepared | TOC, generator, package checks, CI artifact, README and changelog agree on 0.3.0. ZIP includes source/media/import and the durable feature/audit documents. Branch CI, merge and immutable prerelease publication follow the user's GitHub instruction. |
+| 2026-11-09 | 11.4 | Merged and published; bytes verified | [PR #1](https://github.com/tomqwu/wow_forever_weakaura/pull/1) merged as `edb0f1d9eb91e7ac6cca17d2d6a11e1c3bc9f126`. Final PR CI and [main CI](https://github.com/tomqwu/wow_forever_weakaura/actions/runs/42743959052) passed. [Immutable v0.3.0 prerelease](https://github.com/tomqwu/wow_forever_weakaura/releases/tag/v0.3.0) published with ZIP/import/receipt; downloaded bytes match the checked local package and every runtime source/media file. ZIP SHA-256: `f79200752e02bcb8fc7784950f98fde5a326a50299cca34f1f7a21da04516a97`. TOC, generator, checks, artifact, README and changelog agree on 0.3.0. |
 
 **Next required evidence:** 11.3 game-client acceptance. Code and automated
 checks are implemented; the detailed runtime acceptance checkboxes remain open
