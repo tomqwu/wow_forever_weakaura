@@ -9,7 +9,13 @@ E.classNames = {
 }
 local defaults = {
     enabled=true, locked=true, combatOnly=false, hoverUtility=false,
-    scale=1, x=0, y=-150, opacity=1,
+    scale=1, x=0, y=-160, opacity=1,
+    school="Auto", cleave=false,
+    expandCombat=true, unfoldSound=false, unfold=true,
+    resourceFlow=true, swingMode="Auto",
+    hideDefaultCast=false,
+    fx=true,
+    alerts=true,
     resources=true, primary=true, utility=true, dots=true, buffs=true,
     cast=true, pet=true, art=true, motion=true, nameplates=false,
 }
@@ -50,6 +56,12 @@ local function fill(profile)
     end
     limit("scale", 0.6, 1.6); limit("opacity", 0.25, 1)
     limit("x", -2000, 2000); limit("y", -1200, 1200)
+    if E.schools and E.class then
+        local valid=profile.school=="Auto"
+        for _,school in ipairs(E.schools[E.class]) do if profile.school==school then valid=true end end
+        if not valid then profile.school="Auto" end
+    end
+    if profile.swingMode~='Auto' and profile.swingMode~='Single' and profile.swingMode~='Dual' then profile.swingMode='Auto' end
 end
 function E.InitDB()
     if type(EclipseHUDDB) ~= "table" then EclipseHUDDB = {} end
@@ -65,15 +77,22 @@ function E.InCombat()
     local value = InCombatLockdown()
     return not readable(value) or value == true
 end
+function E.LiveWorld()
+    return not E.state or (E.state.world and not E.state.loading and not E.state.hidden)
+end
 function E.Gate(module, class)
     local p = E.Profile()
-    if not p or E.class ~= class or not p.enabled then return false end
+    if not p or E.class ~= class or not p.enabled or not E.LiveWorld() then return false end
     local api = E.API()
     local preview = api and api.IsOptionsOpen and api.IsOptionsOpen()
+    if E.state then E.state.ObservePreview(preview==true) end
     if not preview and p.combatOnly and not E.InCombat() then return false end
     if module == "base" then return true end
     if p[module] == false then return false end
     if module == "motion" and not p.art then return false end
+    if module == "fx" and (not p.art or (E.state and (not E.state.world or E.state.loading or E.state.hidden or preview
+        or E.Call(UnitIsDeadOrGhost,"player")~=false))) then return false end
+    if E.state and (module=="primary" or module=="resources" or module=="pet") and not E.state.Visible() then return false end
     if module == "utility" and p.hoverUtility and not preview then
         return E.hovering == true or E.utilityPinned == true
     end
@@ -84,15 +103,22 @@ function E.Notify()
     local p = E.Profile()
     if api and api.SetLoadFlag then
         for class in pairs(E.classNames) do
-            local enabled = p and p.enabled and class == E.class or false
+            local enabled = p and p.enabled and class == E.class and E.LiveWorld() or false
             api.SetLoadFlag("ECLIPSE_"..class.."_base", enabled)
             for _, module in ipairs(E.modules) do
                 local on = enabled and p[module[1]] ~= false
                 if module[1] == "motion" then on = on and p.art end
+                if module[1] == "fx" then on = on and p.art end
                 api.SetLoadFlag("ECLIPSE_"..class.."_"..module[1], on)
             end
+            api.SetLoadFlag('ECLIPSE_'..class..'_fx_power',enabled and p.fx and p.art and p.resources or false)
         end
     end
+    if E.discovery then E.discovery.ApplyFlags() end
+    if E.RefreshEquipment and not E.InCombat() then E.RefreshEquipment() end
+    if E.RefreshCasting then E.RefreshCasting() end
+    if E.RefreshFX then E.RefreshFX(false) end
+    if E.RefreshAlerts then E.RefreshAlerts() end
     local region = api and api.GetRegion and api.GetRegion(E.rootID)
     handle:SetShown(region ~= nil and E.Gate("base", E.class) and (p.art or not p.locked))
     if api and api.ScanEvents then api.ScanEvents("ECLIPSE_HUD_UPDATE") end
@@ -106,6 +132,12 @@ function E.ApplyLayout()
     local api = E.API()
     local region = api and api.GetRegion and api.GetRegion(E.rootID)
     if region then
+        -- FA can initialize before its companion anchor exists. Repair the
+        -- actual parent/anchor once registered, outside combat, rather than
+        -- assuming SELECTFRAME resolved its target during import.
+        if region.SetParent then region:SetParent(anchor) end
+        if region.SetAnchor then region:SetAnchor("CENTER",anchor,"CENTER") end
+        if region.SetOffset then region:SetOffset(0,0) end
         -- Scale the group, keeping the screen position in UIParent units.
         region:SetScale(p.scale)
         if region.SetRegionAlpha then region:SetRegionAlpha(p.opacity) end
@@ -120,7 +152,18 @@ function E.ApplyLayout()
 end
 function E.Bind()
     -- Group initialization can precede the region registration in FA.
-    if C_Timer and C_Timer.After then C_Timer.After(0, E.ApplyLayout) end
+    if C_Timer and C_Timer.After then C_Timer.After(0, function()
+        E.ApplyLayout()
+        if E.discovery then E.discovery.Schedule() end
+        if E.RefreshFX then E.RefreshFX(true) end
+        local api=E.API()
+        local region=api and api.GetRegion and api.GetRegion(E.rootID)
+        if region and region.HookScript and E.boundRegion~=region then
+            E.boundRegion=region
+            region:HookScript('OnHide',function()if E.motion then E.motion.Stop() end end)
+            region:HookScript('OnShow',function()if E.motion and E.state then E.motion.Change(E.state.open,true) end end)
+        end
+    end) end
 end
 function E.Set(key, value)
     local p = E.Profile()
@@ -132,6 +175,18 @@ function E.Set(key, value)
         return
     end
     p[key] = value; fill(p)
+    if E.discovery and key=="enabled" then
+        if value then E.discovery.Start() else E.discovery.Stop() end
+    end
+    if key=='enabled' and not value and E.ClearInteraction then E.ClearInteraction() end
+    if E.state then
+        if key=="enabled" then
+            if value then E.state.Start() else E.state.Stop() end
+        else E.state.Update(true) end
+    end
+    if E.discovery and (key=="school" or key=="cleave") then E.discovery.Schedule() end
+    if E.RefreshPresentation then E.RefreshPresentation() end
+    if E.RefreshEquipment then E.RefreshEquipment() end
     E.ApplyLayout(); E.Notify()
 end
 function E.Reset()
@@ -139,6 +194,17 @@ function E.Reset()
     local p = E.Profile(); if not p then return end
     for key, value in pairs(defaults) do p[key] = value end
     E.hovering, E.utilityPinned = false, false
+    if E.state then E.state.Start() end
+    if E.discovery then E.discovery.Start() end
+    E.ApplyLayout(); E.Notify()
+    if E.RefreshOptions then E.RefreshOptions() end
+end
+function E.ResetPosition()
+    if E.InCombat() then
+        E.Set("x",defaults.x); E.Set("y",defaults.y); return
+    end
+    local p=E.Profile(); if not p then return end
+    p.x,p.y=defaults.x,defaults.y
     E.ApplyLayout(); E.Notify()
     if E.RefreshOptions then E.RefreshOptions() end
 end
@@ -148,6 +214,8 @@ local function stopHover()
 end
 function E.Hover(value)
     stopHover()
+    local p=E.Profile()
+    if not p or not p.enabled or (E.state and not E.state.world) then E.hovering=false;return end
     if value then
         E.hovering = true; E.Notify()
     elseif C_Timer and C_Timer.NewTimer then
@@ -156,6 +224,9 @@ function E.Hover(value)
             E.hovering = false; hoverTimer = nil; E.Notify()
         end)
     else E.hovering = false; E.Notify() end
+end
+function E.ClearInteraction()
+    stopHover();E.StopDrag(false);E.hovering,E.utilityPinned=false,false
 end
 handle:SetScript("OnEnter", function()
     E.Hover(true)
@@ -170,7 +241,11 @@ handle:SetScript("OnLeave", function() E.Hover(false); GameTooltip:Hide() end)
 handle:SetScript("OnClick", function(_, button)
     if button == "RightButton" then
         if E.ToggleOptions then E.ToggleOptions() end
-    else E.utilityPinned = not E.utilityPinned; E.Notify() end
+    else
+        E.utilityPinned = not E.utilityPinned
+        if E.state then E.state.Inspect() end
+        E.Notify()
+    end
 end)
 handle:SetScript("OnDragStart", function()
     local p = E.Profile()
@@ -200,6 +275,14 @@ end
 handle:SetScript("OnDragStop", function() E.StopDrag(true) end)
 function E.Shutdown()
     stopHover(); E.StopDrag(false)
+    if E.discovery then E.discovery.Stop() end
+    if E.state then E.state.Stop() end
+    if E.StopPresentation then E.StopPresentation() end
+    if E.StopCasting then E.StopCasting() end
+    if E.StopFX then E.StopFX() end
+    if E.StopAlerts then E.StopAlerts() end
+    local native=E.API()
+    if native and native.SetLoadFlag then native.SetLoadFlag('ECLIPSE_WARRIOR_pet_offhand',false) end
     E.hovering, E.utilityPinned = false, false
     handle:Hide()
     local api = E.API()
@@ -207,6 +290,7 @@ function E.Shutdown()
         for class in pairs(E.classNames) do
             api.SetLoadFlag("ECLIPSE_"..class.."_base", false)
             for _, module in ipairs(E.modules) do api.SetLoadFlag("ECLIPSE_"..class.."_"..module[1], false) end
+            api.SetLoadFlag('ECLIPSE_'..class..'_fx_power',false)
         end
     end
 end
@@ -229,7 +313,18 @@ events:SetScript("OnEvent", function(_, event, addon)
             fill(p); E.queued = nil
         end
         E.ApplyLayout()
+        if E.discovery then
+            if p and p.enabled then E.discovery.Start() else E.discovery.Stop() end
+        end
+        if E.state then
+            if p and p.enabled then E.state.Update(false) else E.state.Stop() end
+        end
+        if p and not p.enabled then E.ClearInteraction() end
         if E.RefreshOptions then E.RefreshOptions() end
-    else E.InitDB(); E.ApplyLayout() end
+    else
+        E.InitDB(); E.ApplyLayout()
+        if E.discovery then E.discovery.Start() end
+        if E.state then E.state.Start() end
+    end
     E.Notify()
 end)

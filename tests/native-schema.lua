@@ -13,6 +13,10 @@ CreateFrame=frame;hooksecurefunc=noop
 UIParent=frame();C_Timer={After=noop,NewTicker=noop,NewTimer=noop}
 C_NamePlate={GetNamePlateForUnit=noop}
 Enum=setmetatable({}, {__index=function(t,k)local v={};rawset(t,k,v);return v end})
+Enum.LuaCurveType.Step=1
+Enum.DurationTextBindingProperty.RemainingDuration=1
+C_CurveUtil={CreateColorCurve=frame}
+CreateColor=frame
 GetLocale=function()return "enUS"end
 GetScreenWidth=function()return 1920 end
 GetScreenHeight=function()return 1080 end
@@ -25,9 +29,9 @@ strsplit=function()end
 local media={Fetch=function()return "Fonts\\FRIZQT__.TTF"end}
 LibStub=function(name,optional)if optional then return nil end;return media end
 local L=setmetatable({}, {__index=function(_,key)return key end})
-WeakAuras={IsLibsOK=function()return true end,L=L,IsOptionsOpen=function()return false end,RegisterRegionType=noop,RegisterSubRegionType=noop}
+WeakAuras={newFeatureString='',IsLibsOK=function()return true end,L=L,IsOptionsOpen=function()return false end,RegisterRegionType=noop,RegisterSubRegionType=noop}
 ForeverAuras=WeakAuras
-local P={frames={},regions={},callbacks=frame(),memoryRootAccessors={},subRegionTypes={subtext={default=function()return {}end}}}
+local P={frames={},regions={},callbacks=frame(),ExecEnv={},memoryRootAccessors={},subRegionTypes={subtext={default=function()return {}end}}}
 P.TimedAPI=function()return CreateFrame,noop,noop,C_Timer end
 P.Profiled=function(_,fn)return fn end
 local function load(name)assert(loadfile(source.."/"..name..".lua"))("ForeverAuras",P)end
@@ -46,7 +50,38 @@ for _,d in ipairs(data.c)do
     if d.triggers[1].trigger.type=="secretAura" then
         local problem=D.Validate(d)
         assert(problem==nil,d.id..": "..tostring(problem));count=count+1
+        assert(D.FallbackChoice(d)=='none',d.id..': modern aura may not follow the always-true gate')
+        assert(D.FoundFollow(d)==nil,d.id..': inactive aura may not become a fallback icon')
+        if d.triggers[1].trigger.unit=='player' and d.triggers[1].trigger.secretShowOn=='showOnActive' and not d.triggers[1].trigger.secretUseRem then
+            local broken=CopyTable(d)
+            broken.triggers.secretFallback=nil;broken.secretFallback='none'
+            -- Reproduce v0.2.0's actual semantic bug using FA's own selector.
+            assert(D.FoundFollow(broken)=='next','Expected old misplaced setting to follow visibility trigger')
+        end
     end
 end
 assert(count>50,"No native aura coverage")
 print("ForeverAuras' native schema validator passed: "..count.." modern displays")
+load('Conditions')
+local power=P.ExecEnv.PowerCurve
+assert(power,'Native resource-curve support is required')
+local secret={}
+issecretvalue=function(v)return rawequal(v,secret)end
+hasanysecretvalues=function(...)for i=1,select('#',...)do if issecretvalue(select(i,...))then return true end end;return false end
+UnitPowerMax=function()return secret end
+UnitPowerPercent=function(_,_,_,curve)assert(curve);return secret end
+C_CurveUtil.CreateCurve=function()return {SetType=noop,AddPoint=noop}end
+local ctx=power.Begin({show=true,unit='player',powertype=1,total=secret},'power')
+local ops={}
+for _,d in ipairs(data.c)do
+    if d.id:find('FX resource intensity',1,true)then
+        for _,condition in ipairs(d.conditions)do
+            local c=condition.check
+            ops[#ops+1]={power.Leaf(ctx,c.variable,c.op,c.value),condition.changes[1].value}
+        end
+        break
+    end
+end
+assert(#ops==3,'Resource intensity has native curve conditions')
+assert(rawequal(power.Evaluate(ctx,power.Pieces(0,ops)),secret),'Native curve result must pass through without inspection')
+print('Actual ForeverAuras resource-curve path accepted restricted state')

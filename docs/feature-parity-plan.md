@@ -2,11 +2,12 @@
 
 ## Working state — 2026-11-09
 
-**Current phase: plan and source audit. Runtime implementation has not started.**
+**Current phase: 0.3.0 implementation and automated verification; live acceptance remains pending.**
 
-The released version is **0.2.0**. Its pictures, import decoding, schema checks
-and mocked settings tests do not establish feature parity or correct live spell
-tracking. The user's live screenshots take precedence over the earlier preview.
+The previous **0.2.0** release exposed the live failures below. The **0.3.0**
+implementation now has targeted regressions and native-source checks. Pictures,
+import decoding and mocks still do not establish live feature parity. The user's
+actual client evidence takes precedence over an illustrative preview.
 
 The user requested: list every feature first, review the original source fully,
 then implement and verify one item at a time. New artwork and README promotion
@@ -17,8 +18,10 @@ are secondary to working behavior.
 - Level-23 Warlock: the main ability row can be empty despite the native cooldown
   manager showing many spells. Eclipse has only six hardcoded primary candidates.
 - Player effects show placeholder/question-mark icons with the FA editor closed.
-  The exact native-rendering cause is **not yet established**; do not describe
-  them as harmless editor samples or claim an eligibility fix resolves all causes.
+  **Generator defect reproduced in native FA code:** v0.2.0 put `secretFallback`
+  on the display rather than `display.triggers`. FA therefore followed the
+  always-true custom gate when no aura was active. Correct nesting returns no
+  fallback in the actual selector. Live confirmation after reimport is pending.
 - Fear, Unending Breath and Ritual of Summoning were arbitrarily mixed together.
   Preparation spells should not occupy the default combat HUD.
 - The default placement is unsuitable. `/eclipse` opens and unlocked dragging
@@ -84,7 +87,9 @@ are secondary to working behavior.
 
 ## Complete feature checklist
 
-`[x]` below means the audit artifact exists. All runtime items are pending.
+`[x]` below means the stated acceptance is complete. Runtime code status and
+automated evidence are recorded in the work log; live-dependent checkboxes stay
+open until their client acceptance passes. Open does not mean unimplemented.
 **R** = confirmed in original Warrior source. **U** = an explicit user request.
 **A** = adaptation needed for Eclipse's nine-class scope.
 
@@ -342,6 +347,25 @@ plan update does not create a new runtime release.
 | Date | Item | Result | Evidence / next action |
 | --- | --- | --- | --- |
 | 2026-11-09 | 00.1–00.3 | Source audit and plan recorded; no runtime changes | Full 135-region inventory; primary controllers reviewed; user live failures recorded above. |
+| 2026-11-09 | 01.1–01.3 | Learned identity discovery and eligibility unloading implemented; mocked checks pass; live acceptance pending | `Discovery.lua` scans actual spellbook ranks/bases and learned CDM identities outside combat, rejects placeholder/restricted metadata, coalesces documented learning/talent/equipment events and cancels on stop. 14 focused English/Chinese mock checks. `/eclipse spells` prints learned IDs and native attachment/suppression existence without inspecting protected visibility. The live `?` cause remains unproven; proc entries lacking learned evidence now unload rather than guess. |
+| 2026-11-09 | 02.1–02.8 | Selection/grouping implementation and 43 mock checks; live CDM comparison pending | Four slots per side, invested-tree/manual school choice, source Warrior leveling/early/mature plans, manual Cleave, native queue/proc/usability/range cues. Learned unused candidates appear only on cooldown in offense/control/defense groups. Additional learned native CDM entries feed a native on-cooldown clone row, without cooldown reads. Preparation unloads. All nine classes have separate declared school adaptations; these are not audited Guos class source. Low-level Warlock fixture is a regression scenario, not the user's captured spellbook. Settings controls and live acceptance remain pending. |
+| 2026-11-09 | 03.1–03.6 | Idle/target/combat state implemented; 21 focused mock checks pass | Emblem remains at idle; primary/resources/class resource fold. Readable living attackable target opens; optional combat expansion is separate. Five-second loss delay, cancellation on reacquisition, ten-second inspection, silent editor restoration, death/loading/world cleanup. Cast/effects remain independent. Live transition/hidden-frame behavior still needs client confirmation. |
+| 2026-11-09 | 04.1–04.4 | Native unfold/fold implementation; 12 focused mock checks pass | Native translation/alpha groups sample 280ms smoothstep with 65ms forward/reverse stagger over 500ms. Reversal samples the current trajectory; resource slide-in remains opaque, closing fades. No Lua OnUpdate. Stop restores offsets/alpha and cancels finish timer. Optional supported-client unfold sound is silent on initial/editor restoration. Actual client animation playback still pending. |
+| 2026-11-09 | 10.1–10.3 | Explicit anchor repair, new-profile offset and position-only reset implemented | Late-created root is parented/anchored to `EclipseHUDAnchor` outside combat. Fresh/reset position uses source `(0,-160)`; existing saved coordinates remain untouched. Position reset preserves scale/modules. Core suite now 47 assertions, including scale-independent coordinates and combat deferral. Physical client position remains unverified; the numeric default alone is not acceptance. |
+| 2026-11-09 | 01.2 follow-up | Native placeholder cause reproduced and fixed in generator | Actual `SecretAuraSingle.lua` `FoundFollow` returns `next` for the old misplaced setting and `nil` for the corrected `triggers.secretFallback = "none"`. Added regression to native validator, separate from learned filtering. New import required; actual game display still awaits confirmation. |
+| 2026-11-09 | 05.1–05.6 | Native formatting/resource flow/equipment checks implemented | Integer native health/power text; own geometric 480-frame/eight-second inward flow atlases retain FA foreground masks. Native numeric countdown formatter hides zero, uses tenths under one second, rounded seconds, urgency colors and minutes; secondary text sits below icon and previous styling restores. Actual off-hand weapon gates second swing; manual Single/Dual cannot invent equipment. Druid combo display qualifies energy form. Existing native demon/pet/shards/totems retained. 18 presentation/equipment mock checks; client flow/masks, all class-resource edge cases and coordinated real-swing pulses still require validation/08 work. |
+| 2026-11-09 | 06.1–06.6 | Native effect coverage and source reminders implemented; native validation pending below | Learned/CDM-qualified procs and fixed native owned-aura slots; full six-effect Warrior target set; native usable proc indicators exclude selected main entries; native missing Rend requires hostile target and Arms context; Battle Shout missing/≤15s uses native filters, including another Warrior's shout. No Warlock armor missing warning. Nameplate eligibility/module flags unload trackers. Ownership, restrictions and duration gates are delegated to FA, with live apply/expire/foreign-caster checks still pending. |
+| 2026-11-09 | 07.1–07.4 | Native casting retained; reversible ownership and verified cast-event observer implemented | `Casting.lua` preserves Blizzard scripts/events; supports standard/gamepad/late bars, cooperative owners and latest external setter requests. Default suppression starts only with an imported Eclipse cast bar and an enabled visible module. 14 ownership/event mock checks pass, including interruption and matching GUID. Ordinary cast motion and completion pulse connect in 08. Foreign addons that bypass all setters/ownership APIs cannot be inferred. |
+| 2026-11-09 | 08.1–08.4 | Native effect layers and ordinary coordination implemented | Separate low/blood/eyes/medium/major/defense layers, ascending compositing levels; native Aura Start/Main provide release/sustain without helper hooks on protected buttons. Resource trim follows bar visibility. Native FA Power conditions generate the resource-intensity curve; actual `Conditions.lua` tested with restricted state (no helper arithmetic). Ordinary cast and real PLAYER_SWING pulses have a master switch and bounded eight-attachment retry. Native validators accept 163 modern displays. Actual appearance/overlap/taint and hidden-frame cleanup still need game-client validation. |
+| 2026-11-09 | 09.1–09.4 | Native activation chimes and event-driven ready queue implemented; 12 focused mock checks pass | Own PCM chimes replace the reference's private MP3 recordings. Native Added registrations qualify learned identities. Ready events use native FA cooldown-ready triggers, confirmed combat, Warrior stance/shield interrupt selection, 60ms coalescing, priorities, 2s dedupe, 4s TTL and 1s startup suppression; queue cleanup and known chime duration prevent overlapping queued ready alerts. Two no-self-buff shouts use verified cast success. As in source, native Added playback is client-owned (not a Lua aura callback); successful casts reserve its chime interval. Live native-audio timing and audibility remain pending. |
+| 2026-11-09 | 10.4–10.5 | Settings and class lifecycle implemented | Three settings tabs: modules, behavior, position. Manual/auto school, source swing/Cleave choices, independent unfold/resource motion/default-cast/FX/audio controls, temporary inspection and position-only reset. English/Chinese boundary covers all controls/school labels. Inactive class/module flags unload native trackers. |
+| 2026-11-09 | 10.6–10.14 | Nine declared school adaptations implemented; live class verification pending | Source Warrior stages; Warlock leveling/control/demon/shards/qualified procs; Mage Arcane/Fire/Frost and native CDM counters; Priest healing/shadow and native class/racial cooldown overflow; Rogue builders/finishers/native coatings; Paladin school plans/blessings; Hunter pet plus actual ranged/melee swings; Druid cached learned Cat/Bear/caster switching and native form power; Shaman school plans/totems/shields/native imbue. Added verified Intellect/Fortitude/Mark upkeep families with native missing/≤15s gates; no guessed Warlock armor warning. Native learned CDM player-effect overflow captures additional buffs/stacks. 47 selection mock checks cover class plans and combat form changes. No other class's runtime Guos source was supplied; adaptation is not proof of live parity. |
+| 2026-11-09 | 11.1–11.2 | Automated verification passed | 239 focused Lua assertions; eight package/schema/media test groups; import round trip with 830 descendants; actual FA validators/fallback selection and restricted resource-curve path pass on installed and public source (176 modern displays). Browser regressions pass across nine classes, explicit level-23 fixture, idle/enemy/combat/delayed close/reacquisition, stacking and settings. All nine preview images regenerated. Full build/package bytes and `git diff --check` pass. |
+| 2026-11-09 | 11.3 | Pending game-client acceptance | No game installation or SavedVariables modified. Requires installing the new companion and updating the existing top-level import; `/eclipse spells` supplies actual learned/native diagnostics. Live spellbook comparison, placement, native audio, combat/taint, ownership and persistence remain open in `docs/validation.md`. |
+| 2026-11-09 | 11.2 final lifecycle review | Added late-binding/world-leave regressions | Newly eligible ordinary regions may be created after load flags change, so their init callbacks coalesce a layout pass after registration; fresh slots cannot remain stacked at center. Late layout/notifications cannot re-enable world-leave controls or native flags. FX ordering follows FA's actual controlled-child ordering behind foreground UI. Selection/state suites now 49/22 assertions. |
+| 2026-11-09 | 11.4 | Versioned delivery prepared | TOC, generator, package checks, CI artifact, README and changelog agree on 0.3.0. ZIP includes source/media/import and the durable feature/audit documents. Branch CI, merge and immutable prerelease publication follow the user's GitHub instruction. |
 
-**Next item:** 01.1–01.2. First reproduce the live spell eligibility and
-placeholder behavior. Do not skip directly to another generated preview.
+**Next required evidence:** 11.3 game-client acceptance. Code and automated
+checks are implemented; the detailed runtime acceptance checkboxes remain open
+until the corresponding live checks pass. Do not restart the audit or claim that
+the user's actual spellbook was captured by the mock fixture.

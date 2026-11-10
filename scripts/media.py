@@ -53,3 +53,15 @@ def build(directory,classes):
     ticks=''.join(f'<path d="m61 7 3-3 3 3-3 3Zm3 4v3" transform="rotate({i*45} 64 64)"/>' for i in range(8))
     vector(directory,'runes','<g fill="none" stroke="#ffffff" stroke-width="1.3"><circle cx="64" cy="64" r="59" stroke-dasharray="34 12 2 12"/><circle cx="64" cy="64" r="56" stroke-dasharray="1 12"/>'+ticks+'</g>',128,128)
     vector(directory,'divider','<path d="M0 16h232l24-8 24 8h232m-280 0 24 8 24-8" stroke="#bb93df" stroke-width="1" fill="none"/>',512,32)
+    # Small original geometric flow accent. Native FlipBook playback supplies
+    # the clock; this SVG is a 480-frame, 32-column atlas with transparent gaps.
+    for side,direction in (('left',1),('right',-1)):
+        cells=[]
+        for i in range(480):
+            x,y=(i%32)*64,(i//32)*8
+            phase=(i/480)*64*direction
+            cells.append(f'<clipPath id="c{i}"><rect x="{x}" y="{y}" width="64" height="8"/></clipPath>')
+            cells.append(f'<rect x="{x}" y="{y}" width="64" height="8" fill="white" fill-opacity=".7"/>')
+            paths=''.join(f'<path d="M{x+k*32+phase-16:.3f} {y}l{8*direction} 4 {-8*direction} 4"/>' for k in range(-3,5))
+            cells.append(f'<g clip-path="url(#c{i})" fill="none" stroke="white" stroke-opacity=".5" stroke-width="1">{paths}</g>')
+        vector(directory,'resource-flow-'+side,''.join(cells),2048,128)

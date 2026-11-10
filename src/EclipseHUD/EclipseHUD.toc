@@ -3,10 +3,19 @@
 ## Notes: Controls and original media for the Eclipse ForeverAuras class HUD.
 ## Notes-zhCN: Eclipse 职业战斗界面的控制面板与原创材质。需导入配套 ForeverAuras 字符串。
 ## Author: Eclipse HUD contributors
-## Version: 0.2.0
+## Version: 0.3.0
 ## Dependencies: ForeverAuras
 ## SavedVariables: EclipseHUDDB
 ## IconTexture: Interface\AddOns\EclipseHUD\Media\crest-warlock.tga
 Locale.lua
 Core.lua
+Catalog.lua
+Discovery.lua
+Selection.lua
+State.lua
+Motion.lua
+Presentation.lua
+Casting.lua
+Effects.lua
+Alerts.lua
 Options.lua

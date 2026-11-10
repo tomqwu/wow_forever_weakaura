@@ -1,0 +1,50 @@
+dofile('tests/state.lua')
+local E=EclipseHUD
+local checks=0
+local function check(v,m)checks=checks+1;assert(v,m)end
+local now=1
+function GetTime()return now end
+local create=CreateFrame
+function CreateFrame(...)
+    local frame=create(...)
+    frame.HookScript=function(self,key,fn)self.scripts[key]=fn end
+    local makeTexture=frame.CreateTexture
+    frame.CreateTexture=function(self,...)
+        local t=makeTexture(self,...)
+        t.SetTexture=function()end;t.SetBlendMode=function()end;t.SetAlpha=function()end
+        t.CreateAnimationGroup=function()
+            local g={count=0}
+            function g:SetLooping()end
+            function g:Play()self.playing=true;self.count=self.count+1 end
+            function g:Stop()self.playing=false end
+            function g:CreateAnimation()return setmetatable({}, {__index=function()return function()end end})end
+            return g
+        end
+        return t
+    end
+    return frame
+end
+local regions,ready={},false
+ForeverAuras.GetRegion=function(id)
+    if not ready then return end
+    regions[id]=regions[id] or CreateFrame('Frame');return regions[id]
+end
+assert(loadfile('src/EclipseHUD/Effects.lua'))('EclipseHUD',E)
+local F=E.effects
+E.state.world=true;E.state.open=true;E.Profile().fx=true;E.Profile().art=true
+for i=1,9 do E.RefreshFX(false);if F.retry then local t=F.retry;t.callback()end end
+check(F.attempts==8 and not F.retry,'Missing attachment retries stop after eight attempts')
+ready=true;E.RefreshFX(true)
+check(F.built and F.active and F.events.events.PLAYER_SWING,'Late binding creates ordinary effects and actual-swing observer')
+E.CastMotion('start');check(F.cast.playing,'Actual cast start runs decorative cast motion')
+E.CastMotion('cancel');check(not F.cast.playing and not F.success.playing,'Interrupted cast stops with no success pulse')
+E.CastMotion('success');check(F.success.playing,'Verified completion invokes success pulse')
+F.events.scripts.OnEvent(nil,'PLAYER_SWING',1,0);local count=F.left.count
+F.events.scripts.OnEvent(nil,'PLAYER_SWING',1,1)
+check(count==1 and F.left.count==1,'Simultaneous hands merge one real-swing pulse')
+now=2;F.events.scripts.OnEvent(nil,'PLAYER_SWING',0,0)
+check(F.left.count==1,'Invalid swing event cannot invent a pulse')
+E.Set('fx',false)
+check(not F.active and not F.events.events.PLAYER_SWING and not F.retry,'Master disable cancels listener and retries')
+for _,group in ipairs(F.groups)do check(not group.playing,'Master disable stops ordinary native groups')end
+print('Effect lifecycle checks passed: '..checks)

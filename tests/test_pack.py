@@ -29,16 +29,18 @@ class PackTests(unittest.TestCase):
             if d['triggers'][1]['trigger']['type']!='secretAura':continue
             t=d['triggers'][1]['trigger']
             self.assertEqual(t['auraTracking'],'native')
-            self.assertEqual(t['secretShowOn'],'showOnActive')
-            self.assertEqual(t['nativeFilters'],{'PLAYER':True})
+            self.assertIn(t['secretShowOn'],('showOnActive','showOnMissing'))
+            self.assertEqual(t['nativeFilters'],{} if 'Battle Shout missing' in d['id'] or 'Battle Shout expiring' in d['id'] or ' | Upkeep' in d['id'] else {'PLAYER':True})
             self.assertTrue(t['auraRankSpellIDs'])
             self.assertEqual(d['blizzardAuraDisplay']['maxIcons'],1)
+            self.assertEqual(d['triggers']['secretFallback'],'none')
+            self.assertNotIn('secretFallback',d)
             self.assertTrue(all(a['type']=='none' for a in d['animation'].values()))
             self.assertFalse(d['actions']['start']);self.assertFalse(d['actions']['finish'])
             self.assertEqual(d['conditions'],[])
             if t['unit']=='nameplate':
                 self.assertEqual(d['anchorFrameType'],'NAMEPLATE')
-                self.assertTrue(d['load']['loadFlag'].endswith('_nameplates'))
+                self.assertIn('_nameplates_',d['load']['loadFlag'])
     def test_localization_and_forever_seeds(self):
         warlock=CLASSES['WARLOCK']
         self.assertIn((1293817,'Conflagrate'),warlock['primary'])
@@ -62,7 +64,7 @@ class PackTests(unittest.TestCase):
             self.assertNotIn(forbidden,code)
     def test_wow_texture_format(self):
         files=list((ROOT/'src/EclipseHUD/Media').glob('*.tga'))
-        self.assertEqual(len(files),21)
+        self.assertEqual(len(files),23)
         for path in files:
             header=path.read_bytes()[:18]
             self.assertEqual(header[2],2,'Uncompressed true-color TGA')
@@ -78,6 +80,23 @@ class PackTests(unittest.TestCase):
         self.assertEqual(by_id[TITLE]['anchorFrameFrame'],'EclipseHUDAnchor')
         for d in self.regions:
             for child in d.get('controlledChildren',[]):self.assertEqual(by_id[child]['parent'],d['id'])
+
+    def test_native_effect_animation_and_resource_curve(self):
+        effects=[d for d in self.regions if ' | FX | ' in d['id']]
+        self.assertGreater(len(effects),30)
+        for d in effects:
+            self.assertEqual(d['triggers'][1]['trigger']['type'],'secretAura')
+            self.assertIn(d['blizzardAuraDisplay']['auraStart']['type'],('fade','zoom'))
+            self.assertEqual(d['blizzardAuraDisplay']['auraMain']['type'],'pulse')
+        for cls,c in CLASSES.items():
+            by_tier={d['id'].rsplit(' | ',1)[1]:d for d in effects if d['load']['class']['single']==cls}
+            parent=next(d for d in self.regions if d['id']==f"Eclipse | {c['name']}")
+            order=parent['controlledChildren']
+            self.assertGreater(order.index(by_tier['defense']['id']),order.index(by_tier['major']['id']))
+            self.assertLess(order.index(by_tier['defense']['id']),order.index(f"Eclipse | {c['name']} | Primary"))
+            resource=next(d for d in self.regions if d['id']==f"Eclipse | {c['name']} | FX resource intensity")
+            self.assertEqual(resource['triggers'][1]['trigger']['event'],'Power')
+            self.assertTrue(all(x['check']['variable']=='percentpower' for x in resource['conditions']))
 
     def test_painted_art_preserves_transparency_and_class_identity(self):
         from PIL import Image
