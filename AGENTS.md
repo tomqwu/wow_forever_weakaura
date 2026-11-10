@@ -31,6 +31,9 @@ project's folder names, SavedVariables, installation script or release tags here
 - Run `python scripts/build.py` and `python scripts/check.py`, plus
   `git diff --check`. If a ForeverAuras checkout is available, run
   `lua tests/native-schema.lua /path/to/ForeverAuras`.
+- For each change, keep the English-first / Simplified-Chinese-below README,
+  CDM/cast-bar configuration instructions, screenshots, validation notes and
+  release notes current. Label illustrative captures separately from game evidence.
 - Runtime releases must update the TOC, generator, package checks, workflow
   artifact name, README and changelog together. Existing releases are immutable.
 - Do not modify the user's game installation or SavedVariables unless requested.

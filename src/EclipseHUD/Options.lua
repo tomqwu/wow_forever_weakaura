@@ -1,4 +1,5 @@
 local _, E = ...
+local castLabels={Default="Default game bar",Eclipse="Eclipse bar",Both="Both bars"}
 local function label(parent, text, size, x, y, color)
     local f = parent:CreateFontString(nil, "OVERLAY")
     f:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", size, "")
@@ -24,6 +25,7 @@ function E.RefreshOptions()
     end
     panel.school:SetText(E.L('Talent school')..': '..E.L(p.school)
         ..(p.school=='Auto' and E.selection and (' ('..E.L(E.selection.mode or 'Leveling')..')') or ''))
+    panel.castChoice:SetText(E.L('Cast bar display')..': '..E.L(castLabels[p.castBarMode]))
     panel.cooldown:SetText(E.L('Cooldown layout')..': '..E.L(p.cooldownLayout))
     panel.swing:SetText(E.L('Swing mode')..': '..E.L(p.swingMode))
     panel.swing:SetShown(E.class=='WARRIOR')
@@ -72,7 +74,7 @@ local function build()
     for i,entry in ipairs({{'combatOnly','Combat only'},{'hoverUtility','Utility on hover'},
         {'expandCombat','Expand when combat starts'},{'unfold','Unfold animation'},
         {'unfoldSound','Unfold sound'},{'resourceFlow','Resource flow'},
-        {'hideDefaultCast','Hide default cast bar'},{'cleave','Prefer Cleave in Fury'}})do
+        {'cleave','Prefer Cleave in Fury'}})do
         check(behavior,entry[1],entry[2],i%2==1 and 22 or 292,-195-math.floor((i-1)/2)*36)
     end
     local function cycle(key,values,title,y)
@@ -85,6 +87,8 @@ local function build()
         end)
         b.title=title;return b
     end
+    p.castChoice=cycle('castBarMode',function()return {'Default','Eclipse','Both'}end,'Cast bar display',-303)
+    p.castChoice:SetSize(241,29);p.castChoice:ClearAllPoints();p.castChoice:SetPoint('TOPLEFT',292,-303)
     p.school=cycle('school',function()
         local values={'Auto'};for _,school in ipairs(E.schools and E.schools[E.class] or {})do values[#values+1]=school end
         return values

@@ -203,12 +203,18 @@ def generate():
         bar(p,prefix+" | Resource",prefix,cls,"resources",dict(type="unit",event="Power",unit="player",use_unit=True),
             x=138,y=13,width=180,height=13,label='resource')
         primary=prefix+" | Primary"; p.group(primary,prefix,cls,"primary",y=52)
+        for side,grow in [('left','LEFT'),('right','RIGHT')]:
+            wing_id=primary+' | Native '+side
+            wing=p.group(wing_id,primary,cls,'primary',dynamic=True)
+            wing.update(grow=grow,space=7,animate=True,sort='custom',sortOn='index',
+                customSort='function(a,b) return EclipseHUD and EclipseHUD.SortCDM(a,b) or false end')
+            wing['actions']['init']=dict(do_custom=True,custom=f'if EclipseHUD then EclipseHUD.BindAbility("{wing_id}") end')
         for slot in range(1,9):
             slot_id=primary+' | Native '+str(slot)
-            holder=p.group(slot_id,primary,cls,'primary')
-            holder['actions']['init']=dict(do_custom=True,custom=f'if EclipseHUD then EclipseHUD.BindAbility("{slot_id}") end')
-            slot_icon=icon(p,slot_id+' | Entry',slot_id,cls,'primary',dict(type='cdm',event='Blizzard Cooldown Manager',
-                cdmSource='cooldown',cdmSpells=dict(multi={}),cdmShow='always',use_cdmShowGCD=True,
+            # Preserve the v0.3.2 slot-group UID as an empty compatibility node.
+            p.group(slot_id,primary,cls,'primary')
+            slot_icon=icon(p,slot_id+' | Entry',primary+' | Native '+('left' if slot<=4 else 'right'),cls,'primary',dict(type='cdm',event='Blizzard Cooldown Manager',
+                cdmSource='cooldown',cdmSpells=dict(multi={}),cdmShow='cooldown',use_cdmShowGCD=False,
                 cdmTrack='auto',cdmHideGCDText=True,use_ignoreSpellKnown=False),40)
             slot_icon['conditions']=[dict(check=dict(trigger=1,variable=variable,value=value),changes=[dict(property=prop,value=color)]) for variable,value,prop,color in [('onCooldown',1,'desaturate',True),('isUsable',0,'desaturate',True),('inRange',0,'color',[1,.3,.3,1])]]
         for seed,name in candidates(cls):
@@ -277,6 +283,13 @@ def generate():
         icon(p,native_effects+' | Entries',native_effects,cls,'buffs',dict(type='cdm',event='Blizzard CDM Buff',
             cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
             use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),26)
+        tracked=prefix+' | Native tracked bars'
+        p.group(tracked,prefix,cls,'trackedBars',x=410,y=13,dynamic=True).update(grow='DOWN',space=5,
+            sort='custom',sortOn='index',customSort='function(a,b) return EclipseHUD and EclipseHUD.SortCDM(a,b) or false end')
+        bar(p,tracked+' | Entries',tracked,cls,'trackedBars',dict(type='cdm',event='Blizzard CDM Buff',
+            cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
+            use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),
+            width=190,height=18,color=rgba(c['color']),text='%p',name_text='%n')
         buffs=list(c['buffs'])
         if cls=="WARLOCK": buffs.append(([687,706,28176],"Demon armor"))
         for i,(seed,name) in enumerate(buffs):
@@ -350,8 +363,9 @@ def generate():
             flag=f'ECLIPSE_{cls}_alerts_'+alert['uid'];alert['load']['loadFlag']=flag
             p.eligibility[alert['id']]=dict(cls=cls,module='alerts',seeds=[seed],flag=flag,kind='ability')
             alert['actions']['start']=dict(do_custom=True,custom=f'if EclipseHUD then EclipseHUD.ReadyAlert("{alert["id"]}", {seed}, {priority}) end')
-        bar(p,prefix+" | Cast",prefix,cls,"cast",dict(type="unit",event="Cast",unit="player",use_unit=True,spellNames=[]),
+        cast=bar(p,prefix+" | Cast",prefix,cls,"cast",dict(type="unit",event="Cast",unit="player",use_unit=True,spellNames=[]),
             width=300,height=13,y=-178,color=rgba(c['accent']),text="%p",name_text="%n")
+        cast['actions']['init']=dict(do_custom=True,custom='if EclipseHUD then EclipseHUD.RefreshCasting() end')
         # A second bar is optional; Blizzard's original cast bar is untouched.
         if c.get('pet'):
             bar(p,prefix+" | Pet health",prefix,cls,"pet",dict(type="unit",event="Health",unit="pet",use_unit=True),
@@ -431,14 +445,23 @@ def write_class_imports(data,dist):
         records.append(dict(classToken=cls,name=c['name'],file=target.name,characters=len(raw.rstrip(b'\n')),
             bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),displays=len(value['c'])+1,rootID=value['d']['id'],rootUID=value['d']['uid']))
     (dist/'classes/manifest.json').write_text(json.dumps(dict(version=VERSION,imports=records),indent=2)+'\n')
-    rows=['# Per-class imports','',
+    rows=['# Per-class imports','','## English','',
         'Install the companion, then `/reload`. Import one class through `/fa`; choose **Update** for an existing class group, not Import as Copy.',
         'Each file targets only its class group, preserving an existing combined parent and the other classes. New installations can use a class file alone.',
         'Use the combined import for a fresh nine-class installation or to update an existing combined group. Use class files for standalone class updates; choose Update rather than creating copies.',
         '', '| Class | Import | Characters | Displays |','| --- | --- | ---: | ---: |']
     rows += [f"| {r['name']} | [{r['file']}]({r['file']}) | {r['characters']:,} | {r['displays']} |" for r in records]
+    rows += ['', '## 简体中文', '',
+        '安装配套插件后先输入 `/reload`，再通过 `/fa` 导入对应职业文件；已有职业组请选择“更新”，不要导入为副本。',
+        '每份文件仅更新自身职业组，保留原有合并父组和其他职业；首次安装也可单独使用一个职业文件。',
+        '合并文件用于首次安装九职业或更新已有合并组；独立职业安装继续使用职业文件更新。',
+        '', '| 职业 | 导入文件 | 字符数 | 显示数量 |', '| --- | --- | ---: | ---: |']
+    rows += [f"| {CLASSES[r['classToken']]['zh']} | [{r['file']}]({r['file']}) | {r['characters']:,} | {r['displays']} |" for r in records]
     (dist/'classes/README.md').write_text('\n'.join(rows)+'\n')
     return records
+
+def packaged_readme():
+    return (ROOT/'README.md').read_text().replace('dist/classes/','imports/')
 
 def main():
     parser=argparse.ArgumentParser()
@@ -464,9 +487,15 @@ def main():
         for path in sorted((dist/'classes').iterdir()):
             if path.suffix in ('.txt','.json','.md'):z.write(path,'imports/'+path.name)
         for name in ('README.md','LICENSE','CHANGELOG.md'):
-            if (ROOT/name).exists(): z.write(ROOT/name,name)
+            if (ROOT/name).exists():
+                if name=='README.md':z.writestr(name,packaged_readme())
+                else:z.write(ROOT/name,name)
         for name in [str(path.relative_to(ROOT)) for path in sorted((ROOT/'docs').glob('*.md'))]+['preview/eclipse-warlock.png']:
-            if (ROOT/name).exists(): z.write(ROOT/name,name)
+            if (ROOT/name).exists():
+                if name=='README.md':z.writestr(name,packaged_readme())
+                else:z.write(ROOT/name,name)
+        for folder in ('docs/images','preview/classes','preview/states','preview/casting'):
+            for path in sorted((ROOT/folder).glob('*.png')):z.write(path,path.relative_to(ROOT))
     (dist/(target.name+'.sha256')).write_text(hashlib.sha256(target.read_bytes()).hexdigest()+'  '+target.name+'\n')
     print(f'Built {len(data["c"])+1} displays; {target.name} ({target.stat().st_size:,} bytes)')
 if __name__=='__main__': main()

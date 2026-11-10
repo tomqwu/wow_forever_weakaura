@@ -16,7 +16,9 @@ local function bar(value)
     return b
 end
 PlayerCastingBarFrame=bar(true)
+local loaded=true
 ForeverAuras.GetData=function()return {}end
+ForeverAuras.IsAuraLoaded=function()return loaded end
 assert(loadfile('src/EclipseHUD/Casting.lua'))('EclipseHUD',E)
 E.Reset();E.Set('hideDefaultCast',true)
 local C=E.casting
@@ -56,5 +58,12 @@ check(effects[#effects]=='success','Late matching success can still pulse after 
 C.CastEvent('UNIT_SPELLCAST_START','player','disabled')
 E.Set('cast',false)
 check(effects[#effects]=='cancel' and not C.cast,'Cast module disable cancels record and motion')
+E.Set('castBarMode','Eclipse');loaded=false;E.RefreshCasting()
+check(not C.owners.EclipseHUD,'Unavailable Eclipse aura cannot suppress the game bar')
+loaded=true;E.RefreshCasting();check(C.owners.EclipseHUD,'Loaded Eclipse selection acquires the default bar')
+E.Set('castBarMode','Default')
+check(not E.Profile().cast and not E.Profile().hideDefaultCast and not C.owners.EclipseHUD,'Default choice unloads Eclipse casting and releases game-bar ownership')
+E.Set('castBarMode','Both')
+check(E.Profile().cast and not E.Profile().hideDefaultCast and not C.owners.EclipseHUD,'Both bars require an explicit choice')
 E.StopCasting();check(not C.active and not next(C.events.events),'Stop unregisters cast observers')
 print('Cast ownership/event checks passed: '..checks)

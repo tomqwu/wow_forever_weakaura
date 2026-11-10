@@ -142,3 +142,14 @@ local nativeSort=WeakAuras.SortFunctions.custom(sortData)
 assert(nativeSort({cloneId='5',region=secret},{cloneId='3',region=secret})==true)
 assert(nativeSort({cloneId='3',region=secret},{cloneId='5',region=secret})==false)
 print('Actual ForeverAuras dynamic-group sorting passed native identity order without state inspection')
+
+load('CDMAuraProgress')
+local bars=0
+for id,d in pairs(saved)do
+    if id:match(' | Native tracked bars | Entries$')then
+        assert(P.CDMAuraProgress.IsConfigured(d),'Tracked bars must use native CDM aura progress')
+        bars=bars+1
+    end
+end
+assert(bars==(arg[2] and 1 or 9))
+print('Native CDM aura progress accepts tracked-bar renderers: '..bars)

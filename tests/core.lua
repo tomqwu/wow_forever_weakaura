@@ -126,6 +126,17 @@ check(not E.Profile().resources,"Actual settings checkbox changes module")
 E.panel.sliders.scale:SetValue(1.2)
 check(math.abs(E.Profile().scale-1.2)<0.0001,"Actual settings slider changes layout")
 E.ToggleOptions();check(not E.panel:IsShown(),"Settings panel closes")
+local pref=E.Profile()
+pref.castBarMode=nil;pref.cast=true;pref.hideDefaultCast=false;E.InitDB()
+check(pref.castBarMode=='Default' and not pref.cast,'Old overlapping cast defaults migrate to the game bar only')
+pref.castBarMode=nil;pref.cast=true;pref.hideDefaultCast=true;E.InitDB()
+check(pref.castBarMode=='Eclipse' and pref.cast and pref.hideDefaultCast,'Existing explicit Eclipse suppression survives migration')
+E.Set('castBarMode','Both');InCombatLockdown=function()return true end
+E.Set('cast',false)
+check(pref.cast and E.queued.castBarMode=='Default','Cast-mode changes queue atomically in combat')
+InCombatLockdown=function()return false end
+E.events.scripts.OnEvent(nil,'PLAYER_REGEN_ENABLED')
+check(pref.castBarMode=='Default' and not pref.cast and not pref.hideDefaultCast,'Deferred cast choice applies consistently after combat')
 local commonRoot=E.rootID
 local classRoot='Eclipse | Warlock'
 local currentRoot={id=classRoot,parent=commonRoot}

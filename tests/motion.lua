@@ -25,6 +25,7 @@ ForeverAuras.GetRegion=function(id)
 end
 assert(loadfile('src/EclipseHUD/Motion.lua'))('EclipseHUD',E)
 local M=E.motion
+E.state.world=true
 E.Profile().primary=true;E.Profile().resources=true;E.Profile().unfold=true
 E.selection={positions={first={x=-83,side=1,slot=1},last={x=-224,side=1,slot=4}}}
 E.state.open=false;M.Change(false,true)
@@ -49,4 +50,16 @@ E.Profile().unfold=false;M.Change(false,false)
 check(not M.finish and frames.first.alpha==0,'Animation-off commits immediately')
 E.Profile().unfold=true;M.Change(true,false);local finish=M.finish;M.Stop()
 check(finish.cancelled and not next(M.entries) and frames.first.x==0 and frames.first.alpha==nil,'Stop cancels clock and restores ordinary regions')
+E.state.open=false;M.Change(false,true);E.state.open=true;M.Change(true,false)
+now=1.14;local transition=M.entries.first.transition;local timer=M.finish
+M.Reconcile()
+check(M.entries.first.transition==transition and M.finish==timer and frames.first.group.playing,'Layout/root-show reconciliation preserves a running animation instead of snapping')
+E.selection.positions.late={x=83,side=2,slot=1}
+M.Reconcile()
+check(M.entries.late.transition and M.entries.late.transition.from==0,'Late-created entries slide from the closed baseline instead of appearing fully open')
+check(M.entries.first.transition==transition and timer.cancelled and M.finish~=timer,'Late attachment extends cleanup without restarting existing animations')
+now=1.2;M.Change(false,false);local closing=M.entries.first.transition
+M.Reconcile();check(M.entries.first.transition==closing and M.running,'Reconciliation also preserves the closing trajectory')
+M.Stop()
+E.state.world=false;M.Reconcile();check(not next(M.entries) and not M.finish,'Late root-show reconciliation cannot restart world-leave animation')
 print('Unfold motion checks passed: '..checks)

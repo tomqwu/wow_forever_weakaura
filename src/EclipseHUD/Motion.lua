@@ -34,7 +34,9 @@ local function entry(id,distance,rank,count,resource)
     if not region or not region.SetOffsetAnim or not region.SetAnimAlpha or not region.CreateAnimationGroup then return end
     local old=M.entries[id]
     if old and old.region~=region then stopEntry(old,true); old=nil end
-    local item=old or {region=region,q=E.state.open and 1 or 0,alpha=E.state.open and 1 or 0}
+    local baseline=E.state.open and 1 or 0
+    if M.running then baseline=M.target and 0 or 1 end
+    local item=old or {region=region,q=baseline,alpha=baseline}
     item.distance,item.rank,item.count,item.resource=distance,rank,count,resource
     M.entries[id]=item
     return item
@@ -94,25 +96,45 @@ local function animate(item,goal)
     item.transition={at=GetTime(),from=from,alpha=alpha,goal=goal}
     item.group:Play()
 end
+local function finishLater()
+    if M.finish then M.finish:Cancel();M.finish=nil end
+    M.finish=C_Timer.NewTimer(.51,function()
+        M.finish=nil;M.running=false;E.state.transition=false;E.Notify()
+    end)
+end
+function M.Reconcile()
+    if not E.state or not E.state.world then M.Stop();return end
+    local previous={}
+    for id,item in pairs(M.entries)do previous[id]=item end
+    M.Gather()
+    if M.running then
+        local added=false
+        for id,item in pairs(M.entries)do
+            if previous[id]~=item then animate(item,M.target and 1 or 0);added=true end
+        end
+        if added then finishLater()end
+    else
+        for _,item in pairs(M.entries)do
+            stopEntry(item,true);commit(item,E.state.open and 1 or 0,E.state.open and 1 or 0)
+        end
+    end
+end
 function M.Change(open,silent)
     if M.finish then M.finish:Cancel();M.finish=nil end
-    M.Gather()
     local p=E.Profile()
     local immediate=silent or not p or not p.unfold
+    M.target=open;M.running=not immediate
+    M.Gather()
     E.state.transition=not immediate
     for _,item in pairs(M.entries) do
         if immediate then stopEntry(item,true);commit(item,open and 1 or 0,open and 1 or 0)
         else animate(item,open and 1 or 0) end
     end
-    if not immediate then
-        M.finish=C_Timer.NewTimer(.51,function()
-            M.finish=nil;E.state.transition=false;E.Notify()
-        end)
-    end
+    if not immediate then finishLater()end
 end
 function M.Stop()
     if M.finish then M.finish:Cancel(); M.finish=nil end
     for _,item in pairs(M.entries) do stopEntry(item,true) end
-    M.entries={}
+    M.entries={};M.running=false
     if E.state then E.state.transition=false end
 end

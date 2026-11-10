@@ -1,4 +1,5 @@
 import json
+import re
 import struct
 import unittest
 from pathlib import Path
@@ -47,6 +48,20 @@ class PackTests(unittest.TestCase):
                 for child in d.get('controlledChildren',[]):self.assertEqual(by_id[child]['parent'],d['id'])
         self.assertEqual(seen,set(full))
         self.assertTrue(all(d.get('parent') for d in self.pack['c']),'Class slicing must not mutate the combined pack')
+
+    def test_readme_languages_configuration_and_screenshots(self):
+        text=(ROOT/'README.md').read_text()
+        english,chinese=text.split('## 简体中文',1)
+        self.assertIn('## English',english)
+        for section in (english,chinese):
+            self.assertIn('Hide Blizzard',section)
+            self.assertIn('Tracked Bars',section)
+            self.assertIn('cdmsetup',section)
+            self.assertIn('preview/casting/warlock-default.png',section)
+            self.assertIn('preview/states/warlock-opening.png',section)
+        images=re.findall(r'src="([^"]+)"',text)
+        self.assertGreater(len(images),20)
+        for name in images:self.assertTrue((ROOT/name).is_file(),name)
 
     def test_modern_auras_delegate_tracking_to_client(self):
         for d in self.regions:
@@ -131,8 +146,15 @@ class PackTests(unittest.TestCase):
                 self.assertEqual(group['regionType'],'group')
                 icon=by_id[group['id']+' | Entry']
                 self.assertEqual(icon['triggers'][1]['trigger']['event'],'Blizzard Cooldown Manager')
-                self.assertEqual(icon['triggers'][1]['trigger']['cdmShow'],'always')
-                self.assertEqual(icon['parent'],group['id'])
+                self.assertEqual(icon['triggers'][1]['trigger']['cdmShow'],'cooldown')
+                self.assertFalse(icon['triggers'][1]['trigger']['use_cdmShowGCD'])
+                self.assertEqual(icon['parent'],prefix+' | Primary | Native '+('left' if slot<=4 else 'right'))
+                self.assertEqual(by_id[icon['parent']]['regionType'],'dynamicgroup')
+            tracked=by_id[prefix+' | Native tracked bars | Entries']
+            self.assertEqual(tracked['regionType'],'aurabar')
+            self.assertEqual(tracked['triggers'][1]['trigger']['event'],'Blizzard CDM Buff')
+            self.assertIn('_trackedBars',tracked['load']['loadFlag'])
+            self.assertGreater(by_id[prefix+' | Native tracked bars']['xOffset'],250)
             self.assertEqual(by_id[prefix+' | Native items | Entries']['triggers'][1]['trigger']['event'],'Blizzard CDM Item')
             self.assertIn('_maintenance',by_id[prefix+' | Maintenance']['load']['loadFlag'])
             self.assertLess(by_id[prefix+' | Maintenance']['xOffset'],-250)

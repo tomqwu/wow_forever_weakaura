@@ -18,11 +18,11 @@ local defaults = {
     school="Auto", cleave=false, cooldownLayout="Forever",
     expandCombat=true, unfoldSound=false, unfold=true,
     resourceFlow=true, swingMode="Auto",
-    hideDefaultCast=false,
+    hideDefaultCast=false, castBarMode="Default",
     fx=true,
     alerts=true,
-    resources=true, primary=true, utility=true, dots=true, buffs=true, maintenance=true,
-    cast=true, pet=true, art=true, motion=true, nameplates=false,
+    resources=true, primary=true, utility=true, dots=true, buffs=true, maintenance=true, trackedBars=false,
+    cast=false, pet=true, art=true, motion=true, nameplates=false,
 }
 local anchor = CreateFrame("Frame", "EclipseHUDAnchor", UIParent)
 anchor:SetSize(1, 1)
@@ -62,9 +62,14 @@ function E.Profile()
     return EclipseHUDDB and EclipseHUDDB.profiles and EclipseHUDDB.profiles[E.class]
 end
 local function fill(profile)
+    if profile.castBarMode~='Default' and profile.castBarMode~='Eclipse' and profile.castBarMode~='Both' then
+        profile.castBarMode=profile.cast~=false and profile.hideDefaultCast==true and 'Eclipse' or 'Default'
+    end
     for key, value in pairs(defaults) do
         if type(profile[key]) ~= type(value) then profile[key] = value end
     end
+    profile.cast=profile.castBarMode~='Default'
+    profile.hideDefaultCast=profile.castBarMode=='Eclipse'
     local function limit(key, low, high)
         local value = profile[key]
         if value ~= value or value == math.huge or value == -math.huge then value = defaults[key] end
@@ -187,7 +192,7 @@ local function finishBind()
     if region and region.HookScript and E.boundRegion~=region then
         E.boundRegion=region
         region:HookScript('OnHide',function()if E.motion then E.motion.Stop() end end)
-        region:HookScript('OnShow',function()if E.motion and E.state then E.motion.Change(E.state.open,true) end end)
+        region:HookScript('OnShow',function()if E.motion and E.state then E.motion.Reconcile() end end)
     end
 end
 function E.Bind()
@@ -198,6 +203,11 @@ end
 function E.Set(key, value)
     local p = E.Profile()
     if not p or defaults[key] == nil or type(defaults[key]) ~= type(value) then return end
+    if key=='cast' then key,value='castBarMode',value and 'Eclipse' or 'Default'
+    elseif key=='hideDefaultCast' then
+        local mode=E.queued and E.queued.castBarMode or p.castBarMode
+        key,value='castBarMode',value and 'Eclipse' or (mode~='Default' and 'Both' or 'Default')
+    end
     -- Keep all preference edits out of restricted native widget ancestry.
     if E.InCombat() then
         E.queued = E.queued or {}; E.queued[key] = value
@@ -263,7 +273,7 @@ handle:SetScript("OnEnter", function()
     local p = E.Profile()
     if p and not p.locked then
         GameTooltip:SetOwner(handle, "ANCHOR_TOP")
-        GameTooltip:SetText(E.L("Drag the center seal to move. Right-click it for settings."))
+        GameTooltip:SetText(E.L("Left-click to expand or fold. Right-click for settings."))
         GameTooltip:Show()
     end
 end)
@@ -272,8 +282,8 @@ handle:SetScript("OnClick", function(_, button)
     if button == "RightButton" then
         if E.ToggleOptions then E.ToggleOptions() end
     else
-        E.utilityPinned = not E.utilityPinned
-        if E.state then E.state.Inspect() end
+        local opened=E.state and E.state.ToggleInspect()
+        if opened==nil then E.utilityPinned=not E.utilityPinned else E.utilityPinned=opened end
         E.Notify()
     end
 end)

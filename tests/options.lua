@@ -21,4 +21,7 @@ check(E.Profile().school=='Auto' and not E.panel.swing.shown and not E.panel.che
 E.panel.school.scripts.OnClick();check(E.Profile().school=='Affliction','Warlock has its own three-school selector')
 for _,schools in pairs(E.schools)do for _,name in ipairs(schools)do check(E.L(name)~=name,'Every authored talent-school label is translated')end end
 E.panel.cooldown.scripts.OnClick();check(E.Profile().cooldownLayout=='Class plan' and E.panel.cooldown.text:find('职业方案',1,true),'Cooldown layout has a localized independent control')
+E.Set('castBarMode','Default');E.panel.castChoice.scripts.OnClick()
+check(E.Profile().castBarMode=='Eclipse' and E.Profile().hideDefaultCast and E.panel.castChoice.text:find('Eclipse',1,true),'Localized cast selector chooses Eclipse exclusively')
+E.panel.castChoice.scripts.OnClick();check(E.Profile().castBarMode=='Both' and not E.Profile().hideDefaultCast,'Cast selector explicitly supports both bars')
 print('Settings/locale checks passed: '..checks)

@@ -7,7 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import zipfile
-from build import VERSION
+from build import VERSION, packaged_readme
 ROOT=Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 def run(args): subprocess.run(args,check=True)
@@ -51,6 +51,10 @@ with zipfile.ZipFile(archive) as z:
     assert 'EclipseHUD/EclipseHUD.toc' in names
     assert 'Eclipse-Class-Combat-HUD.txt' in names
     assert 'README.md' in names and 'LICENSE' in names
+    assert z.read('README.md').decode()==packaged_readme()
+    assert z.read('CHANGELOG.md')==(ROOT/'CHANGELOG.md').read_bytes()
+    for folder in ('docs/images','preview/classes','preview/states','preview/casting'):
+        for path in (ROOT/folder).glob('*.png'):assert z.read(str(path.relative_to(ROOT)))==path.read_bytes(),str(path)
     assert len([name for name in names if name.endswith('.tga')])==23
     assert not any('Guos' in name or name.startswith('vendor/') for name in names)
     for path in (ROOT/'src/EclipseHUD').rglob('*'):
