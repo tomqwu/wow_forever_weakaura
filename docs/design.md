@@ -1,5 +1,10 @@
 # Design and reference notes
 
+The current corrective work is governed by
+[the persistent feature-parity plan](feature-parity-plan.md). Its live findings
+and source audit supersede any implication below that the existing v0.2.0 layout
+or schema acceptance establishes reference feature parity.
+
 ## Reference audit
 
 The supplied Guos Warrior Combat HUD v1.2.4 decodes as a transmission-v2000 group, exported with ForeverAuras 1.3.0 and internal schema 91. It contains 135 descendants. The local companion folder contains class artwork and MP3 voice assets.
