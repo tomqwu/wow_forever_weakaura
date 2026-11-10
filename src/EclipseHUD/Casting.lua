@@ -90,10 +90,13 @@ function C.CastEvent(event,unit,guid)
 end
 function E.RefreshCasting()
     local p,api=E.Profile(),E.API()
-    local imported=api and api.GetData and E.class and api.GetData('Eclipse | '..E.classNames[E.class]..' | Cast')
+    local id=E.class and ('Eclipse | '..E.classNames[E.class]..' | Cast')
+    local imported=api and api.GetData and id and api.GetData(id)
+    local loaded=api and id and (api.IsAuraLoaded and E.Call(api.IsAuraLoaded,id)==true
+        or not api.IsAuraLoaded and api.GetRegion and api.GetRegion(id)~=nil)
     local active=p and p.enabled and p.cast and imported~=nil
     if E.state then active=active and E.LiveWorld() and not E.state.Preview() end
-    if active and p.hideDefaultCast and E.Gate('cast',E.class) then C.Acquire('EclipseHUD') else C.Release('EclipseHUD') end
+    if active and loaded and p.hideDefaultCast and E.Gate('cast',E.class) then C.Acquire('EclipseHUD') else C.Release('EclipseHUD') end
     if active~=C.active then
         C.active=active
         for _,event in ipairs(castEvents) do
@@ -110,5 +113,8 @@ function E.StopCasting()
     if E.CastMotion then E.CastMotion('cancel') end
 end
 events:SetScript('OnEvent',function(_,event,...)
-    if event=='ADDON_LOADED' then acquireBars() else C.CastEvent(event,...) end
+    if event=='ADDON_LOADED' then acquireBars() else
+        E.RefreshCasting()
+        if C.active then C.CastEvent(event,...) end
+    end
 end)

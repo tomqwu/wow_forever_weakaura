@@ -1,4 +1,5 @@
 import json
+import re
 import struct
 import unittest
 from pathlib import Path
@@ -7,7 +8,7 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 sys.path.insert(0,str(ROOT/'src'))
-from build import generate, TITLE
+from build import generate, class_import, TITLE
 from catalog import CLASSES, HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES
 from build import rgba
 
@@ -25,6 +26,43 @@ class PackTests(unittest.TestCase):
             self.assertTrue(load['loadFlag'].startswith('ECLIPSE_'+load['class']['single']+'_'))
         self.assertEqual(classes,set(CLASSES))
         self.assertEqual(len(self.pack['d']['controlledChildren']),9)
+    def test_class_import_scopes_preserve_ids_and_leave_other_classes_out(self):
+        full={d['id']:d for d in self.pack['c']}
+        seen=set()
+        for cls,c in CLASSES.items():
+            pack=class_import(self.pack,cls)
+            rows=[pack['d']]+pack['c'];by_id={d['id']:d for d in rows}
+            self.assertEqual(pack['d']['id'],'Eclipse | '+c['name'])
+            self.assertNotIn('parent',pack['d'])
+            self.assertNotIn(TITLE,by_id,'Do not update a partial shared root')
+            self.assertEqual(pack['d']['actions']['init'],self.pack['d']['actions']['init'])
+            expected={key for key,d in full.items() if d['load']['class']['single']==cls}
+            self.assertEqual(set(by_id),expected)
+            self.assertFalse(seen & expected,'Each class update must have a disjoint native UID scope')
+            seen.update(expected)
+            for d in rows:
+                self.assertEqual(d['uid'],full[d['id']]['uid'])
+                self.assertEqual(d['load'],full[d['id']]['load'])
+                if d is not pack['d']:self.assertEqual(d,full[d['id']])
+                if d.get('parent'):self.assertIn(d['parent'],by_id)
+                for child in d.get('controlledChildren',[]):self.assertEqual(by_id[child]['parent'],d['id'])
+        self.assertEqual(seen,set(full))
+        self.assertTrue(all(d.get('parent') for d in self.pack['c']),'Class slicing must not mutate the combined pack')
+
+    def test_readme_languages_configuration_and_screenshots(self):
+        text=(ROOT/'README.md').read_text()
+        english,chinese=text.split('## 简体中文',1)
+        self.assertIn('## English',english)
+        for section in (english,chinese):
+            self.assertIn('Hide Blizzard',section)
+            self.assertIn('Tracked Bars',section)
+            self.assertIn('cdmsetup',section)
+            self.assertIn('preview/casting/warlock-default.png',section)
+            self.assertIn('preview/states/warlock-opening.png',section)
+        images=re.findall(r'src="([^"]+)"',text)
+        self.assertGreater(len(images),20)
+        for name in images:self.assertTrue((ROOT/name).is_file(),name)
+
     def test_modern_auras_delegate_tracking_to_client(self):
         for d in self.regions:
             if d['triggers'][1]['trigger']['type']!='secretAura':continue
@@ -108,8 +146,15 @@ class PackTests(unittest.TestCase):
                 self.assertEqual(group['regionType'],'group')
                 icon=by_id[group['id']+' | Entry']
                 self.assertEqual(icon['triggers'][1]['trigger']['event'],'Blizzard Cooldown Manager')
-                self.assertEqual(icon['triggers'][1]['trigger']['cdmShow'],'always')
-                self.assertEqual(icon['parent'],group['id'])
+                self.assertEqual(icon['triggers'][1]['trigger']['cdmShow'],'cooldown')
+                self.assertFalse(icon['triggers'][1]['trigger']['use_cdmShowGCD'])
+                self.assertEqual(icon['parent'],prefix+' | Primary | Native '+('left' if slot<=4 else 'right'))
+                self.assertEqual(by_id[icon['parent']]['regionType'],'dynamicgroup')
+            tracked=by_id[prefix+' | Native tracked bars | Entries']
+            self.assertEqual(tracked['regionType'],'aurabar')
+            self.assertEqual(tracked['triggers'][1]['trigger']['event'],'Blizzard CDM Buff')
+            self.assertIn('_trackedBars',tracked['load']['loadFlag'])
+            self.assertGreater(by_id[prefix+' | Native tracked bars']['xOffset'],250)
             self.assertEqual(by_id[prefix+' | Native items | Entries']['triggers'][1]['trigger']['event'],'Blizzard CDM Item')
             self.assertIn('_maintenance',by_id[prefix+' | Maintenance']['load']['loadFlag'])
             self.assertLess(by_id[prefix+' | Maintenance']['xOffset'],-250)

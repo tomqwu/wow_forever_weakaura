@@ -7,3 +7,4 @@ dist/*.lua
 dist/*.json
 tests/output/
 
+dist/.build/

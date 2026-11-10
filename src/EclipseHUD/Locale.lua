@@ -1,6 +1,13 @@
 local _, E = ...
 local zh = GetLocale() == "zhCN"
 local strings = {
+    ['Tracked bars (Eclipse)']='持续时间条（Eclipse）',
+
+    ['Default game bar']='系统施法条', ['Eclipse bar']='Eclipse 施法条', ['Both bars']='同时显示',
+    ['Left-click to expand or fold. Right-click for settings.']='左键展开或收起，右键打开设置。',
+
+    ['Cast bar display']='施法条显示', ['Default']='系统施法条', ['Eclipse']='Eclipse 施法条', ['Both']='同时显示', ['Eclipse cast bar']='Eclipse 施法条',
+
     ['Companion update required: install EclipseHUD and /reload before importing.']='需要更新配套插件：安装 EclipseHUD 后先输入 /reload，再导入。',
 
     ['Forever cooldown layout']='系统冷却分组与顺序', ['Essential']='主要冷却', ['Utility']='辅助冷却', ['EquipSlotEssential']='装备冷却', ['HiddenActive']='未显示',
@@ -64,8 +71,8 @@ function E.L(text) return zh and strings[text] or text end
 E.modules = {
     {"resources", "Resources"}, {"primary", "Primary abilities"},
     {"utility", "Utility abilities"}, {"dots", "Target effects"},
-    {"buffs", "Player effects"}, {"cast", "Cast bar"},
-    {"maintenance", "Maintenance buffs"},
+    {"buffs", "Player effects"}, {"cast", "Eclipse cast bar"},
+    {"maintenance", "Maintenance buffs"}, {"trackedBars", "Tracked bars (Eclipse)"},
     {"pet", "Pet and class resource"}, {"art", "Artwork"},
     {"motion", "Rune animation"},
     {"nameplates", "Nameplate effects"},

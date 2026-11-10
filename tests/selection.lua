@@ -113,7 +113,7 @@ check(S.nativeMode and S.nativeSlots[1]==13 and S.nativeSlots[2]==11,'Native Ess
 check(#S.nativeSlots==8 and S.nativeUsed[18] and not S.nativeUsed[19],'Eight main slots have complete Essential overflow')
 local prefix='Eclipse | Warlock'
 local function trigger(suffix)return saved[prefix..suffix].triggers[1].trigger end
-check(trigger(' | Native cooldowns | Entries').cdmSpells.multi[19] and trigger(' | Native cooldowns | Entries').cdmShow=='always','Remaining Essential entries stay visible when ready')
+check(trigger(' | Native cooldowns | Entries').cdmSpells.multi[19] and trigger(' | Native cooldowns | Entries').cdmShow=='cooldown','Remaining Essential entries use native real-cooldown filtering')
 check(trigger(' | Native utility | Entries').cdmSpells.multi[30] and not trigger(' | Native utility | Entries').cdmSpells.multi[32],'Utility retains native placement and excludes preparation')
 check(trigger(' | Native items | Entries').cdmSpells.multi[33],'Equipped cooldown items have a separate native row')
 check(not trigger(' | Native cooldowns | Entries').cdmSpells.multi[31],'Hidden entries are never promoted into cooldown rows')
@@ -125,12 +125,23 @@ D.eligible[armor]={id=687,name='Demon Skin'}
 D.cdm[40]={cdmID=40,name='Demon Armor',category='TrackedBuff',identities={[706]=true}}
 S.SyncCDM()
 check(not trigger(' | Native player effects | Entries').cdmSpells.multi[40],'Maintenance families cannot reappear as duplicate native proc/buff icons')
+template(prefix..' | Primary | Native left').regionType='dynamicgroup'
+S.Refresh()
+check(S.nativeWings and S.positions[prefix..' | Primary | Native left'] and not S.positions[prefix..' | Primary | Native 1'],'New native cooldown wings compact shown clones while legacy slot roots remain compatible')
+D.eligible.nativeProc={name='Native 13'}
+check(S.Allowed('nativeProc',{proc=true}),'Native cooldown-only mode retains usable-proc cues while ready ability icons are hidden')
 local before=nativeWrites;S.Refresh()
 check(nativeWrites==before,'Unchanged native layout does not rewrite aura data')
 D.cdmOrder.Essential={};S.Refresh()
 check(not next(S.positions) and S.nativeMode,'A known empty native Essential list does not invent fallback icons')
 E.Profile().cooldownLayout='Class plan';S.Refresh()
 check(selected('Shadow Bolt') and not next(trigger(' | Primary | Native 1 | Entry').cdmSpells.multi),'Class plans are explicit and clear old native selections')
+D.cdm[50]={cdmID=50,name='Corruption',category='TrackedBar',identities={[172]=true}}
+E.Profile().trackedBars=true;S.Refresh()
+check(trigger(' | Native tracked bars | Entries').cdmSpells.multi[50],'Tracked-bar identities have a separate native duration-bar renderer')
+check(not trigger(' | Native player effects | Entries').cdmSpells.multi[50],'Enabled tracked bars do not duplicate the same native entry as an overflow icon')
+E.Profile().trackedBars=false;S.Refresh()
+check(trigger(' | Native player effects | Entries').cdmSpells.multi[50],'Disabling optional bars preserves legacy icon coverage')
 D.cdmReady=false;E.Profile().cooldownLayout='Forever';S.Refresh()
 check(not S.nativeMode and selected('Shadow Bolt'),'Unavailable CDM retains learned class-plan fallback')
 print('Ability selection checks passed: '..checks)

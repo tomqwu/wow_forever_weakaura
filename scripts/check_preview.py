@@ -20,18 +20,21 @@ with sync_playwright() as p:
     opacity=lambda:float(page.locator('.primary .tile').first.evaluate('(el)=>getComputedStyle(el).opacity'))
     assert opacity()==0,'Idle must fold primary'
     names=page.locator('.primary .tile').evaluate_all('(els)=>els.map(el=>el.getAttribute("aria-label"))')
-    assert set(names)=={'Shadow Bolt','Drain Life','Drain Soul','Immolate','Corruption','Life Tap'}
+    assert names and not {'Shadow Bolt','Corruption','Life Tap'} & set(names),'Cooldown fixture must not use GCD-only fillers'
+    page.locator('#scenario').select_option('level23')
+    assert page.locator('.primary .tile').count()==0,'Leveling fixture has no fabricated real cooldowns'
+    page.locator('#scenario').select_option('learned')
     assert page.locator('.class-label').inner_text()==''
     assert page.locator('.maintenance .tile').count()==1
     assert page.locator('.maintenance .time').count()==0,'Long armor duration must not sit above the emblem'
     assert page.locator('.maintenance .tile').get_attribute('aria-label')=='Demon armor'
     page.locator('#cooldown-layout').select_option('Class plan')
-    assert page.locator('.primary .tile[aria-label="Fear"]').count()==1,'Authored plans remain explicit'
+    assert page.locator('.primary .tile[aria-label="Shadow Bolt"]').count()==1,'Authored plans remain explicit'
     page.locator('#cooldown-layout').select_option('Forever')
     assert not any('questionmark' in (src or '') for src in page.locator('img.spell').evaluate_all('(els)=>els.map(el=>el.src)'))
     page.locator('button[data-state="enemy"]').click();page.wait_for_timeout(600)
     assert opacity()==1,'Enemy target must unfold'
-    assert page.locator('.effects .tile').count()==2
+    assert page.locator('.effects .tile').count()==3
     assert page.locator('.primary .tile').evaluate_all('''els=>els.every(el=>{
         const r=el.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('.tile')===el
     })'''),'Artwork must not cover main spell centers'
@@ -91,6 +94,33 @@ with sync_playwright() as p:
     page.locator('[data-module="resources"]').check()
     assert page.locator('#scale').input_value()=='120','Class preview preferences persist independently'
     page.locator('#reset').click();assert page.locator('#scale').input_value()=='100'
+    # Readable visual toggle and explicit bar selection are illustrative fixtures.
+    page.locator('button[data-state="idle"]').click();page.wait_for_timeout(550)
+    if args.capture:
+        (ROOT/'preview/states').mkdir(exist_ok=True)
+        (ROOT/'preview/casting').mkdir(exist_ok=True)
+        page.locator('.viewport').screenshot(path=str(ROOT/'preview/states/warlock-idle.png'))
+    page.locator('.crest').click();page.wait_for_timeout(120)
+    assert 0<opacity()<1,'Expansion must have visible intermediate frames'
+    if args.capture:page.locator('.viewport').screenshot(path=str(ROOT/'preview/states/warlock-opening.png'))
+    page.wait_for_timeout(550)
+    assert opacity()==1,'First crest click expands out of combat'
+    if args.capture:page.locator('.viewport').screenshot(path=str(ROOT/'preview/states/warlock-click-open.png'))
+    page.locator('.crest').click();page.wait_for_timeout(550)
+    assert opacity()==0,'Second crest click folds immediately'
+    page.locator('button[data-state="combat"]').click()
+    for mode in ('Default','Eclipse','Both'):
+        page.locator('#cast-mode').select_option(mode);page.wait_for_timeout(550)
+        assert page.locator('.cast').is_visible()==(mode!='Default')
+        assert page.locator('.game-cast').is_visible()==(mode!='Eclipse')
+        if args.capture:page.locator('.viewport').screenshot(path=str(ROOT/'preview/casting'/f'warlock-{mode.lower()}.png'))
+    page.locator('button[data-state="enemy"]').click()
+    page.locator('[data-module="trackedBars"]').check()
+    assert page.locator('.tracked-sample').count()==3
+    assert 'Corruption' in page.locator('.trackedBars').inner_text()
+    if args.capture:
+        page.set_viewport_size({'width':1600,'height':1000});page.wait_for_timeout(550)
+        page.locator('.viewport').screenshot(path=str(ROOT/'preview/states/warlock-tracked-bars.png'))
     assert not errors,errors
     browser.close()
 print('Preview browser regressions passed: nine classes, leveling fixture, visibility/delay, artwork stacking, semantic colors/form transitions, independent settings')

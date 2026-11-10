@@ -59,9 +59,9 @@ local function syncEntries(api,id,selected,show)
     local old=data.triggers[1].trigger.cdmSpells.multi
     for key in pairs(old) do if not selected[tonumber(key)] then old=nil; break end end
     if old then for key in pairs(selected) do if not old[key] and not old[tostring(key)] then old=nil; break end end end
-    if old and (not show or data.triggers[1].trigger.cdmShow==show) then return end
+    if old and (not show or (data.triggers[1].trigger.cdmShow==show and data.triggers[1].trigger.use_cdmShowGCD==false)) then return end
     data=copy(data); data.triggers[1].trigger.cdmSpells.multi=selected
-    if show then data.triggers[1].trigger.cdmShow=show end
+    if show then data.triggers[1].trigger.cdmShow=show;data.triggers[1].trigger.use_cdmShowGCD=false end
     api.Add(data)
 end
 function S.SyncCDM()
@@ -89,14 +89,15 @@ function S.SyncCDM()
         end
     end
     local prefix='Eclipse | '..E.classNames[E.class]
-    syncEntries(api,prefix..' | Native cooldowns | Entries',selected,S.nativeMode and 'always' or 'cooldown')
+    syncEntries(api,prefix..' | Native cooldowns | Entries',selected,'cooldown')
     syncEntries(api,prefix..' | Native utility | Entries',utility,'cooldown')
     syncEntries(api,prefix..' | Native items | Entries',items,'cooldown')
     for index=1,8 do
         local cdmID=S.nativeSlots and S.nativeSlots[index]
-        syncEntries(api,prefix..' | Primary | Native '..index..' | Entry',cdmID and {[cdmID]=true} or {},'always')
+        syncEntries(api,prefix..' | Primary | Native '..index..' | Entry',cdmID and {[cdmID]=true} or {},'cooldown')
     end
-    local buffs,representedBuffs,representedBuffIDs={},{},{}
+    local buffs,bars,representedBuffs,representedBuffIDs={},{},{},{}
+    local p=E.Profile()
     for id,entry in pairs(E.catalog) do
         if entry.cls==E.class and (entry.module=='buffs' or entry.module=='maintenance') and entry.kind=='aura' and E.discovery.eligible[id] then
             local record=E.discovery.eligible[id]
@@ -111,13 +112,15 @@ function S.SyncCDM()
     for id,entry in pairs(E.discovery.cdm) do
         local duplicate=representedBuffs[entry.name]
         for spell in pairs(entry.identities)do if representedBuffIDs[spell] then duplicate=true;break end end
-        if (entry.category=='TrackedBuff' or entry.category=='TrackedBar' or entry.category=='SpecAgnosticTracked')
+        if entry.category=='TrackedBar' and not preparation(entry) then bars[id]=true end
+        if (entry.category=='TrackedBuff' or (entry.category=='TrackedBar' and not p.trackedBars) or entry.category=='SpecAgnosticTracked')
             and not duplicate and not preparation(entry) then buffs[id]=true end
     end
     syncEntries(api,prefix..' | Native player effects | Entries',buffs)
+    syncEntries(api,prefix..' | Native tracked bars | Entries',bars)
     -- Native multi-entry pickers sort IDs internally. Re-sort ordinary clone
     -- containers by the public manager order, only outside combat.
-    for _,name in ipairs({'Native cooldowns','Native utility','Native items'})do
+    for _,name in ipairs({'Native cooldowns','Native utility','Native items','Native tracked bars','Primary | Native left','Primary | Native right'})do
         local region=api.GetRegion and api.GetRegion(prefix..' | '..name)
         if region and region.SortUpdatedChildren then region:SortUpdatedChildren() end
     end
@@ -172,7 +175,13 @@ function S.Refresh()
             end
         end
         local count=math.min(8,#records)
-        local left=math.ceil(count/2)
+        local left=math.min(4,count)
+        local prefix='Eclipse | '..E.classNames[E.class]
+        local api=E.API()
+        local wing=api and api.GetData and api.GetData(prefix..' | Primary | Native left')
+        S.nativeWings=wing and wing.regionType=='dynamicgroup'
+        if S.nativeWings and count>0 then S.positions[prefix..' | Primary | Native left']={x=-83,side=1,slot=1}end
+        if S.nativeWings and count>4 then S.positions[prefix..' | Primary | Native right']={x=83,side=2,slot=1}end
         -- Every selected entry is rendered by an unchanged native FA CDM
         -- trigger inside an ordinary slot group. Never move its private widget.
         for index=1,count do
@@ -182,7 +191,7 @@ function S.Refresh()
             local id='Eclipse | '..E.classNames[E.class]..' | Primary | Native '..index
             S.nativeSlots[index]=record.cdmID;S.nativeUsed[record.cdmID]=true
             S.primary[id]=true
-            S.positions[id]={x=(side==1 and -1 or 1)*(83+(slot-1)*47),side=side,slot=slot}
+            if not S.nativeWings then S.positions[id]={x=(side==1 and -1 or 1)*(83+(slot-1)*47),side=side,slot=slot}end
         end
     else for side,slots in ipairs(scheme) do
         local visibleRank=0
@@ -200,13 +209,13 @@ function S.Refresh()
         end
     end end
     S.ApplyLayout(); S.SyncCDM()
-    if E.motion and E.state then E.motion.Change(E.state.open,true) end
+    if E.motion and E.state then E.motion.Reconcile() end
 end
 function S.Allowed(id,entry)
     if entry.prep then return false end
     if entry.proc then
         local record=E.discovery.eligible[id]
-        return record~=nil and not S.used[record.name]
+        return record~=nil and (S.nativeMode or not S.used[record.name])
     end
     if entry.module=="primary" and entry.key then return S.primary[id]==true end
     if entry.module=="utility" and entry.key then
@@ -223,7 +232,7 @@ function E.BindAbility(id)
     -- fresh slots stacked at the generator's temporary center coordinate.
     S.layoutTimer=C_Timer.NewTimer(0,function()
         S.layoutTimer=nil;S.ApplyLayout()
-        if E.motion and E.state then E.motion.Change(E.state.open,true) end
+        if E.motion and E.state then E.motion.Reconcile() end
     end)
 end
 function S.Stop()

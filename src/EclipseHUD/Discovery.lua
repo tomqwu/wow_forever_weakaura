@@ -145,6 +145,10 @@ function D.Refresh()
     if not p or not p.enabled or D.stopped then return end
     if E.InCombat() then D.pending=true; return end
     D.requested=D.requested or {}
+    local api=E.API()
+    if api and api.IsImporting and api.IsImporting() then
+        D.pending=true;E.Bind();return
+    end
     D.ScanBook(); D.ScanCDM(); D.eligible={}
     for id,entry in pairs(E.catalog or {}) do
         if entry.cls==E.class then

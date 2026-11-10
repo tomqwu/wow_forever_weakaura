@@ -2,7 +2,11 @@ local _, E = ...
 -- All combat readings and timers belong to ForeverAuras' native triggers.
 -- This helper owns preferences, the anchor, and cosmetic controls only.
 EclipseHUD = E
+-- v0.3.2 strings compare this field literally. Preserve that bridge while
+-- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
+E.releaseVersion = "0.3.3"
+E.importAPI = 1
 E.rootID = "Eclipse | Class Combat HUD"
 E.classNames = {
     WARLOCK="Warlock", WARRIOR="Warrior", MAGE="Mage", PRIEST="Priest",
@@ -14,11 +18,11 @@ local defaults = {
     school="Auto", cleave=false, cooldownLayout="Forever",
     expandCombat=true, unfoldSound=false, unfold=true,
     resourceFlow=true, swingMode="Auto",
-    hideDefaultCast=false,
+    hideDefaultCast=false, castBarMode="Default",
     fx=true,
     alerts=true,
-    resources=true, primary=true, utility=true, dots=true, buffs=true, maintenance=true,
-    cast=true, pet=true, art=true, motion=true, nameplates=false,
+    resources=true, primary=true, utility=true, dots=true, buffs=true, maintenance=true, trackedBars=false,
+    cast=false, pet=true, art=true, motion=true, nameplates=false,
 }
 local anchor = CreateFrame("Frame", "EclipseHUDAnchor", UIParent)
 anchor:SetSize(1, 1)
@@ -42,14 +46,30 @@ local events = CreateFrame("Frame")
 E.events = events
 local function readable(v) return not issecretvalue or not issecretvalue(v) end
 function E.API() return ForeverAuras or WeakAuras end
+function E.GetRootID()
+    local api=E.API()
+    local classID=E.class and ('Eclipse | '..E.classNames[E.class])
+    if classID and api and api.GetData then
+        local ok,data=pcall(api.GetData,classID)
+        -- Native per-class updates preserve an existing combined parent.
+        -- A fresh class-only import has no parent and owns its own anchor.
+        if ok and type(data)=='table' and data.id==classID and not data.parent then return classID end
+    end
+    return E.rootID
+end
 function E.Profile()
     if not E.class then return end
     return EclipseHUDDB and EclipseHUDDB.profiles and EclipseHUDDB.profiles[E.class]
 end
 local function fill(profile)
+    if profile.castBarMode~='Default' and profile.castBarMode~='Eclipse' and profile.castBarMode~='Both' then
+        profile.castBarMode=profile.cast~=false and profile.hideDefaultCast==true and 'Eclipse' or 'Default'
+    end
     for key, value in pairs(defaults) do
         if type(profile[key]) ~= type(value) then profile[key] = value end
     end
+    profile.cast=profile.castBarMode~='Default'
+    profile.hideDefaultCast=profile.castBarMode=='Eclipse'
     local function limit(key, low, high)
         local value = profile[key]
         if value ~= value or value == math.huge or value == -math.huge then value = defaults[key] end
@@ -121,7 +141,7 @@ function E.Notify()
     if E.RefreshCasting then E.RefreshCasting() end
     if E.RefreshFX then E.RefreshFX(false) end
     if E.RefreshAlerts then E.RefreshAlerts() end
-    local region = api and api.GetRegion and api.GetRegion(E.rootID)
+    local region = api and api.GetRegion and api.GetRegion(E.GetRootID())
     handle:SetShown(region ~= nil and E.Gate("base", E.class) and (p.art or not p.locked))
     if api and api.ScanEvents then api.ScanEvents("ECLIPSE_HUD_UPDATE") end
 end
@@ -132,7 +152,7 @@ function E.ApplyLayout()
     anchor:ClearAllPoints()
     anchor:SetPoint("CENTER", UIParent, "CENTER", p.x, p.y)
     local api = E.API()
-    local region = api and api.GetRegion and api.GetRegion(E.rootID)
+    local region = api and api.GetRegion and api.GetRegion(E.GetRootID())
     if region then
         -- FA can initialize before its companion anchor exists. Repair the
         -- actual parent/anchor once registered, outside combat, rather than
@@ -152,24 +172,42 @@ function E.ApplyLayout()
     outline:SetShown(not p.locked)
     E.pending = nil
 end
+local function finishBind()
+    E.bindTimer=nil
+    if E.state and not E.state.world then return end
+    local api=E.API()
+    -- Import updates temporarily strip the root's parent in phase 1. Wait for
+    -- the public import state to settle before choosing/anchoring its root.
+    if api and api.IsImporting and api.IsImporting() then
+        if E.bindAttempts<1200 then
+            E.bindAttempts=E.bindAttempts+1
+            E.bindTimer=C_Timer.NewTimer(.1,finishBind)
+        else E.pending=true end
+        return
+    end
+    E.ApplyLayout()
+    if E.discovery then E.discovery.Schedule() end
+    if E.RefreshFX then E.RefreshFX(true) end
+    local region=api and api.GetRegion and api.GetRegion(E.GetRootID())
+    if region and region.HookScript and E.boundRegion~=region then
+        E.boundRegion=region
+        region:HookScript('OnHide',function()if E.motion then E.motion.Stop() end end)
+        region:HookScript('OnShow',function()if E.motion and E.state then E.motion.Reconcile() end end)
+    end
+end
 function E.Bind()
-    -- Group initialization can precede the region registration in FA.
-    if C_Timer and C_Timer.After then C_Timer.After(0, function()
-        E.ApplyLayout()
-        if E.discovery then E.discovery.Schedule() end
-        if E.RefreshFX then E.RefreshFX(true) end
-        local api=E.API()
-        local region=api and api.GetRegion and api.GetRegion(E.rootID)
-        if region and region.HookScript and E.boundRegion~=region then
-            E.boundRegion=region
-            region:HookScript('OnHide',function()if E.motion then E.motion.Stop() end end)
-            region:HookScript('OnShow',function()if E.motion and E.state then E.motion.Change(E.state.open,true) end end)
-        end
-    end) end
+    if E.bindTimer or not C_Timer or not C_Timer.NewTimer then return end
+    E.bindAttempts=0
+    E.bindTimer=C_Timer.NewTimer(0,finishBind)
 end
 function E.Set(key, value)
     local p = E.Profile()
     if not p or defaults[key] == nil or type(defaults[key]) ~= type(value) then return end
+    if key=='cast' then key,value='castBarMode',value and 'Eclipse' or 'Default'
+    elseif key=='hideDefaultCast' then
+        local mode=E.queued and E.queued.castBarMode or p.castBarMode
+        key,value='castBarMode',value and 'Eclipse' or (mode~='Default' and 'Both' or 'Default')
+    end
     -- Keep all preference edits out of restricted native widget ancestry.
     if E.InCombat() then
         E.queued = E.queued or {}; E.queued[key] = value
@@ -235,7 +273,7 @@ handle:SetScript("OnEnter", function()
     local p = E.Profile()
     if p and not p.locked then
         GameTooltip:SetOwner(handle, "ANCHOR_TOP")
-        GameTooltip:SetText(E.L("Drag the center seal to move. Right-click it for settings."))
+        GameTooltip:SetText(E.L("Left-click to expand or fold. Right-click for settings."))
         GameTooltip:Show()
     end
 end)
@@ -244,8 +282,8 @@ handle:SetScript("OnClick", function(_, button)
     if button == "RightButton" then
         if E.ToggleOptions then E.ToggleOptions() end
     else
-        E.utilityPinned = not E.utilityPinned
-        if E.state then E.state.Inspect() end
+        local opened=E.state and E.state.ToggleInspect()
+        if opened==nil then E.utilityPinned=not E.utilityPinned else E.utilityPinned=opened end
         E.Notify()
     end
 end)
@@ -276,6 +314,7 @@ function E.StopDrag(save)
 end
 handle:SetScript("OnDragStop", function() E.StopDrag(true) end)
 function E.Shutdown()
+    if E.bindTimer then E.bindTimer:Cancel();E.bindTimer=nil end
     stopHover(); E.StopDrag(false)
     if E.discovery then E.discovery.Stop() end
     if E.state then E.state.Stop() end
