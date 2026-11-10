@@ -13,7 +13,7 @@ ForeverAuras.GetRegion=function(id)
 end
 local function loadout(class,names)
     UnitClass=function()return class,class end
-    E.InitDB(); E.Profile().school='Auto'; E.Profile().cleave=false
+    E.InitDB(); E.Profile().cooldownLayout='Class plan'; E.Profile().school='Auto'; E.Profile().cleave=false
     local allowed={};for _,name in ipairs(names)do allowed[name]=true end
     D.eligible={}
     for id,entry in pairs(E.catalog)do
@@ -60,7 +60,10 @@ end
 local data={triggers={{trigger={cdmSpells={multi={}}}}}}
 local buffData={triggers={{trigger={cdmSpells={multi={}}}}}}
 local writes=0
-ForeverAuras.GetData=function(id)return id:find('Native player effects',1,true) and buffData or data end
+ForeverAuras.GetData=function(id)
+    if id:find('Native player effects',1,true) then return buffData end
+    if id:find('Native cooldowns',1,true) then return data end
+end
 ForeverAuras.Add=function(new)writes=writes+1;if new.triggers[1].trigger.cdmSpells.multi[102] then buffData=new else data=new end end
 D.cdm={[100]={name='Native extra',category='Essential',identities={}},[101]={name='Summon',category='Utility',identities={[698]=true}},[102]={name='Buff',category='TrackedBuff',identities={}},[103]={name='Breathing',category='TrackedBuff',identities={[5697]=true}}}
 S.SyncCDM()
@@ -82,4 +85,52 @@ ForeverAuras.GetRegion=function(key)if key==id then return late end end
 E.BindAbility(id);local layout=S.layoutTimer;E.BindAbility(id)
 check(layout and S.layoutTimer==layout,'Late native region init coalesces layout after registration')
 layout.callback();check(late.x==S.positions[id].x,'Newly eligible ability receives slot position after load scan')
+-- Native manager mode follows saved categories instead of authored spell plans.
+InCombatLockdown=function()return false end
+loadout('WARLOCK',{'Fear','Life Tap','Shadow Bolt'})
+E.Profile().cooldownLayout='Forever';D.cdmReady=true
+local saved={}
+local function template(id)
+    saved[id]=saved[id] or {id=id,triggers={{trigger={cdmSpells={multi={}},cdmShow='cooldown'}}}}
+    return saved[id]
+end
+ForeverAuras.GetData=template
+local nativeWrites=0
+ForeverAuras.Add=function(d)nativeWrites=nativeWrites+1;saved[d.id]=d end
+D.cdmOrder={Essential={13,11,12,14,15,16,17,18,19}}
+D.cdmRank={[13]=1,[11]=2}
+D.cdm={}
+for _,id in ipairs(D.cdmOrder.Essential)do D.cdm[id]={cdmID=id,name='Native '..id,category='Essential',identities={}}end
+D.cdm[30]={cdmID=30,name='Fear',category='Utility',identities={[5782]=true}}
+D.cdm[31]={cdmID=31,name='Hidden spell',category='HiddenActive',identities={}}
+D.cdm[32]={cdmID=32,name='Summoning',category='Utility',identities={[698]=true}}
+D.cdm[33]={cdmID=33,name='Equipped item',category='EquipSlotEssential',identities={}}
+S.Refresh()
+local noState=setmetatable({}, {__index=function()error('Protected state must not be inspected for sorting')end})
+check(E.SortCDM({cloneId='13',region=noState},{cloneId='11',region=noState}),'Overflow sorting uses native identity rank instead of numeric ID or restricted state')
+check(not E.SortCDM({cloneId='11'},{cloneId='13'}),'Native-order comparator is consistent in both directions')
+check(S.nativeMode and S.nativeSlots[1]==13 and S.nativeSlots[2]==11,'Native Essential order replaces authored priorities, including uncatalogued spells')
+check(#S.nativeSlots==8 and S.nativeUsed[18] and not S.nativeUsed[19],'Eight main slots have complete Essential overflow')
+local prefix='Eclipse | Warlock'
+local function trigger(suffix)return saved[prefix..suffix].triggers[1].trigger end
+check(trigger(' | Native cooldowns | Entries').cdmSpells.multi[19] and trigger(' | Native cooldowns | Entries').cdmShow=='always','Remaining Essential entries stay visible when ready')
+check(trigger(' | Native utility | Entries').cdmSpells.multi[30] and not trigger(' | Native utility | Entries').cdmSpells.multi[32],'Utility retains native placement and excludes preparation')
+check(trigger(' | Native items | Entries').cdmSpells.multi[33],'Equipped cooldown items have a separate native row')
+check(not trigger(' | Native cooldowns | Entries').cdmSpells.multi[31],'Hidden entries are never promoted into cooldown rows')
+local fear=prefix..' | Utility | Fear'
+check(not S.Allowed(fear,E.catalog[fear]) and not selected('Life Tap'),'Native mode unloads curated duplicates and unrelated filler')
+check(trigger(' | Primary | Native 1 | Entry').cdmSpells.multi[13],'Native primary uses CDM identity selections rather than guessed spell IDs')
+local armor=prefix..' | Player effects | Demon armor'
+D.eligible[armor]={id=687,name='Demon Skin'}
+D.cdm[40]={cdmID=40,name='Demon Armor',category='TrackedBuff',identities={[706]=true}}
+S.SyncCDM()
+check(not trigger(' | Native player effects | Entries').cdmSpells.multi[40],'Maintenance families cannot reappear as duplicate native proc/buff icons')
+local before=nativeWrites;S.Refresh()
+check(nativeWrites==before,'Unchanged native layout does not rewrite aura data')
+D.cdmOrder.Essential={};S.Refresh()
+check(not next(S.positions) and S.nativeMode,'A known empty native Essential list does not invent fallback icons')
+E.Profile().cooldownLayout='Class plan';S.Refresh()
+check(selected('Shadow Bolt') and not next(trigger(' | Primary | Native 1 | Entry').cdmSpells.multi),'Class plans are explicit and clear old native selections')
+D.cdmReady=false;E.Profile().cooldownLayout='Forever';S.Refresh()
+check(not S.nativeMode and selected('Shadow Bolt'),'Unavailable CDM retains learned class-plan fallback')
 print('Ability selection checks passed: '..checks)

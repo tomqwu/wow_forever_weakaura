@@ -61,17 +61,32 @@ function D.ScanBook()
     end
 end
 function D.ScanCDM()
-    D.cdm={}
+    D.cdm,D.cdmOrder,D.cdmRank,D.cdmReady={},{},{},false
     local api=C_CooldownViewer
     if not api or not Enum or not Enum.CooldownViewerCategory then return end
+    -- The same public data provider used by the native viewers includes saved
+    -- ordering and Hidden placement. Never inspect viewer frames or cooldowns.
+    local settings=CooldownViewerSettings
+    local provider=settings and E.Call(settings.GetDataProvider,settings) or CooldownViewerDataProvider
+    local ordered=provider and provider.GetOrderedCooldownIDsForCategory
     for name,category in pairs(Enum.CooldownViewerCategory) do
-        local ids=E.Call(api.GetCooldownViewerCategorySet,category,false)
+        local ids=ordered and E.Call(ordered,provider,category,false)
+        local arranged=type(ids)=='table'
+        if not arranged then ids=E.Call(api.GetCooldownViewerCategorySet,category,false) end
         if type(ids)=="table" then
+            if name=='Essential' then D.cdmReady=true end
+            D.cdmOrder[name]={}
             for _,id in ipairs(ids) do
-                local info=E.Number(id) and E.Call(api.GetCooldownViewerCooldownInfo,id)
-                if type(info)=="table" and E.Readable(info.isKnown) and info.isKnown==true then
+                local info=E.Number(id) and (arranged and E.Call(provider.GetCooldownInfoForID,provider,id)
+                    or E.Call(api.GetCooldownViewerCooldownInfo,id))
+                if type(info)=="table" and E.Readable(info.isKnown) and info.isKnown==true
+                    and E.Readable(info.isInvisible) and info.isInvisible~=true then
                     local override=E.Number(info.overrideSpellID) and info.overrideSpellID
                     local record=metadata(override or info.spellID)
+                    -- Equipped item entries can have no spell metadata.
+                    if not record and name=='EquipSlotEssential' and E.Number(info.equipSlot) then
+                        record={id=id,name='item:'..id,item=true}
+                    end
                     if record then
                         record.cdmID,record.category=id,name
                         record.identities={}
@@ -84,6 +99,8 @@ function D.ScanCDM()
                             end
                         end
                         D.cdm[id]=record
+                        D.cdmOrder[name][#D.cdmOrder[name]+1]=id
+                        D.cdmRank[id]=#D.cdmOrder[name]
                     end
                 end
             end
@@ -142,6 +159,12 @@ function D.Refresh()
     if E.RefreshEquipment then E.RefreshEquipment() end
     if E.RefreshPresentation then E.RefreshPresentation() end
     D.ApplyFlags(); E.Notify()
+    -- Native identity/layout data may arrive just after world entry. Bounded
+    -- login settling only; no polling once entries arrive or the budget ends.
+    if D.settleRemaining and D.settleRemaining>0 and not next(D.cdm) then
+        D.settleRemaining=D.settleRemaining-1
+        D.timer=C_Timer.NewTimer(.25,D.Refresh)
+    else D.settleRemaining=nil end
 end
 function D.Schedule()
     if D.timer or D.stopped then return end
@@ -158,16 +181,28 @@ local refreshEvents={"SPELLS_CHANGED","LEARNED_SPELL_IN_SKILL_LINE","SPELL_DATA_
     "COOLDOWN_VIEWER_DATA_LOADED","COOLDOWN_VIEWER_SPELL_OVERRIDE_UPDATED","COOLDOWN_VIEWER_TABLE_HOTFIXED"}
 function D.Start()
     local p=E.Profile(); if not p or not p.enabled then D.Stop(); return end
+    if D.stopped~=false then D.settleRemaining=8 end
     D.stopped=false
+    if EventRegistry and EventRegistry.RegisterCallback and not D.layoutCallback then
+        EventRegistry:RegisterCallback('CooldownViewerSettings.OnDataChanged',D.Schedule,D)
+        D.layoutCallback=true
+    end
     for _,event in ipairs(refreshEvents) do pcall(frame.RegisterEvent,frame,event) end
     D.Schedule()
 end
 function D.Stop()
     D.stopped=true
+    if D.layoutCallback and EventRegistry and EventRegistry.UnregisterCallback then
+        EventRegistry:UnregisterCallback('CooldownViewerSettings.OnDataChanged',D)
+        D.layoutCallback=nil
+    end
+    D.settleRemaining=nil
     if E.selection then E.selection.Stop() end
     if D.timer then D.timer:Cancel(); D.timer=nil end
     for _,event in ipairs(refreshEvents) do frame:UnregisterEvent(event) end
-    D.eligible,D.spells,D.byID,D.cdm,D.requested={},{},{},{},{}
+    D.eligible,D.spells,D.byID,D.cdm,D.requested,D.cdmOrder={},{},{},{},{},{}
+    D.cdmReady=false
+    D.cdmRank={}
     D.ApplyFlags()
 end
 frame:SetScript("OnEvent",function(_,event,unit)
@@ -186,6 +221,13 @@ function E.ReportSpells()
     local rows={}
     for name,record in pairs(D.spells) do rows[#rows+1]=name.." ["..record.id.."]" end
     table.sort(rows); for _,row in ipairs(rows) do print(row) end
+    print('Eclipse: '..E.L('Forever cooldown layout'))
+    for _,category in ipairs({'Essential','Utility','EquipSlotEssential','HiddenActive'})do
+        for _,id in ipairs(D.cdmOrder and D.cdmOrder[category] or {})do
+            local record=D.cdm[id]
+            if record then print(E.L(category)..': '..record.name..' [CDM '..id..']')end
+        end
+    end
     local api=E.API()
     for id,entry in pairs(E.catalog or {}) do
         if entry.cls==E.class and entry.kind=="aura" then

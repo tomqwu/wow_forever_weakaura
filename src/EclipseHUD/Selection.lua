@@ -43,14 +43,25 @@ end
 local function preparation(entry)
     return entry.identities[5697] or entry.identities[698] or entry.identities[20608]
 end
-local function syncEntries(api,id,selected)
+function E.SortCDM(a,b)
+    -- cloneId is FA's public identity key, never a duration, stack or alpha.
+    local function key(row)
+        local value=row and row.cloneId
+        local id=E.Readable(value) and tonumber(value)
+        return id and E.discovery.cdmRank and E.discovery.cdmRank[id] or math.huge,id or 0
+    end
+    local ar,ai=key(a);local br,bi=key(b)
+    return ar~=br and ar<br or ar==br and ai<bi
+end
+local function syncEntries(api,id,selected,show)
     local data=api.GetData(id)
     if not data then return end
     local old=data.triggers[1].trigger.cdmSpells.multi
     for key in pairs(old) do if not selected[tonumber(key)] then old=nil; break end end
     if old then for key in pairs(selected) do if not old[key] and not old[tostring(key)] then old=nil; break end end end
-    if old then return end
+    if old and (not show or data.triggers[1].trigger.cdmShow==show) then return end
     data=copy(data); data.triggers[1].trigger.cdmSpells.multi=selected
+    if show then data.triggers[1].trigger.cdmShow=show end
     api.Add(data)
 end
 function S.SyncCDM()
@@ -63,27 +74,53 @@ function S.SyncCDM()
             represented[E.discovery.eligible[id].name]=true
         end
     end
-    local selected={}
+    local selected,utility,items={},{},{}
     -- FA owns cooldown state, charges, overrides and clone rendering.
     for id,entry in pairs(E.discovery.cdm) do
-        if (entry.category=="Essential" or entry.category=="Utility" or entry.category=="SpecAgnosticEssential")
+        if S.nativeMode then
+            if not preparation(entry) then
+                if entry.category=='Essential' and not S.nativeUsed[id] then selected[id]=true
+                elseif entry.category=='Utility' then utility[id]=true
+                elseif entry.category=='EquipSlotEssential' then items[id]=true end
+            end
+        elseif (entry.category=="Essential" or entry.category=="Utility" or entry.category=="SpecAgnosticEssential")
             and not represented[entry.name] then
             if not preparation(entry) then selected[id]=true end
         end
     end
     local prefix='Eclipse | '..E.classNames[E.class]
-    syncEntries(api,prefix..' | Native cooldowns | Entries',selected)
-    local buffs,representedBuffs={},{}
+    syncEntries(api,prefix..' | Native cooldowns | Entries',selected,S.nativeMode and 'always' or 'cooldown')
+    syncEntries(api,prefix..' | Native utility | Entries',utility,'cooldown')
+    syncEntries(api,prefix..' | Native items | Entries',items,'cooldown')
+    for index=1,8 do
+        local cdmID=S.nativeSlots and S.nativeSlots[index]
+        syncEntries(api,prefix..' | Primary | Native '..index..' | Entry',cdmID and {[cdmID]=true} or {},'always')
+    end
+    local buffs,representedBuffs,representedBuffIDs={},{},{}
     for id,entry in pairs(E.catalog) do
-        if entry.cls==E.class and entry.module=='buffs' and entry.kind=='aura' and E.discovery.eligible[id] then
-            representedBuffs[E.discovery.eligible[id].name]=true
+        if entry.cls==E.class and (entry.module=='buffs' or entry.module=='maintenance') and entry.kind=='aura' and E.discovery.eligible[id] then
+            local record=E.discovery.eligible[id]
+            representedBuffs[record.name]=true;representedBuffIDs[record.id]=true
+            for _,seed in ipairs(entry.seeds)do
+                representedBuffIDs[seed]=true
+                local info=E.Call(C_Spell and C_Spell.GetSpellInfo,seed)
+                if type(info)=='table' and E.Readable(info.name) and type(info.name)=='string' then representedBuffs[info.name]=true end
+            end
         end
     end
     for id,entry in pairs(E.discovery.cdm) do
+        local duplicate=representedBuffs[entry.name]
+        for spell in pairs(entry.identities)do if representedBuffIDs[spell] then duplicate=true;break end end
         if (entry.category=='TrackedBuff' or entry.category=='TrackedBar' or entry.category=='SpecAgnosticTracked')
-            and not representedBuffs[entry.name] and not preparation(entry) then buffs[id]=true end
+            and not duplicate and not preparation(entry) then buffs[id]=true end
     end
     syncEntries(api,prefix..' | Native player effects | Entries',buffs)
+    -- Native multi-entry pickers sort IDs internally. Re-sort ordinary clone
+    -- containers by the public manager order, only outside combat.
+    for _,name in ipairs({'Native cooldowns','Native utility','Native items'})do
+        local region=api.GetRegion and api.GetRegion(prefix..' | '..name)
+        if region and region.SortUpdatedChildren then region:SortUpdatedChildren() end
+    end
 end
 function S.ApplyLayout()
     local api=E.API(); if not api or not api.GetRegion then return end
@@ -124,7 +161,30 @@ function S.Refresh()
     local scheme=plans[stage] or plans.Leveling or plans[E.schools[E.class][1]]
     S.primary,S.used,S.positions={},{},{}
     S.mode,S.stage=mode,stage
-    for side,slots in ipairs(scheme) do
+    S.nativeMode=p.cooldownLayout~='Class plan' and E.discovery.cdmReady==true
+    S.nativeSlots,S.nativeUsed={},{}
+    if S.nativeMode then
+        local records={}
+        for _,id in ipairs(E.discovery.cdmOrder.Essential or {})do
+            local record=E.discovery.cdm[id]
+            if record and not preparation(record) and not S.used[record.name] then
+                S.used[record.name]=true;records[#records+1]=record
+            end
+        end
+        local count=math.min(8,#records)
+        local left=math.ceil(count/2)
+        -- Every selected entry is rendered by an unchanged native FA CDM
+        -- trigger inside an ordinary slot group. Never move its private widget.
+        for index=1,count do
+            local record=records[index]
+            local side=index<=left and 1 or 2
+            local slot=side==1 and index or index-left
+            local id='Eclipse | '..E.classNames[E.class]..' | Primary | Native '..index
+            S.nativeSlots[index]=record.cdmID;S.nativeUsed[record.cdmID]=true
+            S.primary[id]=true
+            S.positions[id]={x=(side==1 and -1 or 1)*(83+(slot-1)*47),side=side,slot=slot}
+        end
+    else for side,slots in ipairs(scheme) do
         local visibleRank=0
         for index,choices in ipairs(slots) do
             if E.class=="WARRIOR" and stage=="Fury" and side==2 and index==4 and p.cleave and available.Cleave then choices={"Cleave"} end
@@ -138,7 +198,7 @@ function S.Refresh()
                 end
             end
         end
-    end
+    end end
     S.ApplyLayout(); S.SyncCDM()
     if E.motion and E.state then E.motion.Change(E.state.open,true) end
 end
@@ -150,6 +210,7 @@ function S.Allowed(id,entry)
     end
     if entry.module=="primary" and entry.key then return S.primary[id]==true end
     if entry.module=="utility" and entry.key then
+        if S.nativeMode then return false end
         local record=E.discovery.eligible[id]
         return record~=nil and not S.used[record.name]
     end
@@ -168,6 +229,7 @@ end
 function S.Stop()
     if S.layoutTimer then S.layoutTimer:Cancel();S.layoutTimer=nil end
     S.primary,S.used,S.positions={},{},{}
+    S.nativeMode=false;S.nativeSlots,S.nativeUsed={},{}
 end
 function E.ReminderContext()
     return E.class=='WARRIOR' and S.mode=='Arms' and E.state and E.state.HostileTarget()

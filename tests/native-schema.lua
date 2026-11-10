@@ -117,3 +117,25 @@ region.states[1].powertype=secret
 condition(region,false)
 for i=1,4 do assert(math.abs(region.color[i]-resource.barColor[i])<1e-12,'Restricted resource identity must restore neutral color')end
 print('Actual ForeverAuras color conditions passed mana/energy/rage transitions with restricted amounts')
+
+-- Execute the native dynamic-group sort wrapper on ordinary clone identities.
+-- WoW's xpcall forwards arguments; stock Lua 5.1 needs that API shim.
+local stockXpcall=xpcall
+xpcall=function(fn,handler,...)
+    local args={...}
+    return stockXpcall(function()return fn(unpack(args))end,handler)
+end
+WeakAuras.LoadFunction=P.LoadFunction
+WeakAuras.split=function()return {'index'}end
+P.ActivateAuraEnvironment=noop
+P.GetErrorHandlerId=function()return error end
+P.regionPrototype={AddAlphaToDefault=noop}
+P.RegisterRegionType=noop
+load('RegionTypes/DynamicGroup')
+local E={version='0.3.2',discovery={cdmRank={[5]=1,[3]=2}},Readable=function(v)return not issecretvalue(v)end}
+assert(loadfile('src/EclipseHUD/Selection.lua'))('EclipseHUD',E)
+EclipseHUD=E
+local nativeSort=WeakAuras.SortFunctions.custom(saved['Eclipse | Warlock | Native cooldowns'])
+assert(nativeSort({cloneId='5',region=secret},{cloneId='3',region=secret})==true)
+assert(nativeSort({cloneId='3',region=secret},{cloneId='5',region=secret})==false)
+print('Actual ForeverAuras dynamic-group sorting passed native identity order without state inspection')

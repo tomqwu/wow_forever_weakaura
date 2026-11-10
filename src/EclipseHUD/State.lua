@@ -30,7 +30,7 @@ function S.Goal(open,silent)
     end
     E.Notify()
 end
-function S.Update(silent)
+function S.Update(silent,combatExit)
     local p=E.Profile()
     local unavailable=not p or not p.enabled or not S.world or S.loading or S.hidden or E.Call(UnitIsDeadOrGhost,'player')~=false
     if unavailable then
@@ -39,8 +39,11 @@ function S.Update(silent)
     end
     local preview=S.Preview()
     if preview~=S.preview then silent=true; S.preview=preview end
-    local want=preview or S.inspected or E.inspectingSettings or S.HostileTarget() or (p.expandCombat and E.InCombat())
+    local combat=S.combat
+    if combat==nil then combat=E.InCombat() end
+    local want=preview or S.inspected or E.inspectingSettings or S.HostileTarget() or (p.expandCombat and combat)
     if want then cancel('closeTimer'); S.Goal(true,silent)
+    elseif combatExit then cancel('closeTimer');S.Goal(false,silent)
     elseif S.open and not silent then
         if not S.closeTimer then
             S.closeTimer=C_Timer.NewTimer(5,function() S.closeTimer=nil; S.Goal(false,false) end)
@@ -55,14 +58,14 @@ function S.Inspect()
 end
 function S.Start()
     local p=E.Profile(); if not p or not p.enabled then S.Stop(); return end
-    S.world=true; S.loading=false
+    S.world=true; S.loading=false;S.combat=nil
     for _,event in ipairs(watch) do pcall(events.RegisterEvent,events,event) end
     S.Update(true)
 end
 function S.Stop()
     cancel('closeTimer'); cancel('inspectTimer'); cancel('previewTimer')
     for _,event in ipairs(watch) do events:UnregisterEvent(event) end
-    S.world=false; S.open=false; S.transition=false; S.inspected=false; S.preview=false
+    S.world=false; S.open=false; S.transition=false; S.inspected=false; S.preview=false;S.combat=nil
     if E.motion then E.motion.Stop() end
 end
 function S.ObservePreview(preview)
@@ -74,7 +77,9 @@ events:SetScript('OnEvent',function(_,event,unit)
     if (event=='UNIT_FACTION' or event=='UNIT_FLAGS') and unit~='target' and unit~='player' then return end
     if event=='LOADING_SCREEN_ENABLED' then S.loading=true
     elseif event=='LOADING_SCREEN_DISABLED' then S.loading=false end
-    S.Update(event=='LOADING_SCREEN_DISABLED' or event=='PLAYER_ALIVE' or event=='PLAYER_UNGHOST')
+    if event=='PLAYER_REGEN_DISABLED' then S.combat=true
+    elseif event=='PLAYER_REGEN_ENABLED' then S.combat=false end
+    S.Update(event=='LOADING_SCREEN_DISABLED' or event=='PLAYER_ALIVE' or event=='PLAYER_UNGHOST',event=='PLAYER_REGEN_ENABLED')
 end)
 function E.LayoutVisible() return not E.state or E.state.Visible() end
 if UIParent.HookScript then

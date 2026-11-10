@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.3.1"
+VERSION = "0.3.2"
 TITLE = "Eclipse | Class Combat HUD"
 MEDIA = "Interface\\AddOns\\EclipseHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM ECLIPSE_HUD_UPDATE FA_OPTIONS_CLOSED"
@@ -93,7 +93,7 @@ def icon(pack,name,parent,cls,module,trigger,size=40,x=0,y=0,known=None,modern=F
                 texture_alpha=1,anchor_mode="area",anchor_area="ALL",xOffset=8,yOffset=8),
             subtext("%p",size=13),subtext("%s","BOTTOMRIGHT",10,x=-2,y=2)])
     if modern: d.update(inverse=True,blizzardAuraDisplay=dict(maxIcons=1,sharedDisplay=True,actionSounds=False))
-    if not modern and trigger['event'] in ('Cooldown Progress (Spell)','Blizzard Cooldown Manager'):
+    if not modern and trigger['event'] in ('Cooldown Progress (Spell)','Blizzard Cooldown Manager','Blizzard CDM Item'):
         d['cooldownTextDisabled']=False
         d['subRegions'][2]['text_visible']=False
         d['actions']['init']=dict(do_custom=True,custom=f'if EclipseHUD then EclipseHUD.StyleCooldown(aura_env.region or (ForeverAuras or WeakAuras).GetRegion(aura_env.id, aura_env.cloneId), "{cls}", "{module}") end')
@@ -191,8 +191,7 @@ def generate():
         rune["animation"]["main"]=dict(type="custom",duration_type="seconds",duration=45,use_rotate=True,rotate=360,
             rotateType="straight",easeType="none",easeStrength=3)
         texture(p,prefix+" | Seal",prefix,cls,"art","crest-"+cls.lower(),104,104,y=13)
-        caption=p.add(prefix+" | Class name","text",prefix,cls,"base",y=79,displayText="%c",
-            customText='function() return EclipseHUD and EclipseHUD.L("'+c['name']+'") or "'+c['name']+'" end',customTextUpdate="event",
+        caption=p.add(prefix+" | Class name","text",prefix,cls,"base",y=79,displayText="",
             font="Friz Quadrata TT",fontSize=10,outline="OUTLINE",color=rgba(c['color']),justify="CENTER",
             automaticWidth="Auto",fixedWidth=200,wordWrap="WordWrap",shadowColor=[0,0,0,1],shadowXOffset=0,shadowYOffset=0)
         # Measured channel interiors in the packaged AI-painted frame.
@@ -203,6 +202,14 @@ def generate():
         bar(p,prefix+" | Resource",prefix,cls,"resources",dict(type="unit",event="Power",unit="player",use_unit=True),
             x=138,y=13,width=180,height=13,label='resource')
         primary=prefix+" | Primary"; p.group(primary,prefix,cls,"primary",y=52)
+        for slot in range(1,9):
+            slot_id=primary+' | Native '+str(slot)
+            holder=p.group(slot_id,primary,cls,'primary')
+            holder['actions']['init']=dict(do_custom=True,custom=f'if EclipseHUD then EclipseHUD.BindAbility("{slot_id}") end')
+            slot_icon=icon(p,slot_id+' | Entry',slot_id,cls,'primary',dict(type='cdm',event='Blizzard Cooldown Manager',
+                cdmSource='cooldown',cdmSpells=dict(multi={}),cdmShow='always',use_cdmShowGCD=True,
+                cdmTrack='auto',cdmHideGCDText=True,use_ignoreSpellKnown=False),40)
+            slot_icon['conditions']=[dict(check=dict(trigger=1,variable=variable,value=value),changes=[dict(property=prop,value=color)]) for variable,value,prop,color in [('onCooldown',1,'desaturate',True),('isUsable',0,'desaturate',True),('inRange',0,'color',[1,.3,.3,1])]]
         for seed,name in candidates(cls):
             d=icon(p,primary+" | "+name,primary,cls,"primary",cooldown(seed),40,known=seed)
             d['actions']['init']['custom']+='\nif EclipseHUD then EclipseHUD.BindAbility(aura_env.id) end'
@@ -238,11 +245,19 @@ def generate():
             p.eligibility[d['id']].update(key=name,seeds=RANKS.get(name,[seed]) if cls=='WARRIOR' else [seed],prep=seed in PREPARATION)
             d['conditions']=[dict(check=dict(trigger=1,variable="onCooldown",value=1),changes=[dict(property="desaturate",value=True)])]
         overflow=prefix+" | Native cooldowns"
-        extra=p.group(overflow,prefix,cls,"utility",y=-214,dynamic=True)
-        extra.update(grow='GRID',gridType='HD',gridWidth=12,rowSpace=8,columnSpace=8)
-        icon(p,overflow+" | Entries",overflow,cls,"utility",dict(type="cdm",event="Blizzard Cooldown Manager",
+        extra=p.group(overflow,prefix,cls,"primary",y=-214,dynamic=True)
+        extra.update(grow='GRID',gridType='HD',gridWidth=12,rowSpace=8,columnSpace=8,sort='custom',sortOn='index',customSort='function(a,b) return EclipseHUD and EclipseHUD.SortCDM(a,b) or false end')
+        icon(p,overflow+" | Entries",overflow,cls,"primary",dict(type="cdm",event="Blizzard Cooldown Manager",
             cdmSource="cooldown",cdmSpells=dict(multi={}),cdmShow="cooldown",use_cdmShowGCD=False,
             cdmTrack="auto",cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
+        for title,event,source,y in [('Native utility','Blizzard Cooldown Manager','cooldown',-57),
+            ('Native items','Blizzard CDM Item','cooldown',-98)]:
+            name=prefix+' | '+title
+            extra=p.group(name,prefix,cls,'utility',y=y,dynamic=True)
+            extra.update(grow='GRID',gridType='HD',gridWidth=10,rowSpace=12,columnSpace=8,sort='custom',sortOn='index',customSort='function(a,b) return EclipseHUD and EclipseHUD.SortCDM(a,b) or false end')
+            icon(p,name+' | Entries',name,cls,'utility',dict(type='cdm',event=event,
+                cdmSource=source,cdmSpells=dict(multi={}),cdmShow='cooldown',use_cdmShowGCD=False,
+                cdmTrack='auto',cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
         # Modern aura slots stay fixed in combat. No Lua presence inspection,
         # inferred timers, refresh windows, or combat-dependent group reflow.
         dots=prefix+" | Target effects"; p.group(dots,prefix,cls,"dots",y=-130)
@@ -253,6 +268,8 @@ def generate():
             d=icon(p,prefix+" | Nameplates | "+name,prefix,cls,"nameplates",aura_trigger([seed],"nameplate",True),22,
                 x=(i-(count-1)/2)*26,y=26,modern=True)
             d.update(anchorFrameType="NAMEPLATE",anchorFrameParent=False)
+        maintenance=prefix+' | Maintenance'
+        p.group(maintenance,prefix,cls,'maintenance',x=-286,y=13,dynamic=True).update(grow='LEFT',space=6)
         effects=prefix+" | Player effects";p.group(effects,prefix,cls,"buffs",y=116)
         native_effects=prefix+' | Native player effects'
         p.group(native_effects,prefix,cls,'buffs',y=151,dynamic=True)
@@ -262,18 +279,22 @@ def generate():
         buffs=list(c['buffs'])
         if cls=="WARLOCK": buffs.append(([687,706,28176],"Demon armor"))
         for i,(seed,name) in enumerate(buffs):
-            icon(p,effects+" | "+name,effects,cls,"buffs",aura_trigger(seed if isinstance(seed,list) else [seed]),26,
-                x=(i-(len(buffs)-1)/2)*34,modern=True)
+            upkeep=name=='Demon armor'
+            d=icon(p,effects+" | "+name,maintenance if upkeep else effects,cls,'maintenance' if upkeep else 'buffs',
+                aura_trigger(seed if isinstance(seed,list) else [seed]),20 if upkeep else 26,
+                x=0 if upkeep else (i-(len(c['buffs'])-1)/2)*34,modern=True)
+            if upkeep: d['subRegions'][2]['text_visible']=False
+
         for i,(seeds,name,missing) in enumerate(UPKEEP.get(cls,[])):
             upkeep=aura_trigger(seeds);upkeep['nativeFilters']={}
-            icon(p,prefix+' | Upkeep | '+name,prefix,cls,'buffs',upkeep,24,x=180+i*30,y=94,modern=True)
+            icon(p,prefix+' | Upkeep | '+name,maintenance,cls,'maintenance',upkeep,20,modern=True)
             if missing:
                 for expiring in (False,True):
                     reminder=upkeep.copy()
                     reminder.update(secretShowOn='showOnActive' if expiring else 'showOnMissing',
                         secretUseRem=expiring,secretRem=15,secretRemOperator='<=')
-                    icon(p,prefix+' | Upkeep reminder | '+name+(' expiring' if expiring else ' missing'),prefix,cls,'buffs',
-                        reminder,28,y=94,modern=True)
+                    icon(p,prefix+' | Upkeep reminder | '+name+(' expiring' if expiring else ' missing'),maintenance,cls,'maintenance',
+                        reminder,24,modern=True)
         if cls=='WARRIOR':
             for name,seed,unit,missing,remaining,x in (
                 ('Rend missing',772,'target',True,False,-44),
@@ -369,6 +390,17 @@ def generate():
         foreground=[id for id in children if id not in layers]
         seal=foreground.index(prefix+' | Seal')
         group['controlledChildren']=foreground[:seal]+layers+foreground[seal:]
+    # A newer import must fail closed while an older helper is still loaded.
+    # Checking the table alone allowed hundreds of missing-method errors.
+    for display in p.displays:
+        containers=[display]+[action for action in display['actions'].values()]
+        containers += [entry['trigger'] for key,entry in display['triggers'].items() if isinstance(key,int)]
+        for container in containers:
+            for key in ('custom','customText','customSort'):
+                code=container.get(key)
+                if isinstance(code,str) and 'EclipseHUD' in code:
+                    container[key]=code.replace('if EclipseHUD then',f'if EclipseHUD and EclipseHUD.version == "{VERSION}" then').replace('return EclipseHUD and ',f'return EclipseHUD and EclipseHUD.version == "{VERSION}" and ')
+    p.displays[0]['actions']['init']['custom']=f'if EclipseHUD and EclipseHUD.version == "{VERSION}" then EclipseHUD.Bind() else local message="Companion update required: install EclipseHUD and /reload before importing."; print("Eclipse {VERSION}: "..(EclipseHUD and EclipseHUD.L and EclipseHUD.L(message) or message)) end'
     generate.eligibility = p.eligibility
     return dict(m="d",v=2000,s="1.3.5",d=p.displays[0],c=p.displays[1:])
 

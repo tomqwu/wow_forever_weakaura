@@ -2,6 +2,7 @@ local _, E = ...
 -- All combat readings and timers belong to ForeverAuras' native triggers.
 -- This helper owns preferences, the anchor, and cosmetic controls only.
 EclipseHUD = E
+E.version = "0.3.2"
 E.rootID = "Eclipse | Class Combat HUD"
 E.classNames = {
     WARLOCK="Warlock", WARRIOR="Warrior", MAGE="Mage", PRIEST="Priest",
@@ -10,13 +11,13 @@ E.classNames = {
 local defaults = {
     enabled=true, locked=true, combatOnly=false, hoverUtility=false,
     scale=1, x=0, y=-160, opacity=1,
-    school="Auto", cleave=false,
+    school="Auto", cleave=false, cooldownLayout="Forever",
     expandCombat=true, unfoldSound=false, unfold=true,
     resourceFlow=true, swingMode="Auto",
     hideDefaultCast=false,
     fx=true,
     alerts=true,
-    resources=true, primary=true, utility=true, dots=true, buffs=true,
+    resources=true, primary=true, utility=true, dots=true, buffs=true, maintenance=true,
     cast=true, pet=true, art=true, motion=true, nameplates=false,
 }
 local anchor = CreateFrame("Frame", "EclipseHUDAnchor", UIParent)
@@ -61,6 +62,7 @@ local function fill(profile)
         for _,school in ipairs(E.schools[E.class]) do if profile.school==school then valid=true end end
         if not valid then profile.school="Auto" end
     end
+    if profile.cooldownLayout~='Forever' and profile.cooldownLayout~='Class plan' then profile.cooldownLayout='Forever' end
     if profile.swingMode~='Auto' and profile.swingMode~='Single' and profile.swingMode~='Dual' then profile.swingMode='Auto' end
 end
 function E.InitDB()
@@ -184,7 +186,7 @@ function E.Set(key, value)
             if value then E.state.Start() else E.state.Stop() end
         else E.state.Update(true) end
     end
-    if E.discovery and (key=="school" or key=="cleave") then E.discovery.Schedule() end
+    if E.discovery and (key=="school" or key=="cleave" or key=="cooldownLayout") then E.discovery.Schedule() end
     if E.RefreshPresentation then E.RefreshPresentation() end
     if E.RefreshEquipment then E.RefreshEquipment() end
     E.ApplyLayout(); E.Notify()

@@ -24,6 +24,7 @@ function E.RefreshOptions()
     end
     panel.school:SetText(E.L('Talent school')..': '..E.L(p.school)
         ..(p.school=='Auto' and E.selection and (' ('..E.L(E.selection.mode or 'Leveling')..')') or ''))
+    panel.cooldown:SetText(E.L('Cooldown layout')..': '..E.L(p.cooldownLayout))
     panel.swing:SetText(E.L('Swing mode')..': '..E.L(p.swingMode))
     panel.swing:SetShown(E.class=='WARRIOR')
     panel.checks.cleave:SetShown(E.class=='WARRIOR')
@@ -89,6 +90,7 @@ local function build()
         return values
     end,'Talent school',-359)
     p.swing=cycle('swingMode',function()return {'Auto','Single','Dual'}end,'Swing mode',-397)
+    p.cooldown=cycle('cooldownLayout',function()return {'Forever','Class plan'}end,'Cooldown layout',-435)
     local position=p.sections.Position
     local function slider(key,title,minimum,maximum,step,x,y)
         label(position,title,11,x,y)

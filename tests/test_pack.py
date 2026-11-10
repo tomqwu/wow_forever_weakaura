@@ -49,7 +49,7 @@ class PackTests(unittest.TestCase):
         self.assertIn((980,'Bane of Agony'),warlock['dots'])
         self.assertIn((402174,'Penance'),CLASSES['PRIEST']['primary'])
         for d in self.regions:
-            if d['id'].endswith(' | Class name'):self.assertIn('EclipseHUD.L',d['customText'])
+            if d['id'].endswith(' | Class name'):self.assertEqual(d['displayText'],'')
         for c in CLASSES.values():
             ids=[id for id,name in c['primary']+c['utility']]
             self.assertEqual(len(ids),len(set(ids)),c['name'])
@@ -98,6 +98,26 @@ class PackTests(unittest.TestCase):
             resource=next(d for d in self.regions if d['id']==f"Eclipse | {c['name']} | FX resource intensity")
             self.assertEqual(resource['triggers'][1]['trigger']['event'],'Power')
             self.assertTrue(all(x['check']['variable']=='percentpower' for x in resource['conditions']))
+
+    def test_native_cooldown_slots_and_maintenance_are_separate(self):
+        by_id={d['id']:d for d in self.regions}
+        for c in CLASSES.values():
+            prefix='Eclipse | '+c['name']
+            for slot in range(1,9):
+                group=by_id[f'{prefix} | Primary | Native {slot}']
+                self.assertEqual(group['regionType'],'group')
+                icon=by_id[group['id']+' | Entry']
+                self.assertEqual(icon['triggers'][1]['trigger']['event'],'Blizzard Cooldown Manager')
+                self.assertEqual(icon['triggers'][1]['trigger']['cdmShow'],'always')
+                self.assertEqual(icon['parent'],group['id'])
+            self.assertEqual(by_id[prefix+' | Native items | Entries']['triggers'][1]['trigger']['event'],'Blizzard CDM Item')
+            self.assertIn('_maintenance',by_id[prefix+' | Maintenance']['load']['loadFlag'])
+            self.assertLess(by_id[prefix+' | Maintenance']['xOffset'],-250)
+        armor=by_id['Eclipse | Warlock | Player effects | Demon armor']
+        self.assertEqual(armor['parent'],'Eclipse | Warlock | Maintenance')
+        self.assertIn('_maintenance_',armor['load']['loadFlag'])
+        self.assertFalse(armor['subRegions'][2]['text_visible'])
+        self.assertEqual(armor['triggers'][1]['trigger']['secretShowOn'],'showOnActive')
 
     def test_resource_colors_follow_native_type_across_classes(self):
         by_id={d['id']:d for d in self.regions}
