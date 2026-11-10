@@ -19,7 +19,7 @@ The Lua suites currently cover 267 assertions across companion preferences, actu
 
 ## Required game-client acceptance — pending
 
-No new addon files or SavedVariables were installed/edited during implementation. The user's existing 0.2.0 screenshots establish the reported bugs, not validation of 0.3.1.
+No game files were modified during implementation. On 2026-11-10, at the user's request, the published v0.3.1 companion was installed into the running client's `F:\World of Warcraft\_forever_\Interface\AddOns\EclipseHUD`. All 38 addon files match the release; the previous v0.2.0 folder was backed up and verified outside AddOns. SavedVariables remain untouched. `/reload` and the in-game top-level import update are still pending, as are the live checks below. The user's existing 0.2.0 screenshots establish the reported bugs, not validation of 0.3.1.
 
 1. Update the companion, `/reload`, then update the existing **top-level** imported group through `/fa`. Check no duplicate groups or import errors. An addon-only update cannot repair the old saved fallback nesting.
 2. On the actual level-23 Warlock, run `/eclipse spells` out of combat and compare the printed learned ranks/native CDM with the spellbook and default manager. Verify new training updates without reimport. No unresolved proc/question-mark or preparation icon should appear in live mode.

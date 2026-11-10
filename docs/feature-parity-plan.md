@@ -374,6 +374,9 @@ plan update does not create a new runtime release.
 
 | 2026-11-10 | 11.4 continuation | 0.3.1 merged, published and downloaded bytes verified | [PR #2](https://github.com/tomqwu/wow_forever_weakaura/pull/2) merged as `4411e3e83bb7aab30d3fa70dc0f9d58ccf177320`; PR CI and [release-commit main CI](https://github.com/tomqwu/wow_forever_weakaura/actions/runs/42760550177) passed. [Immutable v0.3.1 prerelease](https://github.com/tomqwu/wow_forever_weakaura/releases/tag/v0.3.1) has ZIP/import/receipt; all downloaded bytes and 38 runtime files match the checked local build. ZIP SHA-256: `c9ca4b6927fbfc489e66e5de711a8a507aa9429b40fb4e1d4ff382e1273eea51`. Versions and README gallery agree on 0.3.1. v0.3.0 remains unchanged. |
 
+
+| 2026-11-10 | 11.3 installation preparation (user requested) | Companion v0.3.1 installed; live acceptance still pending | Running `Wow.exe` confirmed the active `_forever_` product. Replaced companion v0.2.0 in `F:\World of Warcraft\_forever_\Interface\AddOns\EclipseHUD` using the published v0.3.1 package; all 38 file hashes verified (4 replaced, 13 added, 21 unchanged). Previous addon backed up and verified at `F:\WoW-addon-backups\EclipseHUD\20261110-091740\before\EclipseHUD`; receipt and matching import retained alongside it. SavedVariables untouched; no game restart. User still needs `/reload` and an in-game top-level import update through `/fa`; installation is not evidence that live spellbook/layout/combat checks pass. |
+
 **Implementation status:** resource readability and module cleanup are complete
 and delivered. No further code item is queued from this continuation; proceed to
 11.3 game-client acceptance when client evidence is available.
