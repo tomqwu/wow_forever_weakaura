@@ -8,7 +8,8 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 sys.path.insert(0,str(ROOT/'src'))
 from build import generate, TITLE
-from catalog import CLASSES
+from catalog import CLASSES, HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES
+from build import rgba
 
 class PackTests(unittest.TestCase):
     @classmethod
@@ -97,6 +98,26 @@ class PackTests(unittest.TestCase):
             resource=next(d for d in self.regions if d['id']==f"Eclipse | {c['name']} | FX resource intensity")
             self.assertEqual(resource['triggers'][1]['trigger']['event'],'Power')
             self.assertTrue(all(x['check']['variable']=='percentpower' for x in resource['conditions']))
+
+    def test_resource_colors_follow_native_type_across_classes(self):
+        by_id={d['id']:d for d in self.regions}
+        for c in CLASSES.values():
+            prefix='Eclipse | '+c['name']
+            health=by_id[prefix+' | Health']
+            self.assertEqual(health['barColor'],rgba(HEALTH_COLOR))
+            power=by_id[prefix+' | Resource']
+            self.assertEqual(power['barColor'],rgba(UNKNOWN_RESOURCE_COLOR))
+            self.assertFalse(power['triggers'][1]['trigger'].get('use_powertype',False))
+            mapping={rule['check']['value']:rule['changes'][0]['value'] for rule in power['conditions']}
+            self.assertEqual(mapping,{kind:rgba(style['color']) for kind,style in RESOURCE_STYLES.items()})
+            self.assertTrue(all(rule['check']['variable']=='powertype' for rule in power['conditions']))
+            self.assertIn('EclipseHUD.ResourceLabel()',power['customText'])
+            if c.get('pet'):
+                self.assertEqual(by_id[prefix+' | Pet health']['barColor'],rgba(PET_HEALTH_COLOR))
+            if c.get('extra')=='combo':
+                number=by_id[prefix+' | Combo points']['subRegions'][2]
+                self.assertEqual(number['text_text'],'%p / %t')
+                self.assertEqual(number['text_text_format_t_decimal_precision'],0)
 
     def test_painted_art_preserves_transparency_and_class_identity(self):
         from PIL import Image

@@ -2,6 +2,19 @@
 client metadata against learned ranks/overrides or a learned native CDM identity.
 """
 
+# Resource meaning is shared across classes; class accents belong to artwork.
+# IDs are the Forever client's native Power trigger's powertype values.
+HEALTH_COLOR = '#36C897'
+PET_HEALTH_COLOR = '#43AD91'
+UNKNOWN_RESOURCE_COLOR = '#8898AC'
+RESOURCE_STYLES = {
+    0: dict(name='Mana', color='#438DFF'),
+    1: dict(name='Rage', color='#EA5A47'),
+    2: dict(name='Focus', color='#DA9650'),
+    3: dict(name='Energy', color='#F4C747'),
+    4: dict(name='Combo points', color='#F4C747'),
+}
+
 CLASSES = {
     "WARLOCK": dict(name="Warlock", zh="术士", color="#ac89ef", accent="#b5f471", icon="Spell_Shadow_Metamorphosis",
         primary=[(17877,"Shadowburn"),(1293817,"Conflagrate"),(6789,"Death Coil"),(18288,"Amplify Curse"),(18708,"Fel Domination"),(6353,"Soul Fire")],

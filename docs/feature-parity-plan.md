@@ -2,7 +2,7 @@
 
 ## Working state — 2026-11-09
 
-**Current phase: 0.3.0 implementation and automated verification; live acceptance remains pending.**
+**Current phase: 0.3.1 resource readability and independent-module cleanup; live acceptance remains pending.**
 
 The previous **0.2.0** release exposed the live failures below. The **0.3.0**
 implementation now has targeted regressions and native-source checks. Pictures,
@@ -33,7 +33,7 @@ are secondary to working behavior.
 
 - Original: **Guos Warrior Combat HUD v1.2.4**, supplied as a ForeverAuras import
   and companion media folder. Import SHA-256:
-  `6db57aad73c5e8b2fea2033a241e9c3c7c46831f73e6b8b3ebb78f358483f5fd`.
+  `6db57aad73c5e8b2fea2033a240e9c3c7c46831f73e6b8b3ebb78f358483f5fd`.
 - Decoded: transmission 2000, export version 1.3.0, internal schema 91; one root
   and **135 descendants**. See [the full inventory](reference-inventory.md).
 - Descendants: 78 icons, 6 progress bars, 15 groups, 4 dynamic groups, 23 empty
@@ -365,6 +365,16 @@ plan update does not create a new runtime release.
 | 2026-11-09 | 11.2 final lifecycle review | Added late-binding/world-leave regressions | Newly eligible ordinary regions may be created after load flags change, so their init callbacks coalesce a layout pass after registration; fresh slots cannot remain stacked at center. Late layout/notifications cannot re-enable world-leave controls or native flags. FX ordering follows FA's actual controlled-child ordering behind foreground UI. Selection/state suites now 50/22 assertions. |
 | 2026-11-09 | 11.2 visual/audio follow-up | Sparse learned slots and controller gates corrected | Compact each wing by visible learned rank while retaining logical priority order; browser captures wait for loaded artwork. Ready observers ignore the HUD's combat-only visual gate so combat entry cannot announce every already-ready skill. Native buff overflow also excludes breathing/summoning. Initial branch CI passed; final follow-up reruns CI before merge. |
 | 2026-11-09 | 11.4 | Merged and published; bytes verified | [PR #1](https://github.com/tomqwu/wow_forever_weakaura/pull/1) merged as `edb0f1d9eb91e7ac6cca17d2d6a11e1c3bc9f126`. Final PR CI and [main CI](https://github.com/tomqwu/wow_forever_weakaura/actions/runs/42743959052) passed. [Immutable v0.3.0 prerelease](https://github.com/tomqwu/wow_forever_weakaura/releases/tag/v0.3.0) published with ZIP/import/receipt; downloaded bytes match the checked local package and every runtime source/media file. ZIP SHA-256: `f79200752e02bcb8fc7784950f98fde5a326a50299cca34f1f7a21da04516a97`. TOC, generator, checks, artifact, README and changelog agree on 0.3.0. |
+| 2026-11-09 | 05.1/05.5 continuation | Semantic resource colors/labels implemented; automated checks pass | Jade health/pet health, blue mana, gold energy, red rage, amber focus, neutral unknown identity. Native FA `powertype` conditions follow forms; actual FA condition compiler/evaluator tested through mana→energy→rage→mana with restricted amounts and unknown identity. Added localized role labels and native combo current/max text. Eight new label/guard assertions and nine Python groups pass. Client colors/readability still need acceptance. |
+| 2026-11-09 | 00.3 integrity correction | Reference hash restored from actual file | Previous broad test-count replacement changed `a240` inside the original digest to `a241`. Recomputed SHA-256 from the supplied TXT and restored the exact digest above. Future counts must be edited contextually. |
+| 2026-11-09 | 07.4 continuation | Observed cast-stop and disable cleanup fixed; 17 cast checks pass | Cast/channel stop immediately cancels looping decoration even if success is absent or late. A subsequent matching success may pulse; module disable clears both record and motion. Restricted unit tokens are rejected before comparison. Actual event order still needs client acceptance. |
+| 2026-11-10 | 08.4 continuation | Independent FX binding and cleanup implemented; targeted checks pass | Ordinary resource FX no longer require Cast/Seal hosts when Cast is disabled; cast effects work without resource hosts. Disabled widgets allocate no frames/retries, stop and hide existing decorations, and remove unneeded swing listeners. Reimport reuses bounded owned frames; ancestry replacement defers in combat and old host hooks become dormant. Native resource trim now has a Resources eligibility dependency and unloads when that module is off. 25 FX and 18 discovery assertions pass. |
+
+| 2026-11-10 | 11.1–11.2 continuation | 0.3.1 implementation and automated verification passed | 267 focused Lua assertions, nine Python groups, 830-descendant import round trip and ZIP source/media/hash verification pass. Installed/public FA validate 176 modern displays and execute the real color compiler through mana→energy→rage→mana with restricted amounts. Chromium verifies all nine classes, Druid form palette transitions, native-value fixtures and independent resource/pet controls; all gallery captures refreshed. `git diff --check` passes. Mock/native-source tests remain separate from game-client acceptance. |
+
+**Next implementation item:** 11.4 CI, merge and immutable 0.3.1 delivery.
+Resource colors and independent-module cleanup are implemented; live acceptance
+below stays open.
 
 **Next required evidence:** 11.3 game-client acceptance. Code and automated
 checks are implemented; the detailed runtime acceptance checkboxes remain open

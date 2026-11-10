@@ -117,6 +117,7 @@ function D.ApplyFlags()
     for id,entry in pairs(E.catalog or {}) do
         local on=p and p.enabled and E.LiveWorld() and E.class==entry.cls and p[entry.module]~=false and D.eligible[id]~=nil
         if on and E.selection then on=E.selection.Allowed(id,entry) end
+        if on and entry.requires then on=p[entry.requires]~=false end
         if entry.module=='fx' and (not p or not p.art) then on=false end
         api.SetLoadFlag(entry.flag,on==true)
     end
