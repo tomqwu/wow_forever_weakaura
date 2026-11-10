@@ -4,7 +4,7 @@
 
 `python scripts/build.py`, `python scripts/check.py` and `git diff --check` are the required build/package checks. The check script validates Lua syntax, focused behavior regressions, class/module loading, own media, import decoding/hierarchy, synchronized versions and ZIP source/media/hash bytes.
 
-The Lua suites currently cover 239 assertions across companion preferences, actual settings callbacks/localization, discovery, selection, state, motion, formatting/equipment, casting, audio and ordinary effect lifecycle. They include:
+The Lua suites currently cover 241 assertions across companion preferences, actual settings callbacks/localization, discovery, selection, state, motion, formatting/equipment, casting, audio and ordinary effect lifecycle. They include:
 
 - English/Chinese learned ranks, reversed spellbook order, learned bases/overrides, passive and placeholder rejection, learning events and stop cleanup.
 - Explicit level-23 Warlock fixture; source Warrior stages, all 27 school controls, duplicate/preparation exclusion, native CDM overflow/counters and cached Druid combat-form switching.

@@ -3,6 +3,12 @@ local A={queue={},last={},sounds={},active=false}
 E.alerts=A
 local events=CreateFrame('Frame')
 A.events=events
+function E.AlertGate(class)
+    local p=E.Profile()
+    -- Observe native ready edges outside combat too. HUD combat-only folding
+    -- must not re-show every already-ready controller at combat entry.
+    return p and p.enabled and p.alerts and E.class==class and E.LiveWorld() or false
+end
 local path='Interface\\AddOns\\EclipseHUD\\Audio\\'
 local function cancel(key)
     if A[key] then A[key]:Cancel();A[key]=nil end

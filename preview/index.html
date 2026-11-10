@@ -222,10 +222,10 @@ function render(){
  const c=classes[active],p=profile(),sample23=active==='WARLOCK'&&p.scenario==='level23';
  const available=new Set(sample23?warlock23:c.candidates.map(x=>x[1]).filter(x=>icons[x]));
  const scheme=plans[active][sample23?'Leveling':p.school]||plans[active].Leveling||plans[active][schools[active][0]];
- const used=new Set(),main=[];
+ const used=new Set(),main=[],dense=[0,0];
  scheme.forEach((slots,side)=>slots.forEach((choices,i)=>{
   const name=choices.find(key=>available.has(key)&&!used.has(key));
-  if(name){used.add(name);main.push(tile(name,'',(side===0?-1:1)*(83+i*47),i))}
+  if(name){used.add(name);main.push(tile(name,'',(side===0?-1:1)*(83+(dense[side]++)*47),dense[side]-1))}
  }));
  $('.primary').innerHTML=main.join('');
  const cooling=sample23?[]:c.alerts.filter(name=>available.has(name)&&!used.has(name)).slice(0,3);

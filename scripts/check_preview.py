@@ -29,6 +29,7 @@ with sync_playwright() as p:
         const r=el.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('.tile')===el
     })'''),'Artwork must not cover main spell centers'
     if args.capture:
+        page.wait_for_function("Array.from(document.querySelectorAll('.viewport img')).every(img=>img.complete&&img.naturalWidth>0)")
         page.screenshot(path=str(ROOT/'preview/eclipse-warlock.png'))
         page.locator('.viewport').screenshot(path=str(ROOT/'preview/classes/warlock.png'))
     page.locator('button[data-state="lost"]').click()
@@ -46,7 +47,9 @@ with sync_playwright() as p:
         page.locator('button[data-state="enemy"]').click();page.wait_for_timeout(550)
         assert page.locator('.primary .tile').count()>0,token+' empty sample'
         assert page.locator('#school option').count()==3,token+' missing school choices'
-        if args.capture:page.locator('.viewport').screenshot(path=str(ROOT/'preview/classes'/f'{token.lower()}.png'))
+        if args.capture:
+            page.wait_for_function("Array.from(document.querySelectorAll('.viewport img')).every(img=>img.complete&&img.naturalWidth>0)")
+            page.locator('.viewport').screenshot(path=str(ROOT/'preview/classes'/f'{token.lower()}.png'))
     page.locator('[data-class="WARLOCK"]').click()
     assert page.locator('#scale').input_value()=='120','Class preview preferences persist independently'
     page.locator('#reset').click();assert page.locator('#scale').input_value()=='100'

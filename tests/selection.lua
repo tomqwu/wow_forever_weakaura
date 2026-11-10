@@ -31,6 +31,7 @@ check(selected('Shadow Bolt') and selected('Corruption') and selected('Immolate'
 check(selected('Life Tap').side==1 and selected('Shadow Bolt').side==2,'Two-sided functional hierarchy')
 check(not selected('Conflagrate'),'No untrained maximum-level slot')
 check(selected('Drain Life') and not selected('Drain Soul'),'Learned slot fallback has stable priority')
+check(selected('Fear').x==-130 and selected('Health Funnel').x==-177,'Unlearned priority slots compact without gaps or reordered learned skills')
 for id,entry in pairs(E.catalog) do
     if entry.cls=='WARLOCK' and entry.prep then check(not S.Allowed(id,entry),'Preparation excluded') end
     if entry.cls=='WARLOCK' and entry.key=='Fear' and entry.module=='utility' then check(not S.Allowed(id,entry),'Main ability absent from secondary') end
@@ -61,10 +62,10 @@ local buffData={triggers={{trigger={cdmSpells={multi={}}}}}}
 local writes=0
 ForeverAuras.GetData=function(id)return id:find('Native player effects',1,true) and buffData or data end
 ForeverAuras.Add=function(new)writes=writes+1;if new.triggers[1].trigger.cdmSpells.multi[102] then buffData=new else data=new end end
-D.cdm={[100]={name='Native extra',category='Essential',identities={}},[101]={name='Summon',category='Utility',identities={[698]=true}},[102]={name='Buff',category='TrackedBuff',identities={}}}
+D.cdm={[100]={name='Native extra',category='Essential',identities={}},[101]={name='Summon',category='Utility',identities={[698]=true}},[102]={name='Buff',category='TrackedBuff',identities={}},[103]={name='Breathing',category='TrackedBuff',identities={[5697]=true}}}
 S.SyncCDM()
 check(data.triggers[1].trigger.cdmSpells.multi[100] and not data.triggers[1].trigger.cdmSpells.multi[101],'Native learned combat overflow excludes preparation')
-check(buffData.triggers[1].trigger.cdmSpells.multi[102],'Additional learned tracked buffs/counters use native CDM')
+check(buffData.triggers[1].trigger.cdmSpells.multi[102] and not buffData.triggers[1].trigger.cdmSpells.multi[103],'Additional learned tracked buffs/counters exclude preparation')
 S.SyncCDM();check(writes==2,'Unchanged CDM selections do not rewrite imports')
 ForeverAuras.GetData=nil
 UnitPowerType=function()return 3 end

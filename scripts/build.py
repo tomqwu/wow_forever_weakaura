@@ -310,6 +310,7 @@ def generate():
             alert=p.add(prefix+f' | Ready alert | {seed}','empty',prefix,cls,'alerts',width=1,height=1)
             p.triggers(alert,[dict(type='spell',event='Cooldown Ready (Spell)',spellName=seed,
                 use_spellName=True,use_exact_spellName=False,use_ignoreSpellKnown=False,use_ignoreoverride=False)],cls,'alerts')
+            alert['triggers'][2]['trigger']['custom']=f'function() return EclipseHUD and EclipseHUD.AlertGate("{cls}") or false end'
             flag=f'ECLIPSE_{cls}_alerts_'+alert['uid'];alert['load']['loadFlag']=flag
             p.eligibility[alert['id']]=dict(cls=cls,module='alerts',seeds=[seed],flag=flag,kind='ability')
             alert['actions']['start']=dict(do_custom=True,custom=f'if EclipseHUD then EclipseHUD.ReadyAlert("{alert["id"]}", {seed}, {priority}) end')

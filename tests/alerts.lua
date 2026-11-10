@@ -35,6 +35,7 @@ timer.callback();check(#played==1 and #A.queue==1,'One ready chime at a time')
 now=1.2;A.timer.callback();check(#played==1,'Chime duration prevents overlapping ready playback')
 now=6;A.timer.callback();check(#played==1 and #A.queue==0,'Four-second queue lifetime discards stale alerts')
 combat=false;E.ReadyAlert('low',101,10);check(#A.queue==0,'Ready alerts require confirmed combat')
+E.Profile().combatOnly=true;check(E.AlertGate('WARLOCK'),'Combat-only visual setting cannot reset native ready observers on combat entry')
 combat=true;E.ReadyAlert('low',101,10);timer=A.timer
 A.events.scripts.OnEvent(nil,'PLAYER_REGEN_ENABLED')
 check(timer.cancelled and #A.queue==0,'Leaving combat cancels pending ready audio')

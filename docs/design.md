@@ -28,7 +28,7 @@ Ordinary FA regions use native translation/alpha groups: 65ms forward/reverse st
 
 `EclipseHUDAnchor` owns the root position in UIParent units. Outside combat, the companion explicitly repairs a root that FA created before the anchor was available. Scale applies to the imported root, not the saved position anchor. New/reset position is `(0,-160)`; existing coordinates survive upgrades. Overall preference/root ancestry edits queue in combat. A position-only reset preserves every other preference.
 
-At 100% scale: seal 104×104 at `(0,13)`; chassis 512×128 at `(0,20)`; health/resource 180×13 at `(±138,13)`; main icons 40×40 at y=52, x=±(83+47×slotIndex). Secondary categories use centered four-column grids at y=-57, target effects y=-130, swings y=-153, combo bar y=-155, cast y=-178 and additional native cooldowns y=-214. Modern player effects stay fixed; native CDM player effects have a separate row. Actual client spacing/stacking remains an acceptance check.
+At 100% scale: seal 104×104 at `(0,13)`; chassis 512×128 at `(0,20)`; health/resource 180×13 at `(±138,13)`; main icons 40×40 at y=52, x=±(83+47×visibleIndex). Secondary categories use centered four-column grids at y=-57, target effects y=-130, swings y=-153, combo bar y=-155, cast y=-178 and additional native cooldowns y=-214. Modern player effects stay fixed; native CDM player effects have a separate row. Actual client spacing/stacking remains an acceptance check.
 
 ## Resources, casting, effects and sound
 

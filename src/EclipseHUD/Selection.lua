@@ -40,6 +40,9 @@ local function copy(value)
     if type(value)~="table" then return value end
     local result={}; for k,v in pairs(value) do result[k]=copy(v) end; return result
 end
+local function preparation(entry)
+    return entry.identities[5697] or entry.identities[698] or entry.identities[20608]
+end
 local function syncEntries(api,id,selected)
     local data=api.GetData(id)
     if not data then return end
@@ -65,9 +68,7 @@ function S.SyncCDM()
     for id,entry in pairs(E.discovery.cdm) do
         if (entry.category=="Essential" or entry.category=="Utility" or entry.category=="SpecAgnosticEssential")
             and not represented[entry.name] then
-            local prep=false
-            for _,seed in ipairs({5697,698,20608}) do if entry.identities[seed] then prep=true end end
-            if not prep then selected[id]=true end
+            if not preparation(entry) then selected[id]=true end
         end
     end
     local prefix='Eclipse | '..E.classNames[E.class]
@@ -80,7 +81,7 @@ function S.SyncCDM()
     end
     for id,entry in pairs(E.discovery.cdm) do
         if (entry.category=='TrackedBuff' or entry.category=='TrackedBar' or entry.category=='SpecAgnosticTracked')
-            and not representedBuffs[entry.name] then buffs[id]=true end
+            and not representedBuffs[entry.name] and not preparation(entry) then buffs[id]=true end
     end
     syncEntries(api,prefix..' | Native player effects | Entries',buffs)
 end
@@ -124,13 +125,15 @@ function S.Refresh()
     S.primary,S.used,S.positions={},{},{}
     S.mode,S.stage=mode,stage
     for side,slots in ipairs(scheme) do
+        local visibleRank=0
         for index,choices in ipairs(slots) do
             if E.class=="WARRIOR" and stage=="Fury" and side==2 and index==4 and p.cleave and available.Cleave then choices={"Cleave"} end
             for _,key in ipairs(choices) do
                 local entry=available[key]
                 if entry and not S.used[entry.record.name] then
+                    visibleRank=visibleRank+1
                     S.primary[entry.id]=true; S.used[entry.record.name]=true
-                    S.positions[entry.id]={x=(side==1 and -1 or 1)*(83+(index-1)*47),side=side,slot=index}
+                    S.positions[entry.id]={x=(side==1 and -1 or 1)*(83+(visibleRank-1)*47),side=side,slot=index}
                     break
                 end
             end
