@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 — 2026-11-10 (prerelease)
+
+- Use shared semantic bar colors: jade health, blue mana, gold energy, red rage and amber focus. Native resource-type conditions follow Druid forms; unknown resource types keep a neutral color.
+- Add localized health/resource/pet/shard labels and native current/maximum combo text. Class colors remain on artwork and accents.
+- Stop cast decoration on observed cast end and module disable. Bind ordinary FX independently, reuse frames across reimport, and unload native resource trim when Resources is off.
+- Refresh all nine gallery images and add Druid caster/bear/cat palette previews. Record 267 Lua assertions, nine Python groups and actual native condition-compiler coverage in the durable log; live-client acceptance remains pending.
+
 ## 0.3.0 — 2026-11-09 (prerelease)
 
 - Fix the native placeholder bug: store `secretFallback = "none"` inside the trigger combination. Regression reproduces v0.2.0 using ForeverAuras' actual fallback selector.

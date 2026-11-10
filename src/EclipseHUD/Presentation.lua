@@ -153,3 +153,9 @@ end
 function E.ComboAllowed()
     return E.class~='DRUID' or E.Call(UnitPowerType,'player')==3
 end
+function E.ResourceLabel()
+    -- Resource identity only, never its current/max/restricted numeric amount.
+    local power=E.Call(UnitPowerType,'player')
+    local name=type(power)=='number' and E.resourceNames and E.resourceNames[power]
+    return E.L(name or 'Resource')
+end

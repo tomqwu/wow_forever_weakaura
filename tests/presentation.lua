@@ -4,6 +4,7 @@ local checks=0
 local function check(v,m)checks=checks+1;assert(v,m)end
 assert(loadfile('src/EclipseHUD/Discovery.lua'))('EclipseHUD',E)
 assert(loadfile('src/EclipseHUD/Presentation.lua'))('EclipseHUD',E)
+assert(loadfile('src/EclipseHUD/Catalog.lua'))('EclipseHUD',E)
 local rules
 Enum={NumericRuleFormatRounding={Up=1}}
 C_StringUtil={CreateNumericRuleFormatter=function()return {SetBreakpoints=function(_,value)rules=value end}end}
@@ -65,4 +66,15 @@ check(fg.mask==mask and fg.path:find('resource%-flow%-right'),'Original native p
 flow.scripts.OnHide();check(not group.playing,'Hidden resource stops native animation')
 flow.scripts.OnShow();check(group.playing,'Shown resource resumes native animation')
 E.Set('resourceFlow',false);check(not group.playing and fg.path=='original' and fg.mask==mask,'Disable restores native paint without changing progress mask')
+local kind=0
+UnitPowerType=function()return kind end
+for value,label in pairs({[0]='Mana',[1]='Rage',[2]='Focus',[3]='Energy',[4]='Combo points'}) do
+    kind=value;check(E.ResourceLabel()==label,'Resource labels follow live type metadata')
+end
+local secret={};issecretvalue=function(v)return rawequal(v,secret)end
+kind=secret;check(E.ResourceLabel()=='Resource','Restricted identity never becomes a guessed mana label')
+kind=999;check(E.ResourceLabel()=='Resource','Unknown type has a neutral resource label')
+GetLocale=function()return 'zhCN'end
+assert(loadfile('src/EclipseHUD/Locale.lua'))('EclipseHUD',E)
+kind=3;check(E.ResourceLabel()=='能量' and E.L('Health')=='生命' and E.L('Pet')=='宠物','Health/resource/pet labels localize')
 print('Presentation/equipment checks passed: '..checks)

@@ -10,9 +10,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from catalog import CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP
+from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
+    HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 TITLE = "Eclipse | Class Combat HUD"
 MEDIA = "Interface\\AddOns\\EclipseHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM ECLIPSE_HUD_UPDATE FA_OPTIONS_CLOSED"
@@ -111,7 +112,7 @@ def aura_trigger(ids,unit="player",harmful=False):
         secretUseSpellIDs=False,auraspellids=[],secretShowOn="showOnActive",
         nativeFilters={"PLAYER":True},useExactSpellId=False)
 
-def bar(pack,name,parent,cls,module,trigger,width=170,height=13,x=0,y=0,color=None,text="%p",name_text=None):
+def bar(pack,name,parent,cls,module,trigger,width=170,height=13,x=0,y=0,color=None,text="%p",name_text=None,label=None):
     d=pack.add(name,"aurabar",parent,cls,module,x,y,width=width,height=height,icon=False,desaturate=False,iconSource=-1,
         progressSource=[-1,""],adjustedMax="",adjustedMin="",texture="Blizzard",textureSource="LSM",
         orientation="HORIZONTAL",inverse=False,barColor=color or rgba(CLASSES[cls]["color"]),
@@ -128,10 +129,23 @@ def bar(pack,name,parent,cls,module,trigger,width=170,height=13,x=0,y=0,color=No
             d['subRegions'][-1].update(text_text='%percenthealth%%  %p',
                 text_text_format_percenthealth_format='Number',text_text_format_percenthealth_decimal_precision=0)
         d["subRegions"][-1]["text_text_format_p_big_number_format"]="AbbreviateNumbers"
+        if '%t' in text:
+            d['subRegions'][-1].update(text_text_format_t_format='Number',text_text_format_t_decimal_precision=0)
         if trigger.get('unit')=='player' and module=='resources':
             side='left' if trigger['event']=='Health' else 'right'
             d['actions']['init']=dict(do_custom=True,custom=f'if EclipseHUD then EclipseHUD.StyleResource(aura_env.region or (ForeverAuras or WeakAuras).GetRegion(aura_env.id), "{cls}", "{side}") end')
     if name_text: d["subRegions"].append(subtext(name_text,"INNER_LEFT",9,x=4))
+    if label:
+        d['subRegions'].append(subtext('%c','INNER_LEFT',9,x=4))
+        d['customTextUpdate']='event'
+        d['customText']=('function() return EclipseHUD and EclipseHUD.ResourceLabel() or "Resource" end' if label=='resource'
+            else f'function() return EclipseHUD and EclipseHUD.L("{label}") or "{label}" end')
+    if trigger['event']=='Power' and module=='resources':
+        # Native state carries the current resource identity, including form
+        # switches in combat. The helper never reads power amounts for color.
+        d['barColor']=rgba(UNKNOWN_RESOURCE_COLOR)
+        d['conditions']=[dict(check=dict(trigger=1,variable='powertype',op='==',value=power),
+            changes=[dict(property='barColor',value=rgba(style['color']))]) for power,style in RESOURCE_STYLES.items()]
     pack.triggers(d,[trigger],cls,module)
     return d
 
@@ -183,11 +197,11 @@ def generate():
             automaticWidth="Auto",fixedWidth=200,wordWrap="WordWrap",shadowColor=[0,0,0,1],shadowXOffset=0,shadowYOffset=0)
         # Measured channel interiors in the packaged AI-painted frame.
         bar(p,prefix+" | Health",prefix,cls,"resources",dict(type="unit",event="Health",unit="player",use_unit=True),
-            x=-138,y=13,width=180,height=13,color=[.43,.67,.36,1])
+            x=-138,y=13,width=180,height=13,color=rgba(HEALTH_COLOR),label='Health')
         # No explicit powertype: Druid forms, Warrior rage and Rogue energy
         # follow the client's current resource automatically.
         bar(p,prefix+" | Resource",prefix,cls,"resources",dict(type="unit",event="Power",unit="player",use_unit=True),
-            x=138,y=13,width=180,height=13)
+            x=138,y=13,width=180,height=13,label='resource')
         primary=prefix+" | Primary"; p.group(primary,prefix,cls,"primary",y=52)
         for seed,name in candidates(cls):
             d=icon(p,primary+" | "+name,primary,cls,"primary",cooldown(seed),40,known=seed)
@@ -296,9 +310,9 @@ def generate():
                 trim=texture(p,prefix+' | FX trim | '+tier,prefix,cls,'fx','divider',470,32,y=13,color=rgba(c['accent'],.5),level=priority)
                 trim.update(inverse=True,blizzardAuraDisplay=effect['blizzardAuraDisplay'].copy())
                 p.triggers(trim,[aura_trigger(seeds)],cls,'fx')
-                trim['triggers'][2]['trigger']['custom']=f'function() return EclipseHUD and EclipseHUD.Gate("fx","{cls}") and EclipseHUD.LayoutVisible() or false end'
+                trim['triggers'][2]['trigger']['custom']=f'function() return EclipseHUD and EclipseHUD.Gate("fx","{cls}") and EclipseHUD.Gate("resources","{cls}") or false end'
                 flag=f'ECLIPSE_{cls}_fx_'+trim['uid'];trim['load']['loadFlag']=flag
-                p.eligibility[trim['id']]=dict(cls=cls,module='fx',seeds=seeds,flag=flag,kind='aura')
+                p.eligibility[trim['id']]=dict(cls=cls,module='fx',requires='resources',seeds=seeds,flag=flag,kind='aura')
         powerfx=texture(p,prefix+' | FX resource intensity',prefix,cls,'fx','runes',154,154,y=13,color=rgba(c['accent']),level=1)
         powerfx['alpha']=0
         powerfx['load']['loadFlag']=f'ECLIPSE_{cls}_fx_power'
@@ -319,17 +333,18 @@ def generate():
         # A second bar is optional; Blizzard's original cast bar is untouched.
         if c.get('pet'):
             bar(p,prefix+" | Pet health",prefix,cls,"pet",dict(type="unit",event="Health",unit="pet",use_unit=True),
-                x=-138,y=-13,width=180,height=7,color=rgba(c['accent']),text="%p")
+                x=-138,y=-13,width=180,height=7,color=rgba(PET_HEALTH_COLOR),text="%p",label='Pet')
         if c.get('extra')=="shards":
-            d=p.add(prefix+" | Soul Shards","text",prefix,cls,"pet",x=138,y=-13,displayText="%s  |TInterface\\Icons\\INV_Misc_Gem_Amethyst_02:12|t",
+            d=p.add(prefix+" | Soul Shards","text",prefix,cls,"pet",x=138,y=-13,displayText="%c: %s  |TInterface\\Icons\\INV_Misc_Gem_Amethyst_02:12|t",
                 font="Friz Quadrata TT",fontSize=11,outline="OUTLINE",color=rgba(c['accent']),justify="CENTER",
-                automaticWidth="Auto",fixedWidth=120,wordWrap="WordWrap")
+                automaticWidth="Auto",fixedWidth=180,wordWrap="WordWrap",customTextUpdate='event',
+                customText='function() return EclipseHUD and EclipseHUD.L("Soul Shards") or "Soul Shards" end')
             # Count the carried reagent, not a guessed modern Soul Shard power.
             p.triggers(d,[dict(type="item",event="Item Count",itemName=6265,use_itemName=True,use_exact_itemName=True,
                 use_includeBank=False,use_includeWarBandBank=False,use_includeCharges=False)],cls,"pet")
         elif c.get('extra')=="combo":
             combo=bar(p,prefix+" | Combo points",prefix,cls,"pet",dict(type="unit",event="Power",unit="player",use_unit=True,
-                use_powertype=True,powertype=4),width=100,height=5,y=-155,color=rgba(c['accent']))
+                use_powertype=True,powertype=4),width=100,height=5,y=-155,color=rgba(RESOURCE_STYLES[4]['color']),text='%p / %t')
             if cls=='DRUID':
                 combo['triggers'][2]['trigger']['custom']='function() return EclipseHUD and EclipseHUD.Gate("pet","DRUID") and EclipseHUD.ComboAllowed() or false end'
         elif c.get('extra')=="swing":
@@ -368,7 +383,7 @@ def main():
     from audio import build as build_audio
     build_audio(ROOT/'src/EclipseHUD/Audio')
     data=generate()
-    (ROOT/'src/EclipseHUD/Catalog.lua').write_text('-- Generated by scripts/build.py. Edit src/catalog.py or the generator.\nlocal _, E = ...\nE.catalog = '+lua(generate.eligibility)+'\nE.plans = '+lua(PLANS)+'\nE.schools = '+lua(SCHOOLS)+'\nE.effectSpells = '+lua(EFFECTS)+'\n')
+    (ROOT/'src/EclipseHUD/Catalog.lua').write_text('-- Generated by scripts/build.py. Edit src/catalog.py or the generator.\nlocal _, E = ...\nE.catalog = '+lua(generate.eligibility)+'\nE.plans = '+lua(PLANS)+'\nE.schools = '+lua(SCHOOLS)+'\nE.effectSpells = '+lua(EFFECTS)+'\nE.resourceNames = '+lua({power:style['name'] for power,style in RESOURCE_STYLES.items()})+'\n')
     (dist/'Eclipse-Class-Combat-HUD.json').write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
     (dist/'Eclipse-Class-Combat-HUD.lua').write_text('return '+lua(data)+'\n')
     subprocess.run(['lua',str(ROOT/'scripts/codec.lua'),'encode',str(dist/'Eclipse-Class-Combat-HUD.lua'),str(dist/'Eclipse-Class-Combat-HUD.txt')],check=True)

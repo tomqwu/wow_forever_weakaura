@@ -60,7 +60,7 @@ local function clear()
     C.cast=nil
 end
 function C.CastEvent(event,unit,guid)
-    if unit~='player' or not E.Readable(guid) or type(guid)~='string' then return end
+    if not E.Readable(unit) or unit~='player' or not E.Readable(guid) or type(guid)~='string' then return end
     if event=='UNIT_SPELLCAST_START' or event=='UNIT_SPELLCAST_CHANNEL_START' then
         clear();C.cast={guid=guid,channel=event=='UNIT_SPELLCAST_CHANNEL_START'}
         if E.CastMotion then E.CastMotion('start') end
@@ -72,7 +72,11 @@ function C.CastEvent(event,unit,guid)
         clear();if E.CastMotion then E.CastMotion('cancel') end;return
     end
     if event=='UNIT_SPELLCAST_SUCCEEDED' then cast.success=true
-    elseif event=='UNIT_SPELLCAST_CHANNEL_STOP' or event=='UNIT_SPELLCAST_STOP' then cast.ended=true end
+    elseif event=='UNIT_SPELLCAST_CHANNEL_STOP' or event=='UNIT_SPELLCAST_STOP' then
+        cast.ended=true
+        -- End motion at the observed stop, even if success is absent or late.
+        if E.CastMotion then E.CastMotion('cancel') end
+    end
     local finished=cast.success and (not cast.channel or cast.ended)
     if finished and not C.finish then
         -- Coalesce same-frame interruption/stop events before decorative success.
@@ -95,7 +99,9 @@ function E.RefreshCasting()
         for _,event in ipairs(castEvents) do
             if active then events:RegisterEvent(event) else events:UnregisterEvent(event) end
         end
-        if not active then clear() end
+        if not active then
+            clear();if E.CastMotion then E.CastMotion('cancel') end
+        end
     end
 end
 function E.StopCasting()

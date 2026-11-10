@@ -85,3 +85,35 @@ end
 assert(#ops==3,'Resource intensity has native curve conditions')
 assert(rawequal(power.Evaluate(ctx,power.Pieces(0,ops)),secret),'Native curve result must pass through without inspection')
 print('Actual ForeverAuras resource-curve path accepted restricted state')
+
+-- Compile and run the actual FA condition code for a form-changing bar.
+-- Trigger/property metadata is a fixture; condition evaluation is FA's code.
+local resource=saved['Eclipse | Druid | Resource']
+P.regionTypes={aurabar={properties={barColor={type='color',setter='Color'}}}}
+P.GetTriggerConditions=function()return {[1]={powertype={type='select'}}}end
+P.GetGlobalConditions=function()return {}end
+P.ExecEnv.conditionHelpers={}
+P.AuraWarnings={UpdateWarning=noop}
+local active={}
+WeakAuras.GetActiveConditions=function()return active end
+P.LoadFunction=function(code)
+    local fn=assert(loadstring(code))
+    setfenv(fn,setmetatable({Private=P},{__index=_G}))
+    return fn()
+end
+P.LoadConditionFunction(resource)
+local condition=P.memoryRootAccessors['Conditions: checkConditions']()[resource.uid]
+assert(condition,'No compiled native color conditions')
+local region={id=resource.id,states={[1]={show=true,power=secret,total=secret}},
+    Color=function(self,...)self.color={...}end}
+for _,kind in ipairs({0,3,1,0}) do
+    region.states[1].powertype=kind
+    condition(region,false)
+    local expected
+    for _,rule in ipairs(resource.conditions)do if rule.check.value==kind then expected=rule.changes[1].value end end
+    for i=1,4 do assert(math.abs(region.color[i]-expected[i])<1e-12,'Native resource color failed during form change') end
+end
+region.states[1].powertype=secret
+condition(region,false)
+for i=1,4 do assert(math.abs(region.color[i]-resource.barColor[i])<1e-12,'Restricted resource identity must restore neutral color')end
+print('Actual ForeverAuras color conditions passed mana/energy/rage transitions with restricted amounts')

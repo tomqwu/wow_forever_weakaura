@@ -2,7 +2,7 @@
 
 An original ForeverAuras HUD for WoW Forever, with a Warlock-focused layout and **automatic switching across all nine classes**. Import once; the character's class chooses the active module. Each class keeps independent controls and layout preferences.
 
-**Version 0.3.0 — reference behavior implementation (prerelease).** Learned-rank discovery, school/leveling selection, compact idle and unfolding, native cooldown overflow, resource motion, reminders, reversible cast-bar controls, combat effects and audible alerts are implemented. The [persistent checklist](docs/feature-parity-plan.md) records the work and evidence. In-game acceptance remains open; this is not a claim of verified full parity.
+**Version 0.3.1 — resource readability and module cleanup (prerelease).** Health is jade, mana blue, energy gold, rage red and focus amber. Native resource-type conditions follow Druid forms; labels distinguish the bars without relying on color alone. The [persistent checklist](docs/feature-parity-plan.md) records implementation and evidence. In-game acceptance remains open; this is not a claim of verified full parity.
 
 **The live placeholder defect was found:** v0.2.0 saved `secretFallback` on the display instead of inside `triggers`. ForeverAuras then followed the always-true visibility trigger when an aura was absent. Its actual fallback selector reproduces the old behavior and accepts the correction. **Update both the addon and the imported top-level group** to receive this fix.
 
@@ -23,6 +23,8 @@ Click an image to enlarge it. These are behavior previews with sample values and
 | Hunter · 猎人 | Shaman · 萨满祭司 | Paladin · 圣骑士 |
 | :---: | :---: | :---: |
 | [<img src="preview/classes/hunter.png" width="280" alt="Hunter HUD preview">](preview/classes/hunter.png) | [<img src="preview/classes/shaman.png" width="280" alt="Shaman HUD preview">](preview/classes/shaman.png) | [<img src="preview/classes/paladin.png" width="280" alt="Paladin HUD preview">](preview/classes/paladin.png) |
+
+The preview also includes Druid caster/bear/cat forms and independent resource/pet controls. Bar labels identify health and the current resource; class colors remain on the artwork.
 
 For interactive controls, download the repository and open [`preview/index.html`](preview/index.html) in a browser; use the class tabs across the top. GitHub displays the static gallery above.
 

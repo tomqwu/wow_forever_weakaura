@@ -47,4 +47,53 @@ check(F.left.count==1,'Invalid swing event cannot invent a pulse')
 E.Set('fx',false)
 check(not F.active and not F.events.events.PLAYER_SWING and not F.retry,'Master disable cancels listener and retries')
 for _,group in ipairs(F.groups)do check(not group.playing,'Master disable stops ordinary native groups')end
+
+-- Fresh login with Cast disabled: no cast/seal region is required for swings.
+E.Profile().fx=true;E.Profile().cast=false;E.Profile().resources=true;E.state.open=true
+local health,power=CreateFrame('Frame'),CreateFrame('Frame')
+local cast,seal=CreateFrame('Frame'),CreateFrame('Frame')
+local queriedCast=false
+ForeverAuras.GetRegion=function(id)
+    if id:match(' | Health$')then return health end
+    if id:match(' | Resource$')then return power end
+    queriedCast=true
+end
+assert(loadfile('src/EclipseHUD/Effects.lua'))('EclipseHUD',E)
+F=E.effects;E.RefreshFX(true)
+check(F.built and F.left and F.right and not F.cast and not queriedCast,'Resource FX build without disabled cast/seal dependencies')
+check(not F.retry and #F.groups==2,'Disabled widgets consume no attachment retry or animation allocation')
+
+-- Enable only Cast. Existing resource bindings pause instead of recreating.
+E.Profile().cast=true;E.Profile().resources=false
+ForeverAuras.GetRegion=function(id)
+    if id:match(' | Cast$')then return cast end
+    if id:match(' | Seal$')then return seal end
+end
+E.RefreshFX(false);E.CastMotion('start')
+check(F.built and F.cast.playing and not F.retry,'Cast FX build without resource regions')
+check(not F.bindings.left.frame.shown and not F.events.events.PLAYER_SWING,'Resources off hides trim and removes real-swing listener')
+
+-- Reuse the owned frames if FA replaces an ordinary host during reimport.
+local replacement=CreateFrame('Frame')
+E.Profile().resources=true
+ForeverAuras.GetRegion=function(id)
+    if id:match(' | Health$')then return replacement end
+    if id:match(' | Resource$')then return power end
+    if id:match(' | Cast$')then return cast end
+    if id:match(' | Seal$')then return seal end
+end
+local owned=F.bindings.left.frame
+InCombatLockdown=function()return true end
+E.RefreshFX(false)
+check(owned.parent==health and not F.bindings.left.active,'Combat defers cosmetic ancestry replacement')
+InCombatLockdown=function()return false end
+E.RefreshFX(false)
+check(owned.parent==replacement and #F.groups==4,'After combat, reimport reuses bounded owned frames')
+now=3;F.events.scripts.OnEvent(nil,'PLAYER_SWING',1,0)
+health.scripts.OnHide()
+check(F.left.playing,'Former host hook cannot stop the replacement host effect')
+replacement.scripts.OnHide();check(not F.left.playing,'Current host hide stops its ordinary effect')
+E.Profile().cast=false;E.Profile().resources=false;E.RefreshFX(false)
+check(F.built and not F.retry and not F.events.events.PLAYER_SWING,'All optional hosts disabled need no timer or event observer')
+for _,binding in pairs(F.bindings)do check(not binding.active and not binding.frame.shown,'Disabled module leaves no ordinary effect frame')end
 print('Effect lifecycle checks passed: '..checks)

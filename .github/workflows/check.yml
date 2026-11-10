@@ -37,7 +37,7 @@ jobs:
           python scripts/check_preview.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Eclipse-Class-Combat-HUD-v0.3.0
+          name: Eclipse-Class-Combat-HUD-v0.3.1
           path: |
             dist/*.zip
             dist/*.sha256

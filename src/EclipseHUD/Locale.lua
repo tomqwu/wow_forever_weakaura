@@ -1,6 +1,8 @@
 local _, E = ...
 local zh = GetLocale() == "zhCN"
 local strings = {
+    ['Health']='生命', ['Resource']='资源', ['Mana']='法力', ['Rage']='怒气',
+    ['Focus']='集中值', ['Energy']='能量', ['Combo points']='连击点', ['Pet']='宠物', ['Soul Shards']='灵魂碎片',
     ["Learned spell identities"] = "已学技能与原生光环诊断",
     ["Reset position"] = "重置位置",
     ["Combat effects"] = "战斗特效",
