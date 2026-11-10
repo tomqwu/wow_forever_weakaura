@@ -79,4 +79,23 @@ class PackTests(unittest.TestCase):
         for d in self.regions:
             for child in d.get('controlledChildren',[]):self.assertEqual(by_id[child]['parent'],d['id'])
 
+    def test_painted_art_preserves_transparency_and_class_identity(self):
+        from PIL import Image
+        import hashlib
+        media=ROOT/'src/EclipseHUD/Media'
+        seals=[]
+        for token in CLASSES:
+            path=media/('crest-'+token.lower()+'.png')
+            with Image.open(path) as image:
+                self.assertEqual(image.size,(256,256))
+                self.assertEqual(image.mode,'RGBA')
+                self.assertEqual(image.getchannel('A').getextrema(),(0,255))
+                seals.append(hashlib.sha256(image.tobytes()).hexdigest())
+        self.assertEqual(len(set(seals)),9,'Classes must have distinct painted emblems')
+        with Image.open(media/'icon-frame.png') as image:
+            self.assertEqual(image.getpixel((image.width//2,image.height//2))[3],0,'Spell artwork remains visible through the border')
+        for name in ('warlock-seal','resource-frame','class-seals-atlas','icon-frame'):
+            self.assertTrue((ROOT/'assets/ai'/(name+'.png')).is_file())
+            self.assertIn('Built-in image_gen',(ROOT/'assets/ai'/(name+'.prompt.txt')).read_text())
+
 if __name__=='__main__':unittest.main()

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="128" viewBox="0 0 512 128">
-<defs><linearGradient id="metal" x2="0" y2="1"><stop stop-color="#e5d5ba"/><stop offset=".28" stop-color="#8b7f85"/><stop offset=".5" stop-color="#393343"/><stop offset=".8" stop-color="#b6a38c"/><stop offset="1" stop-color="#514750"/></linearGradient><linearGradient id="energy"><stop stop-color="#6eafff" stop-opacity=".2"/><stop offset=".5" stop-color="#b4f2ed"/><stop offset="1" stop-color="#6eafff" stop-opacity=".2"/></linearGradient><radialGradient id="core"><stop stop-color="#6eafff" stop-opacity=".3"/><stop offset="1" stop-color="#090913"/></radialGradient></defs><path d="m12 42 12-19 31 6 27 7h116l30-18 28 12 28-12 30 18h116l27-7 31-6 12 19-16 20-29-3-19 12H314l-30 18-28-12-28 12-30-18H82L63 59l-29 3Z" fill="#090911" stroke="#030309" stroke-width="5"/>
-<path d="m12 42 12-19 31 6 27 7h116l30-18 28 12 28-12 30 18h116l27-7 31-6 12 19-16 20-29-3-19 12H314l-30 18-28-12-28 12-30-18H82L63 59l-29 3Z" fill="none" stroke="url(#metal)" stroke-width="2"/>
-<path d="M43 40h166M303 40h166M76 65h123m114 0h123" stroke="url(#energy)" stroke-width="2"/>
-<path d="m27 32 11 10-11 11m458-21-11 10 11 11M85 29l12 7m318 0 12-7" fill="none" stroke="#6eafff"/>
-<path d="M45 45h161v16H45Zm261 0h161v16H306Z" fill="#04050a" stroke="#756077" stroke-width=".65"/>
-<g fill="#b4f2ed"><path d="m39 42 3 3-3 3-3-3Zm434 0 3 3-3 3-3-3Z"/><circle cx="211" cy="51" r="2"/><circle cx="301" cy="51" r="2"/></g></svg>

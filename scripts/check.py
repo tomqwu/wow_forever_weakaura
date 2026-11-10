@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 import zipfile
+from build import VERSION
 ROOT=Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 def run(args): subprocess.run(args,check=True)
@@ -15,7 +16,7 @@ run([sys.executable,'-m','unittest','discover','-s','tests','-v'])
 run(['lua','scripts/codec.lua','verify','dist/Eclipse-Class-Combat-HUD.txt'])
 source=os.environ.get('FOREVERAURAS_SOURCE')
 if source:run(['lua','tests/native-schema.lua',source])
-archive=ROOT/'dist/Eclipse-Class-Combat-HUD-v0.1.0.zip'
+archive=ROOT/f'dist/Eclipse-Class-Combat-HUD-v{VERSION}.zip'
 with zipfile.ZipFile(archive) as z:
     names=z.namelist()
     assert z.testzip() is None,'Corrupt ZIP entry'

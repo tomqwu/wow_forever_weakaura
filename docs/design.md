@@ -6,7 +6,7 @@ The supplied Guos Warrior Combat HUD v1.2.4 decodes as a transmission-v2000 grou
 
 The useful behavioral patterns are a strong central emblem, resource bars near the character, prominent primary abilities, secondary utility abilities, native aura tracking, a separate cast bar, optional effects, and settings that reduce clutter. The reference also includes weapon-dependent swing layouts, talent selection and voice alerts.
 
-Eclipse implements its own art, module catalog, controls and grouping. It does not transplant the reference's custom selection scripts, assets or voice files. This first version uses learned-spell filtering across talent trees rather than recommending a rotation or inferring a spec. Voice recordings and a talent-specific priority system are outside v0.1.0.
+Eclipse implements its own art, module catalog, controls and grouping. It does not transplant the reference's custom selection scripts, assets or voice files. It uses learned-spell filtering across talent trees rather than recommending a rotation or inferring a spec. Voice recordings and a talent-specific priority system are outside the current release.
 
 ## Architecture
 
@@ -20,7 +20,13 @@ Eclipse implements its own art, module catalog, controls and grouping. It does n
 
 ## Layout
 
-All dimensions are UI units at 100% scale. The 512×128 decorative chassis centers on the saved anchor. The seal centers 13 units above it. Health/resource bars are 161×13 at x ±130, y +13; primary icons are 42×42 at y −45; target effects are 32×32 at y −100; casting is 300×13 at y −148; utility icons are 30×30 at y −195. Player effects sit above the seal. The minimum artwork texture dimensions are powers of two, with uncompressed RGBA TGA output.
+All dimensions are UI units at 100% scale. The 512×128 decorative chassis centers at y +20 relative to the saved anchor. The 104×104 seal centers at y +13. Health/resource bars are 180×13 at x ±138, y +13; primary icons are 42×42 at y −66; target effects are 32×32 at y −119; casting is 300×13 at y −166; utility icons are 30×30 at y −207. Player effects sit above the seal at y +116. The bar channels were fitted to the painted frame. Spell borders are texture subregions, including native modern displays, and inherit each icon's visibility.
+
+## Painted artwork
+
+Version 0.2.0 replaces the first version's thin vector crests and chassis with AI-painted metal, bone, gemstones and class-specific emblems. The Warlock gets a horned demonic skull with fel-fire eyes; the remaining eight emblems come from a class atlas. The resource frame and square spell border use matching painted materials.
+
+The four unmodified transparent generation masters and exact prompts are checked into `assets/ai/`. The built-in image generation tool produced the art; builds reuse it offline. `scripts/media.py` performs only sprite extraction, transparent-margin trimming, proportional fitting and format conversion. Exports preserve alpha and use power-of-two dimensions: 256×256 seals, 1024×256 chassis and a 128×128 icon frame, with uncompressed RGBA TGA output. The existing aura IDs and class/module loading remain stable. Small rotating rune geometry remains SVG.
 
 ## Compatibility evidence
 
@@ -34,4 +40,4 @@ All dimensions are UI units at 100% scale. The 512×128 decorative chassis cente
 
 ## Boundaries
 
-The HTML/PNG preview uses actual Eclipse decorative media with representative spell tiles and sample values. It does not show a running WoW client. Mock tests establish serialization, schema acceptance and addon logic; they cannot establish combat readability, visual stacking, secure-widget behavior, or real SavedVariables persistence.
+The HTML/PNG preview uses the actual exported painted media, spell thumbnails from Wowhead's CDN, and sample values. Thumbnails are preview-only and are not packaged in the addon. The preview does not show a running WoW client. Mock tests establish serialization, schema acceptance and addon logic; they cannot establish combat readability, visual stacking, secure-widget behavior, or real SavedVariables persistence.
