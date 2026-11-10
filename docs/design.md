@@ -1,6 +1,6 @@
 # Eclipse implementation and reference notes
 
-Version 0.3.2 implements the numbered work in [feature-parity-plan.md](feature-parity-plan.md). The reference inventory and work log distinguish source facts, Eclipse adaptations, mocks and outstanding game-client checks. Only the Warrior runtime source was supplied; the other eight class plans are original adaptations.
+Version 0.3.3 implements the numbered work in [feature-parity-plan.md](feature-parity-plan.md). The reference inventory and work log distinguish source facts, Eclipse adaptations, mocks and outstanding game-client checks. Only the Warrior runtime source was supplied; the other eight class plans are original adaptations.
 
 ## Identity and selection
 
@@ -44,7 +44,15 @@ Original PCM chimes replace the private reference's MP3 voice recordings. Ready 
 
 Long-duration upkeep is a separate Maintenance buffs module, in a 20px side group at x=-286/y=13. The stable Warlock Demon armor display moves there and hides its long-duration number; it still shows only a native observed active buff, never an inferred missing state. Native buff overflow excludes represented maintenance families by identities and localized metadata. Class-caption IDs remain stable empty displays.
 
-Generated callbacks require the matching companion version. A newer import with an older/missing in-memory helper fails closed and the root prints one localized reload instruction. Tests execute every generated bridge callback against missing/old helpers.
+New generated callbacks require the stable `importAPI = 1` boundary. The companion retains `E.version = "0.3.2"` for the historical v0.3.2 callback guard while reporting its current `releaseVersion`, allowing independent class updates. A newer import with an older/missing in-memory helper fails closed and the root prints one localized reload instruction. Tests execute every generated bridge callback against missing/old helpers.
+
+## Per-class packaging
+
+The combined nine-class import remains available. `class_import` exports each existing class group as its root, with a stable UID, no external parent and only that class's descendants. Its root calls the shared companion binding. The partial export never contains the shared root: FA's default Remove Obsolete Auras option therefore cannot interpret other classes as removed. Native class updates retain the target's existing parent; fresh class imports stay standalone. The companion resolves that standalone class root or the existing combined root from public aura metadata and applies the same saved anchor, scale and opacity outside combat.
+
+Binding coalesces and waits for the public `IsImporting` state to end, so the temporary parent removal in native import phase 1 does not select the wrong root. The bounded UI retry is cancelled on world leave; discovery also defers its own data updates during imports. This is UI lifecycle handling, not an inferred combat timer.
+
+Every class export is independently codec-verified, checked for a closed graph, preserved IDs/load flags, disjoint class scope, complete union with the combined graph and matching ZIP bytes. A generated manifest records characters, bytes, counts, root UID and SHA-256. Actual multi-class installation/update UI acceptance remains pending.
 
 ## Artwork and evidence
 

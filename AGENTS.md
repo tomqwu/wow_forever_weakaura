@@ -12,7 +12,10 @@ project's folder names, SavedVariables, installation script or release tags here
 - Read `README.md`, `docs/design.md` and `docs/validation.md` before runtime edits.
 - Edit `src/catalog.py`, `scripts/build.py`, or `src/EclipseHUD/`; regenerate
   `dist/` instead of hand-editing an encoded import.
-- Keep all nine classes in one import. Every descendant needs a class load
+- Keep the combined nine-class import available and also generate per-class
+  imports as requested. Scope each class import to its stable class-group root;
+  do not export a partial shared root that could delete other installed classes.
+  Every descendant needs a class load
   condition and a module load flag. Disabled modules must unload their trackers.
 - Delegate aura/resource/cooldown data and restricted rendering to native
   ForeverAuras triggers. Do not add combat-log inference or guessed timers.

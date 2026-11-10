@@ -2,7 +2,7 @@
 
 ## Working state — 2026-11-10
 
-**Current phase: 0.3.2 merged, published and installed. The new top-level import and game-client acceptance remain pending.**
+**Current phase: 0.3.3 per-class import packaging requested; retain the combined import and preserve class IDs/preferences. Live acceptance remains pending.**
 
 The previous **0.2.0** release exposed the live failures below. The **0.3.0** behavior implementation and **0.3.1** resource/module follow-up
 have targeted regressions and native-source checks. Pictures,
@@ -383,10 +383,15 @@ plan update does not create a new runtime release.
 
 | 2026-11-10 | 11.4/11.3 correction delivery | v0.3.2 merged, published, downloaded and installed with verified bytes | [PR #3](https://github.com/tomqwu/wow_forever_weakaura/pull/3) merged as `355fdb26d3989a573cde0e2a7ca97e36889afd07`. PR and [release-commit main CI](https://github.com/tomqwu/wow_forever_weakaura/actions/runs/42838759841) passed. [Immutable v0.3.2 prerelease](https://github.com/tomqwu/wow_forever_weakaura/releases/tag/v0.3.2) downloaded ZIP/import/receipt match local bytes and all 38 runtime files. ZIP SHA-256: `6700989db47018618e3098137f350d15f6d3e2aa2b444ccee4c916734bae4452`. Installed into the same `_forever_/Interface/AddOns/EclipseHUD` (8 files replaced, 30 unchanged); v0.3.1 backup verified at `F:\WoW-addon-backups\EclipseHUD\20261110-095502\before\EclipseHUD`. No SavedVariables edits or game restart. `/reload` and the new top-level import are required before live comparison; no further runtime validation is claimed. |
 
-**Implementation status:** the requested cooldown grouping, maintenance/caption,
-color and immediate combat-event changes are delivered. No live spell-name or
-learned list is inferred from grayscale configuration icons. Apply the new
-import after loading/reloading the companion, then collect 11.3 client evidence.
+| 2026-11-10 | 10.5/11.4 per-class import request | Scope and native-import behavior reviewed before edits | User requested smaller per-class strings. Native FA updater defaults Remove Obsolete Auras to true; exporting a partial shared root could delete omitted classes. Export each stable class group as the import root instead, so an update matches only that class and native update preserves its existing parent. Fresh standalone class groups need companion anchor/root resolution. Retain the combined nine-class export. Add graph/UID/codec/package checks and document the choice; do not alter installed SavedVariables. |
+
+| 2026-11-10 | 10.5 per-class implementation | Scoped graph and root/bridge checks pass | Nine class files export only their stable class root/descendants; combined import retained. Warlock is 14,485 versus 85,992 characters (~83% smaller). Eleven Python groups verify closed/disjoint graphs, complete union, unchanged IDs/load flags, no mutation of the combined export and ZIP/manifests. Core suite now 57 assertions, including standalone anchoring/scale, existing combined-parent resolution, combat deferral, v0.3.2 bridge compatibility and native import-phase wait/coalescing/cleanup. Stable import API permits independent class updates. Live install/update UI evidence remains pending. |
+
+| 2026-11-10 | 11.1–11.2 per-class verification | Local checks pass | Full build; 304 focused Lua assertions plus bridge scenarios; eleven Python groups; exact encoded-content/graph/UID verification for the combined import and all nine class files; manifest size/hash/ZIP byte checks; native validators, resource conditions and sort wrappers for all ten exports on installed/public source; and nine-class Chromium regression/captures pass. Native updater source review establishes preservation of the existing class parent; actual in-game update UI remains pending. |
+
+**Implementation status:** per-class implementation and local checks complete;
+CI, merge, immutable v0.3.3 publication and companion update next. No new combat
+behavior is requested.
 
 **Next required evidence:** 11.3 game-client acceptance. Code and automated
 checks are implemented; the detailed runtime acceptance checkboxes remain open

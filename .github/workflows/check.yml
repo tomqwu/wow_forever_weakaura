@@ -27,6 +27,9 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/neroxrw/foreverauras.git /tmp/foreverauras
           lua tests/native-schema.lua /tmp/foreverauras/ForeverAuras
+          for import in dist/.build/classes/*.lua; do
+            lua tests/native-schema.lua /tmp/foreverauras/ForeverAuras "$import"
+          done
       - name: Verify generated preview document
         run: |
           python scripts/preview.py
@@ -37,8 +40,11 @@ jobs:
           python scripts/check_preview.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Eclipse-Class-Combat-HUD-v0.3.2
+          name: Eclipse-Class-Combat-HUD-v0.3.3
           path: |
             dist/*.zip
             dist/*.sha256
             dist/*.txt
+            dist/classes/*.txt
+            dist/classes/manifest.json
+            dist/classes/README.md

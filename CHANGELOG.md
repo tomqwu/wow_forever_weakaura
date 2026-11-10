@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.3 — 2026-11-10 (prerelease)
+
+- Add nine smaller per-class imports alongside the combined import. Each file updates its stable class-group root without including other classes.
+- Support standalone class imports through companion root/anchor resolution; retain existing combined parents and per-class preferences.
+- Keep v0.3.2 import callbacks compatible while introducing a stable import API for independent class updates. Include class files, sizes and hashes in packages/releases.
+- Native class-by-class installation and update acceptance remains pending.
+
 ## 0.3.2 — 2026-11-10 (prerelease)
 
 - Guard imports against an old or missing in-memory companion, with one reload instruction.

@@ -25,6 +25,16 @@ if arg[1] == "encode" then
     print("Import codec round trip passed: "..#roundtrip.c.." children, "..#value.." characters")
 elseif arg[1] == "verify" then
     local data=decode(read(arg[2]))
+    if arg[3] then
+        local expected=assert(loadfile(arg[3]))()
+        local function equal(a,b)
+            assert(type(a)==type(b),"Round-trip type mismatch")
+            if type(a)~="table" then assert(a==b,"Round-trip value mismatch");return end
+            for key,value in pairs(a)do equal(value,b[key])end
+            for key in pairs(b)do assert(a[key]~=nil,"Round-trip missing key")end
+        end
+        equal(data,expected)
+    end
     assert(data.m=="d" and data.v==2000 and data.d.regionType=="group")
     local ids,uids={},{}
     for _,d in ipairs({data.d,unpack(data.c)}) do
@@ -42,4 +52,4 @@ elseif arg[1] == "verify" then
         for _,id in ipairs(d.controlledChildren or {}) do assert(ids[id].parent==d.id,"Broken child") end
     end
     print("Decoded import verified: "..#data.c.." children, unique IDs, hierarchy, Lua compilation")
-else error("Usage: codec.lua encode INPUT.lua OUTPUT.txt | verify INPUT.txt") end
+else error("Usage: codec.lua encode INPUT.lua OUTPUT.txt | verify INPUT.txt [EXPECTED.lua]") end

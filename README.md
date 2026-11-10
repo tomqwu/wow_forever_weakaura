@@ -1,14 +1,14 @@
 # Eclipse · Class Combat HUD
 
-An original ForeverAuras HUD for WoW Forever, with a Warlock-focused layout and **automatic switching across all nine classes**. Import once; the character's class chooses the active module. Each class keeps independent controls and layout preferences.
+An original ForeverAuras HUD for WoW Forever, with a Warlock-focused layout and **automatic switching across all nine classes**. Import just the classes you play, or use the combined import; the character's class chooses the active module. Each class keeps independent controls and layout preferences.
 
-**Version 0.3.2 — native cooldown categories and maintenance placement (prerelease).** The default follows learned Essential entries in Forever's manager order, keeps Utility/item cooldowns separate and respects hidden entries. Health is crimson, mana blue, energy gold and rage orange. Long-duration upkeep has a separate side area; the class caption is removed. The [persistent checklist](docs/feature-parity-plan.md) records implementation and evidence. In-game acceptance remains open.
+**Version 0.3.3 — smaller per-class imports (prerelease).** [Warlock only](dist/classes/Eclipse-Warlock.txt) is about 14,500 characters instead of 86,000; [all nine class files and exact sizes](dist/classes/README.md) are available. The combined import remains optional. The default follows learned Essential entries in Forever's manager order, keeps Utility/item cooldowns separate and respects hidden entries. Health is crimson, mana blue, energy gold and rage orange. Long-duration upkeep has a separate side area; the class caption is removed. The [persistent checklist](docs/feature-parity-plan.md) records implementation and evidence. In-game acceptance remains open.
 
-**The live placeholder defect was found:** v0.2.0 saved `secretFallback` on the display instead of inside `triggers`. ForeverAuras then followed the always-true visibility trigger when an aura was absent. Its actual fallback selector reproduces the old behavior and accepts the correction. **Update both the addon and the imported top-level group** to receive this fix.
+**The live placeholder defect was found:** v0.2.0 saved `secretFallback` on the display instead of inside `triggers`. ForeverAuras then followed the always-true visibility trigger when an aura was absent. Its actual fallback selector reproduces the old behavior and accepts the correction. **Update both the addon and the affected imported group** to receive this fix.
 
 ## All nine class previews
 
-**One import includes every class below.** In-game, the HUD automatically loads your current character's class. Each class has its own emblem, spell catalog and saved settings.
+**Choose individual class imports or one combined import containing every class below.** In-game, the HUD automatically loads your current character's class. Each class has its own emblem, spell catalog and saved settings.
 
 Click an image to enlarge it. These are behavior previews with sample values and spell thumbnails, not live game screenshots. Warlock uses an explicitly mocked level-23 learned list; the other images use declared learned fixtures. The interactive preview includes mock native-category and class-plan layouts, idle, hostile-target, combat-without-target and five-second target-loss close. Mock categories are not a capture of the user’s native manager.
 
@@ -35,13 +35,13 @@ Requires **[ForeverAuras](https://github.com/neroxrw/foreverauras)** with native
 1. Download the ZIP from this repository's [Releases](https://github.com/tomqwu/wow_forever_weakaura/releases), or build it from source.
 2. Copy **`EclipseHUD/`** into your active Forever client's `Interface/AddOns/` folder. `EclipseHUD.toc` must be directly inside that folder.
 3. Enable **Eclipse | Class Combat HUD** and ForeverAuras. Use `/reload` after updating an already discovered addon. On a first install, make sure the client lists the new addon before importing.
-4. Out of combat, enter **`/fa` → Import** and paste the entire contents of **`dist/Eclipse-Class-Combat-HUD.txt`** (the ZIP puts this text file at its root).
-5. Import the **top-level group**. For later updates, update the existing group to preserve IDs and avoid duplicates.
+4. Out of combat, enter **`/fa` → Import** and paste your [class file](dist/classes/README.md), such as [Warlock](dist/classes/Eclipse-Warlock.txt). The ZIP puts these under **`imports/`**. The optional combined file remains **`Eclipse-Class-Combat-HUD.txt`** at the ZIP root.
+5. Choose **Update** for an existing class group. A class file targets that class only, preserving its existing combined parent and your other installed classes. A fresh class import also works on its own. Use class files for standalone updates; use the combined file to install or update a combined group. Avoid **Import as Copy** for updates.
 6. Enter **`/eclipse`** or **`/ehud`** for settings. For the corrected default anchor, use **Position → Reset position**. Upgrades preserve your existing coordinates and preferences.
 
-The ZIP contains the companion addon and the import. It does **not** bundle ForeverAuras. Both parts of Eclipse are needed. Importing does not replace your other auras or default UI; disable overlapping HUDs yourself if desired.
+The ZIP contains the companion addon, all nine class imports with a size/hash manifest, and the optional combined import. It does **not** bundle ForeverAuras. Both parts of Eclipse are needed. Importing does not replace your other auras or default UI; disable overlapping HUDs yourself if desired.
 
-中文：先安装 ForeverAuras，将 `EclipseHUD` 文件夹放入当前无限服客户端的 `Interface/AddOns/`，然后通过 `/fa` 导入完整字符串。输入 `/eclipse` 调整界面。九职业自动切换，分别保存设置。当前版本仍需游戏内实测。
+中文：先安装 ForeverAuras，将 `EclipseHUD` 文件夹放入当前无限服客户端的 `Interface/AddOns/`，然后通过 `/fa` 导入所玩职业的独立字符串，也可选用九职业合并字符串。更新时选择现有职业组的“更新”，不要创建副本。输入 `/eclipse` 调整界面。九职业自动切换，分别保存设置。当前版本仍需游戏内实测。
 
 ## Controls
 
@@ -74,7 +74,7 @@ These are catalog candidates, **not proof that a particular character trained th
 
 All aura presence, ownership, durations, stacks, resources, casting and cooldown rendering are delegated to ForeverAuras' built-in triggers. Modern aura slots are fixed during combat. There are no guessed refresh windows, combat-log reconstruction, rotation automation, or estimates of offscreen DoT timers. Armor is a native effect display; Eclipse does not infer that an unreadable armor aura is missing. The Blizzard cast bar remains available by default. Optional suppression preserves its latest show request and restores it on release. Audible alerts use original chimes, including client-owned aura Added sounds; no reference recordings are bundled.
 
-A newer import detects an older in-memory companion and prints one install/reload instruction instead of calling missing helpers. Always `/reload` after installing the addon and before updating the import.
+New class imports require the v0.3.3 companion or a compatible import API. Existing v0.3.2 class strings keep working with this companion, so you can update classes independently. A missing/older companion receives one install/reload instruction instead of missing-helper calls. Always `/reload` after installing the addon and before updating the import.
 
 For spell problems, run **`/eclipse spells`** out of combat to print actual learned identities and native attachment/fallback diagnostics. The level-23 fixture is not a substitute for your real spellbook.
 
@@ -93,7 +93,7 @@ python scripts/preview.py
 lua tests/native-schema.lua /path/to/ForeverAuras
 ```
 
-The import is generated from `src/catalog.py` and `scripts/build.py`. AI-generated PNG masters and their exact prompts live in [`assets/ai/`](assets/ai/). Exported PNG previews and uncompressed RGBA TGA game assets live in `src/EclipseHUD/Media/`; small geometric rune accents retain SVG sources. The editable Lua/JSON export and import text live in `dist/`. Builds reuse the checked-in masters and do not call a paid generation API. The ZIP and its SHA-256 are produced locally and in CI. Do not hand-edit the encoded import.
+The import is generated from `src/catalog.py` and `scripts/build.py`. AI-generated PNG masters and their exact prompts live in [`assets/ai/`](assets/ai/). Exported PNG previews and uncompressed RGBA TGA game assets live in `src/EclipseHUD/Media/`; small geometric rune accents retain SVG sources. The editable combined Lua/JSON export and import text live in `dist/`; generated class strings, sizes and hashes are in `dist/classes/`. Class strings retain each class-group UID and every descendant UID. Builds reuse the checked-in masters and do not call a paid generation API. The ZIP and its SHA-256 are produced locally and in CI. Do not hand-edit the encoded import.
 
 ## Credits and license
 

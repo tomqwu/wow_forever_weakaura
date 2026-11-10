@@ -41,7 +41,7 @@ load("SecretAuraSingle")
 load("SecretAuraConditions")
 load("SecretAuraFlow")
 local D=P.BlizzardAuraDisplay
-local data=dofile("dist/Eclipse-Class-Combat-HUD.lua")
+local data=dofile(arg[2] or "dist/Eclipse-Class-Combat-HUD.lua")
 local saved={[data.d.id]=data.d}
 for _,d in ipairs(data.c)do saved[d.id]=d end
 WeakAuras.GetData=function(id)return saved[id]end
@@ -60,7 +60,7 @@ for _,d in ipairs(data.c)do
         end
     end
 end
-assert(count>50,"No native aura coverage")
+assert(count>(arg[2] and 0 or 50),"No native aura coverage")
 print("ForeverAuras' native schema validator passed: "..count.." modern displays")
 load('Conditions')
 local power=P.ExecEnv.PowerCurve
@@ -89,6 +89,7 @@ print('Actual ForeverAuras resource-curve path accepted restricted state')
 -- Compile and run the actual FA condition code for a form-changing bar.
 -- Trigger/property metadata is a fixture; condition evaluation is FA's code.
 local resource=saved['Eclipse | Druid | Resource']
+if not resource then for id,d in pairs(saved)do if id:match(' | Resource$')then resource=d;break end end end
 P.regionTypes={aurabar={properties={barColor={type='color',setter='Color'}}}}
 P.GetTriggerConditions=function()return {[1]={powertype={type='select'}}}end
 P.GetGlobalConditions=function()return {}end
@@ -132,10 +133,12 @@ P.GetErrorHandlerId=function()return error end
 P.regionPrototype={AddAlphaToDefault=noop}
 P.RegisterRegionType=noop
 load('RegionTypes/DynamicGroup')
-local E={version='0.3.2',discovery={cdmRank={[5]=1,[3]=2}},Readable=function(v)return not issecretvalue(v)end}
+local E={version='0.3.2',importAPI=1,discovery={cdmRank={[5]=1,[3]=2}},Readable=function(v)return not issecretvalue(v)end}
 assert(loadfile('src/EclipseHUD/Selection.lua'))('EclipseHUD',E)
 EclipseHUD=E
-local nativeSort=WeakAuras.SortFunctions.custom(saved['Eclipse | Warlock | Native cooldowns'])
+local sortData=saved['Eclipse | Warlock | Native cooldowns']
+if not sortData then for id,d in pairs(saved)do if id:match(' | Native cooldowns$')then sortData=d;break end end end
+local nativeSort=WeakAuras.SortFunctions.custom(sortData)
 assert(nativeSort({cloneId='5',region=secret},{cloneId='3',region=secret})==true)
 assert(nativeSort({cloneId='3',region=secret},{cloneId='5',region=secret})==false)
 print('Actual ForeverAuras dynamic-group sorting passed native identity order without state inspection')

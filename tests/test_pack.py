@@ -7,7 +7,7 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 sys.path.insert(0,str(ROOT/'src'))
-from build import generate, TITLE
+from build import generate, class_import, TITLE
 from catalog import CLASSES, HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES
 from build import rgba
 
@@ -25,6 +25,29 @@ class PackTests(unittest.TestCase):
             self.assertTrue(load['loadFlag'].startswith('ECLIPSE_'+load['class']['single']+'_'))
         self.assertEqual(classes,set(CLASSES))
         self.assertEqual(len(self.pack['d']['controlledChildren']),9)
+    def test_class_import_scopes_preserve_ids_and_leave_other_classes_out(self):
+        full={d['id']:d for d in self.pack['c']}
+        seen=set()
+        for cls,c in CLASSES.items():
+            pack=class_import(self.pack,cls)
+            rows=[pack['d']]+pack['c'];by_id={d['id']:d for d in rows}
+            self.assertEqual(pack['d']['id'],'Eclipse | '+c['name'])
+            self.assertNotIn('parent',pack['d'])
+            self.assertNotIn(TITLE,by_id,'Do not update a partial shared root')
+            self.assertEqual(pack['d']['actions']['init'],self.pack['d']['actions']['init'])
+            expected={key for key,d in full.items() if d['load']['class']['single']==cls}
+            self.assertEqual(set(by_id),expected)
+            self.assertFalse(seen & expected,'Each class update must have a disjoint native UID scope')
+            seen.update(expected)
+            for d in rows:
+                self.assertEqual(d['uid'],full[d['id']]['uid'])
+                self.assertEqual(d['load'],full[d['id']]['load'])
+                if d is not pack['d']:self.assertEqual(d,full[d['id']])
+                if d.get('parent'):self.assertIn(d['parent'],by_id)
+                for child in d.get('controlledChildren',[]):self.assertEqual(by_id[child]['parent'],d['id'])
+        self.assertEqual(seen,set(full))
+        self.assertTrue(all(d.get('parent') for d in self.pack['c']),'Class slicing must not mutate the combined pack')
+
     def test_modern_auras_delegate_tracking_to_client(self):
         for d in self.regions:
             if d['triggers'][1]['trigger']['type']!='secretAura':continue

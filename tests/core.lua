@@ -126,4 +126,35 @@ check(not E.Profile().resources,"Actual settings checkbox changes module")
 E.panel.sliders.scale:SetValue(1.2)
 check(math.abs(E.Profile().scale-1.2)<0.0001,"Actual settings slider changes layout")
 E.ToggleOptions();check(not E.panel:IsShown(),"Settings panel closes")
+local commonRoot=E.rootID
+local classRoot='Eclipse | Warlock'
+local currentRoot={id=classRoot,parent=commonRoot}
+ForeverAuras.GetData=function(id)return id==classRoot and currentRoot end
+check(E.GetRootID()==commonRoot,'Per-class update within a combined group keeps the shared anchor')
+currentRoot.parent=nil
+check(E.GetRootID()==classRoot,'A standalone class import resolves its own root')
+local standalone=CreateFrame('Frame')
+local previousGetRegion=ForeverAuras.GetRegion
+ForeverAuras.GetRegion=function(id)if id==classRoot then return standalone end;return previousGetRegion(id)end
+E.ApplyLayout()
+check(standalone.parent==E.anchor and standalone.nativeAnchor[2]==E.anchor and standalone.scale==E.Profile().scale,'Standalone root uses the companion anchor, scale and preserved profile')
+local oldParent=standalone.parent
+InCombatLockdown=function()return true end;E.ApplyLayout()
+check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
+InCombatLockdown=function()return false end
+check(E.version=='0.3.2' and E.importAPI==1 and E.releaseVersion=='0.3.3','Legacy v0.3.2 bridge and independent class import API remain compatible')
+local legacy=assert(loadstring('return function()return EclipseHUD and EclipseHUD.version=="0.3.2" and EclipseHUD.Gate("base","WARLOCK") or false end'))()
+check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
+local importing=true
+ForeverAuras.IsImporting=function()return importing end
+E.Bind();local initial=E.bindTimer;E.Bind()
+check(E.bindTimer==initial,'Import binding requests coalesce')
+initial.callback();check(E.bindTimer and E.bindAttempts==1,'Binding waits while native import parents are temporary')
+currentRoot.parent=commonRoot;importing=false
+E.bindTimer.callback()
+check(not E.bindTimer and E.GetRootID()==commonRoot,'Completed class update resolves its preserved combined parent')
+importing=true;E.Bind();local pendingBind=E.bindTimer;E.Shutdown()
+check(pendingBind.cancelled and not E.bindTimer,'World leave cancels pending import binding')
+ForeverAuras.IsImporting=nil
+ForeverAuras.GetData=nil;ForeverAuras.GetRegion=previousGetRegion
 print("Companion behaviour checks passed: "..checks)

@@ -117,7 +117,7 @@ local function build()
     button(p,'Open aura editor',25,18,163,function()
         local api=E.API()
         if E.InCombat()then p.notice:SetText(E.L('Changes apply after combat.'));return end
-        if api and api.OpenOptions then api.OpenOptions(E.rootID);p:Hide()end
+        if api and api.OpenOptions then api.OpenOptions(E.GetRootID());p:Hide()end
     end)
     button(p,'Reset position',199,18,163,E.ResetPosition)
     button(p,'Reset this class',373,18,163,E.Reset)
