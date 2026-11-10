@@ -10,8 +10,21 @@ from build import VERSION
 ROOT=Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 def run(args): subprocess.run(args,check=True)
+assert f'## Version: {VERSION}' in (ROOT/'src/EclipseHUD/EclipseHUD.toc').read_text()
+assert f'Version {VERSION}' in (ROOT/'README.md').read_text()
+assert f'## {VERSION} ' in (ROOT/'CHANGELOG.md').read_text()
+assert f'name: Eclipse-Class-Combat-HUD-v{VERSION}' in (ROOT/'.github/workflows/check.yml').read_text()
 for path in (ROOT/'src/EclipseHUD').glob('*.lua'):run(['luac','-p',str(path)])
 run(['lua','tests/core.lua'])
+run(['lua','tests/discovery.lua'])
+run(['lua','tests/selection.lua'])
+run(['lua','tests/state.lua'])
+run(['lua','tests/motion.lua'])
+run(['lua','tests/presentation.lua'])
+run(['lua','tests/casting.lua'])
+run(['lua','tests/alerts.lua'])
+run(['lua','tests/effects.lua'])
+run(['lua','tests/options.lua'])
 run([sys.executable,'-m','unittest','discover','-s','tests','-v'])
 run(['lua','scripts/codec.lua','verify','dist/Eclipse-Class-Combat-HUD.txt'])
 source=os.environ.get('FOREVERAURAS_SOURCE')
@@ -23,10 +36,10 @@ with zipfile.ZipFile(archive) as z:
     assert 'EclipseHUD/EclipseHUD.toc' in names
     assert 'Eclipse-Class-Combat-HUD.txt' in names
     assert 'README.md' in names and 'LICENSE' in names
-    assert len([name for name in names if name.endswith('.tga')])==21
+    assert len([name for name in names if name.endswith('.tga')])==23
     assert not any('Guos' in name or name.startswith('vendor/') for name in names)
     for path in (ROOT/'src/EclipseHUD').rglob('*'):
-        if path.suffix in ('.toc','.lua','.tga'):
+        if path.suffix in ('.toc','.lua','.tga','.wav'):
             relative=str(path.relative_to(ROOT/'src'))
             assert hashlib.sha256(path.read_bytes()).digest()==hashlib.sha256(z.read(relative)).digest(),relative+' mismatched'
     assert z.read('Eclipse-Class-Combat-HUD.txt')==(ROOT/'dist/Eclipse-Class-Combat-HUD.txt').read_bytes()

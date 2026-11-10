@@ -22,74 +22,110 @@ function E.RefreshOptions()
         slider:SetValue(p[key]); slider.value:SetText(tostring(p[key]))
         if key == "scale" or key == "opacity" then slider.value:SetText(string.format("%d%%", p[key]*100)) end
     end
+    panel.school:SetText(E.L('Talent school')..': '..E.L(p.school)
+        ..(p.school=='Auto' and E.selection and (' ('..E.L(E.selection.mode or 'Leveling')..')') or ''))
+    panel.swing:SetText(E.L('Swing mode')..': '..E.L(p.swingMode))
+    panel.swing:SetShown(E.class=='WARRIOR')
+    panel.checks.cleave:SetShown(E.class=='WARRIOR')
     panel.notice:SetText(E.L(E.InCombat() and "Changes apply after combat." or "Drag the center seal to move. Right-click it for settings."))
     panel.refreshing = false
 end
 local function build()
     local p = CreateFrame("Frame", "EclipseHUDOptions", UIParent, "BackdropTemplate")
-    p:SetSize(500, 580); p:SetPoint("CENTER"); p:SetFrameStrata("DIALOG")
+    p:SetSize(560, 570); p:SetPoint("CENTER"); p:SetFrameStrata("DIALOG")
     p:SetClampedToScreen(true); p:SetMovable(true); p:EnableMouse(true)
     p:RegisterForDrag("LeftButton")
     p:SetScript("OnDragStart", p.StartMoving); p:SetScript("OnDragStop", p.StopMovingOrSizing)
     p:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8", edgeFile="Interface\\Buttons\\WHITE8X8", edgeSize=1})
     p:SetBackdropColor(0.035, 0.03, 0.065, 0.98); p:SetBackdropBorderColor(0.36, 0.26, 0.52, 1)
-    local stripe = p:CreateTexture(nil, "ARTWORK")
-    stripe:SetPoint("TOPLEFT", 1, -1); stripe:SetPoint("TOPRIGHT", -1, -1); stripe:SetHeight(3)
-    stripe:SetColorTexture(0.65, 0.42, 0.95, 1)
     label(p, "E C L I P S E", 22, 24, -23)
     label(p, "Class Combat HUD", 11, 26, -51, {0.65,0.6,0.73})
     p.classLabel = label(p, "", 11, 25, -80)
     local close = CreateFrame("Button", nil, p, "UIPanelCloseButton")
-    close:SetPoint("TOPRIGHT", -4, -4)
-    close:SetScript("OnClick", function() p:Hide() end)
+    close:SetPoint("TOPRIGHT", -4, -4); close:SetScript("OnClick", function() p:Hide() end)
     table.insert(UISpecialFrames, "EclipseHUDOptions")
-    p.checks, p.sliders = {}, {}
-    local function check(key, text, x, y)
-        local box = CreateFrame("CheckButton", nil, p, "UICheckButtonTemplate")
-        box:SetSize(25, 25); box:SetPoint("TOPLEFT", x, y)
-        box.Text:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 11, "")
-        box.Text:SetText(E.L(text)); box.Text:SetTextColor(0.88,0.86,0.94)
-        box:SetScript("OnClick", function(self) E.Set(key, self:GetChecked() == true) end)
-        p.checks[key] = box
+    p.checks, p.sliders, p.sections = {}, {}, {}
+    local function check(parent,key,text,x,y)
+        local box = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
+        box:SetSize(25,25); box:SetPoint("TOPLEFT",x,y)
+        box.Text:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF",11,"")
+        box.Text:SetText(E.L(text));box.Text:SetTextColor(.88,.86,.94)
+        box:SetScript("OnClick",function(self)E.Set(key,self:GetChecked()==true)end)
+        p.checks[key]=box
     end
-    check("enabled", "Enabled", 22, -108); check("locked", "Lock position", 260, -108)
-    check("combatOnly", "Combat only", 22, -140); check("hoverUtility", "Utility on hover", 260, -140)
-    for i, entry in ipairs(E.modules) do
-        check(entry[1], entry[2], i % 2 == 1 and 22 or 260, -184-math.floor((i-1)/2)*30)
-    end
-    local function slider(key, title, minimum, maximum, step, x, y)
-        label(p, title, 11, x, y)
-        local s = CreateFrame("Slider", nil, p, "OptionsSliderTemplate")
-        s:SetSize(192, 15); s:SetPoint("TOPLEFT", x+2, y-24)
-        s:SetMinMaxValues(minimum, maximum); s:SetValueStep(step); s:SetObeyStepOnDrag(true)
-        if s.Low then s.Low:SetText("") end
-        if s.High then s.High:SetText("") end
-        if s.Text then s.Text:SetText("") end
-        s.value = label(p, "", 10, x+152, y)
-        s:SetScript("OnValueChanged", function(_, value)
-            if p.refreshing then return end
-            value = math.floor(value/step+0.5)*step
-            E.Set(key, value)
-            s.value:SetText((key == "scale" or key == "opacity") and string.format("%d%%", value*100) or tostring(value))
+    check(p,'enabled','Enabled',22,-104); check(p,'locked','Lock position',292,-104)
+    for i,title in ipairs({'Modules','Behavior','Position'}) do
+        local section=CreateFrame('Frame',nil,p);section:SetAllPoints();p.sections[title]=section
+        local tab=CreateFrame('Button',nil,p,'UIPanelButtonTemplate')
+        tab:SetSize(163,27);tab:SetPoint('TOPLEFT',25+(i-1)*174,-145);tab:SetText(E.L(title))
+        tab:SetScript('OnClick',function()
+            for key,frame in pairs(p.sections)do frame:SetShown(key==title)end
         end)
-        p.sliders[key] = s
+        section:SetShown(i==1)
     end
-    slider("scale", "Scale", 0.6, 1.6, 0.05, 27, -350)
-    slider("opacity", "Opacity", 0.25, 1, 0.05, 266, -350)
-    slider("x", "Horizontal position", -900, 900, 1, 27, -408)
-    slider("y", "Vertical position", -600, 600, 1, 266, -408)
-    p.notice = label(p, "", 11, 27, -474, {0.65,0.61,0.73})
-    p.notice:SetWidth(446); p.notice:SetJustifyH("LEFT")
-    label(p, "Preview in /fa; only learned abilities appear in play.", 10, 27, -511, {0.54,0.51,0.62})
-    button(p, "Open aura editor", 25, 18, 216, function()
-        local api = E.API()
-        if E.InCombat() then p.notice:SetText(E.L("Changes apply after combat.")); return end
-        if api and api.OpenOptions then api.OpenOptions(E.rootID); p:Hide() end
+    for i,entry in ipairs(E.modules)do
+        check(p.sections.Modules,entry[1],entry[2],i%2==1 and 22 or 292,-195-math.floor((i-1)/2)*36)
+    end
+    label(p.sections.Modules,'Disabled modules unload their trackers.',11,27,-438,{.65,.61,.73})
+    local behavior=p.sections.Behavior
+    for i,entry in ipairs({{'combatOnly','Combat only'},{'hoverUtility','Utility on hover'},
+        {'expandCombat','Expand when combat starts'},{'unfold','Unfold animation'},
+        {'unfoldSound','Unfold sound'},{'resourceFlow','Resource flow'},
+        {'hideDefaultCast','Hide default cast bar'},{'cleave','Prefer Cleave in Fury'}})do
+        check(behavior,entry[1],entry[2],i%2==1 and 22 or 292,-195-math.floor((i-1)/2)*36)
+    end
+    local function cycle(key,values,title,y)
+        local b=CreateFrame('Button',nil,behavior,'UIPanelButtonTemplate')
+        b:SetSize(506,29);b:SetPoint('TOPLEFT',27,y)
+        b:SetScript('OnClick',function()
+            local options=values();local current=E.Profile()[key];local index=0
+            for i,value in ipairs(options)do if value==current then index=i;break end end
+            E.Set(key,options[index%#options+1]);E.RefreshOptions()
+        end)
+        b.title=title;return b
+    end
+    p.school=cycle('school',function()
+        local values={'Auto'};for _,school in ipairs(E.schools and E.schools[E.class] or {})do values[#values+1]=school end
+        return values
+    end,'Talent school',-359)
+    p.swing=cycle('swingMode',function()return {'Auto','Single','Dual'}end,'Swing mode',-397)
+    local position=p.sections.Position
+    local function slider(key,title,minimum,maximum,step,x,y)
+        label(position,title,11,x,y)
+        local s=CreateFrame('Slider',nil,position,'OptionsSliderTemplate')
+        s:SetSize(218,15);s:SetPoint('TOPLEFT',x+2,y-24)
+        s:SetMinMaxValues(minimum,maximum);s:SetValueStep(step);s:SetObeyStepOnDrag(true)
+        if s.Low then s.Low:SetText('')end;if s.High then s.High:SetText('')end;if s.Text then s.Text:SetText('')end
+        s.value=label(position,'',10,x+166,y)
+        s:SetScript('OnValueChanged',function(_,value)
+            if p.refreshing then return end
+            value=math.floor(value/step+.5)*step;E.Set(key,value)
+            s.value:SetText((key=='scale' or key=='opacity')and string.format('%d%%',value*100)or tostring(value))
+        end)
+        p.sliders[key]=s
+    end
+    slider('scale','Scale',.6,1.6,.05,27,-205)
+    slider('opacity','Opacity',.25,1,.05,292,-205)
+    slider('x','Horizontal position',-900,900,1,27,-290)
+    slider('y','Vertical position',-600,600,1,292,-290)
+    local inspect=CreateFrame('Button',nil,position,'UIPanelButtonTemplate')
+    inspect:SetSize(506,29);inspect:SetPoint('TOPLEFT',27,-382);inspect:SetText(E.L('Expand for inspection'))
+    inspect:SetScript('OnClick',function()if E.state then E.state.Inspect()end end)
+    p.notice=label(p,'',11,27,-473,{.65,.61,.73});p.notice:SetWidth(506);p.notice:SetJustifyH('LEFT')
+    button(p,'Open aura editor',25,18,163,function()
+        local api=E.API()
+        if E.InCombat()then p.notice:SetText(E.L('Changes apply after combat.'));return end
+        if api and api.OpenOptions then api.OpenOptions(E.rootID);p:Hide()end
     end)
-    button(p, "Reset this class", 259, 18, 216, E.Reset)
-    p:SetScript("OnShow", E.RefreshOptions)
-    p:Hide(); E.panel = p
-    return p
+    button(p,'Reset position',199,18,163,E.ResetPosition)
+    button(p,'Reset this class',373,18,163,E.Reset)
+    p:SetScript('OnShow',function()
+        E.inspectingSettings=true;if E.state then E.state.Update(true)end;E.RefreshOptions()
+    end)
+    p:SetScript('OnHide',function()
+        E.inspectingSettings=false;if E.state then E.state.Update(false)end
+    end)
+    p:Hide();E.panel=p;return p
 end
 function E.ToggleOptions()
     if not E.Profile() then return end
@@ -98,4 +134,8 @@ function E.ToggleOptions()
 end
 SLASH_ECLIPSEHUD1 = "/eclipse"
 SLASH_ECLIPSEHUD2 = "/ehud"
-SlashCmdList.ECLIPSEHUD = function() E.ToggleOptions() end
+SlashCmdList.ECLIPSEHUD = function(message)
+    if message and message:match("^%s*spells%s*$") and E.ReportSpells then E.ReportSpells()
+    elseif message and message:match("^%s*inspect%s*$") and E.state then E.state.Inspect()
+    else E.ToggleOptions() end
+end

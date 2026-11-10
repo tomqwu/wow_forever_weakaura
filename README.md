@@ -2,19 +2,15 @@
 
 An original ForeverAuras HUD for WoW Forever, with a Warlock-focused layout and **automatic switching across all nine classes**. Import once; the character's class chooses the active module. Each class keeps independent controls and layout preferences.
 
-**Version 0.2.0 — painted artwork update.** Nine AI-painted class emblems, a sculpted resource frame and engraved spell borders replace the first version's flat vectors. Automated checks pass; in-game combat, native aura rendering, Chinese client fonts, and logout persistence still require live validation.
+**Version 0.3.0 — reference behavior implementation (prerelease).** Learned-rank discovery, school/leveling selection, compact idle and unfolding, native cooldown overflow, resource motion, reminders, reversible cast-bar controls, combat effects and audible alerts are implemented. The [persistent checklist](docs/feature-parity-plan.md) records the work and evidence. In-game acceptance remains open; this is not a claim of verified full parity.
 
-**Behavior review in progress:** live use has exposed missing low-level cooldown
-coverage, unwanted preparation icons, question-mark player effects and missing
-idle/unfold behavior. Version 0.2.0 is **not a complete feature mirror** of the
-reference WA. Work now follows the [numbered feature-parity plan](docs/feature-parity-plan.md)
-and [full original-display inventory](docs/reference-inventory.md), one item at a time.
+**The live placeholder defect was found:** v0.2.0 saved `secretFallback` on the display instead of inside `triggers`. ForeverAuras then followed the always-true visibility trigger when an aura was absent. Its actual fallback selector reproduces the old behavior and accepts the correction. **Update both the addon and the imported top-level group** to receive this fix.
 
 ## All nine class previews
 
 **One import includes every class below.** In-game, the HUD automatically loads your current character's class. Each class has its own emblem, spell catalog and saved settings.
 
-Click an image to enlarge it. These are illustrative layout previews with sample values and spell thumbnails, not live game screenshots.
+Click an image to enlarge it. These are behavior previews with sample values and spell thumbnails, not live game screenshots. Warlock uses an explicitly mocked level-23 learned list; the other images use declared learned fixtures. The interactive preview includes idle, hostile-target, combat-without-target and five-second delayed close.
 
 | Warlock · 术士 | Warrior · 战士 | Mage · 法师 |
 | :---: | :---: | :---: |
@@ -32,14 +28,14 @@ For interactive controls, download the repository and open [`preview/index.html`
 
 ## Install
 
-Requires the current **[ForeverAuras](https://github.com/neroxrw/foreverauras)**. The generated import targets the installed 1.3.5 schema; native aura schemas were also checked against the public 1.3.2 source. WoW Forever interface: `16001`.
+Requires **[ForeverAuras](https://github.com/neroxrw/foreverauras)** with native modern-aura animation, CDM and resource-curve support. The target is the installed 1.3.5 build; native schemas and resource-curve behavior are also checked against the public source. WoW Forever interface: `16001`.
 
 1. Download the ZIP from this repository's [Releases](https://github.com/tomqwu/wow_forever_weakaura/releases), or build it from source.
 2. Copy **`EclipseHUD/`** into your active Forever client's `Interface/AddOns/` folder. `EclipseHUD.toc` must be directly inside that folder.
 3. Enable **Eclipse | Class Combat HUD** and ForeverAuras. Use `/reload` after updating an already discovered addon. On a first install, make sure the client lists the new addon before importing.
 4. Out of combat, enter **`/fa` → Import** and paste the entire contents of **`dist/Eclipse-Class-Combat-HUD.txt`** (the ZIP puts this text file at its root).
 5. Import the **top-level group**. For later updates, update the existing group to preserve IDs and avoid duplicates.
-6. Enter **`/eclipse`** or **`/ehud`** for settings.
+6. Enter **`/eclipse`** or **`/ehud`** for settings. For the corrected default anchor, use **Position → Reset position**. Upgrades preserve your existing coordinates and preferences.
 
 The ZIP contains the companion addon and the import. It does **not** bundle ForeverAuras. Both parts of Eclipse are needed. Importing does not replace your other auras or default UI; disable overlapping HUDs yourself if desired.
 
@@ -47,14 +43,14 @@ The ZIP contains the companion addon and the import. It does **not** bundle Fore
 
 ## Controls
 
-- **`/eclipse`**: enable, lock, combat-only visibility, scale, position, opacity, and independent module switches.
+- **`/eclipse`**: Modules, Behavior and Position tabs. Each class keeps its own settings. Behavior includes automatic/manual talent school, combat expansion, unfolding, resource flow, optional default-cast-bar suppression, Warrior swing mode and Fury Cleave preference.
 - **Unlock**, then drag the center seal to move the HUD. Right-click the seal to open settings.
-- Utility abilities can appear on center hover. Left-click the seal to pin or unpin the utility row; leaving hover has a short grace period.
+- Idle keeps the central emblem. A readable living hostile target or combat opens the main rows; losing the condition starts a five-second close delay. Settings or **`/eclipse inspect`** allow temporary inspection. Left-click the seal also inspects and pins/unpins optional hover utility.
 - **`/fa`**: edit individual spells, size, placement, typography, colors and other ForeverAuras display settings. Prefer `/eclipse` for overall position, scale and opacity; those are restored from its per-class profile.
-- Layout and toggle changes made during combat are queued until combat ends. **Reset this class** is available out of combat.
+- Overall layout and preference changes made in combat wait until combat ends. **Reset position** changes only X/Y; **Reset this class** restores every preference for that class.
 - Nameplate effects are **off by default**. Enable them explicitly to attach native player-owned effect icons to live nameplates.
 
-Modules: resources, primary abilities, utility abilities, target effects, player effects/procs, cast bar, pet/class resource, decorative frame, rune animation, and nameplate effects. Turning off a module clears its load flag so ForeverAuras unloads its trackers. An inactive class does not load its displays.
+Modules: resources, primary abilities, secondary combat cooldowns, target effects, player effects/procs, cast bar, pet/class resource, artwork, rune animation, nameplate effects, combat effects and audible alerts. Turning off a module clears its load flag so ForeverAuras unloads its trackers. An inactive class does not load its displays.
 
 ## Class coverage
 
@@ -70,11 +66,13 @@ Modules: resources, primary abilities, utility abilities, target effects, player
 | Shaman | Health, mana, four native totem slots | Stormstrike, shocks, Elemental Mastery, Riptide; shields, Maelstrom Weapon |
 | Paladin | Health, mana | Holy Shock, Divine Favor, Holy Shield, Consecration; Judgements and defensive cooldowns |
 
-These are catalog candidates, **not a claim that every character or current build has every ability**. Cooldown icons use ForeverAuras' learned-spell load checks and rank/override handling. Modern aura icons show only native matching effects. Actual spell names and textures come from the client. English and Simplified Chinese control labels are included.
+These are catalog candidates, **not proof that a particular character trained them**. Actual learned spellbook ranks/bases, localized metadata and learned native CDM identities qualify the displays. Passive abilities cannot become action slots. Four cooldown/support slots sit left of the emblem and four attack/heal slots sit right, with learned fallbacks and deduplication. Unused learned combat skills appear only on cooldown in offense/control/defense groups; additional native CDM cooldowns and tracked buffs/counters are included. Unending Breath and summoning are excluded from the combat slots. Modern aura icons show only native matching effects. Actual spell names and textures come from the client. English and Simplified Chinese control labels are included.
 
 ## Combat data
 
-All aura presence, ownership, durations, stacks, resources, casting and cooldown rendering are delegated to ForeverAuras' built-in triggers. Modern aura slots are fixed during combat. There are no guessed refresh windows, combat-log reconstruction, rotation automation, or estimates of offscreen DoT timers. Armor is a native effect display; Eclipse does not infer that an unreadable armor aura is missing. The original Blizzard cast bar remains available.
+All aura presence, ownership, durations, stacks, resources, casting and cooldown rendering are delegated to ForeverAuras' built-in triggers. Modern aura slots are fixed during combat. There are no guessed refresh windows, combat-log reconstruction, rotation automation, or estimates of offscreen DoT timers. Armor is a native effect display; Eclipse does not infer that an unreadable armor aura is missing. The Blizzard cast bar remains available by default. Optional suppression preserves its latest show request and restores it on release. Audible alerts use original chimes, including client-owned aura Added sounds; no reference recordings are bundled.
+
+For spell problems, run **`/eclipse spells`** out of combat to print actual learned identities and native attachment/fallback diagnostics. The level-23 fixture is not a substitute for your real spellbook.
 
 Read [the design and reference notes](docs/design.md) and [live validation checklist](docs/validation.md) for the precise scope and remaining checks.
 

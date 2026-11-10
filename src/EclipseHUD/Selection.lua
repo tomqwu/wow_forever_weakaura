@@ -1,0 +1,174 @@
+local _, E = ...
+local S={primary={},used={},positions={}}
+E.selection=S
+-- Only purchased, readable ranks contribute. Unavailable data leaves Leveling.
+function S.TalentSchool()
+    local config=E.Call(C_ClassTalents and C_ClassTalents.GetActiveConfigID)
+    local info=E.Number(config) and E.Call(C_Traits and C_Traits.GetConfigInfo,config)
+    if type(info)~="table" or not E.Readable(info.treeIDs) or type(info.treeIDs)~="table" then return end
+    local nodes=E.Number(info.treeIDs[1]) and E.Call(C_Traits.GetTreeNodes,info.treeIDs[1])
+    if type(nodes)~="table" then return end
+    local columns,xs={},{}
+    for _,id in ipairs(nodes) do
+        local node=E.Number(id) and E.Call(C_Traits.GetNodeInfo,config,id)
+        if type(node)=="table" and E.Readable(node.posX) and type(node.posX)=="number" then
+            local x=node.posX
+            if not columns[x] then xs[#xs+1]=x; columns[x]=0 end
+            if E.Readable(node.ranksPurchased) and type(node.ranksPurchased)=="number" and node.ranksPurchased>0 then
+                columns[x]=columns[x]+node.ranksPurchased
+            end
+        end
+    end
+    table.sort(xs)
+    local step
+    for i=2,#xs do
+        local gap=xs[i]-xs[i-1]
+        if gap>0 and (not step or gap<step) then step=gap end
+    end
+    if not step then return end
+    local totals={columns[xs[1]]}
+    for i=2,#xs do
+        if xs[i]-xs[i-1]>2*step then totals[#totals+1]=0 end
+        totals[#totals]=totals[#totals]+columns[xs[i]]
+    end
+    if #totals~=3 then return end
+    local best
+    for i,points in ipairs(totals) do if points>0 and (not best or points>totals[best]) then best=i end end
+    return best and E.schools[E.class][best]
+end
+local function copy(value)
+    if type(value)~="table" then return value end
+    local result={}; for k,v in pairs(value) do result[k]=copy(v) end; return result
+end
+local function preparation(entry)
+    return entry.identities[5697] or entry.identities[698] or entry.identities[20608]
+end
+local function syncEntries(api,id,selected)
+    local data=api.GetData(id)
+    if not data then return end
+    local old=data.triggers[1].trigger.cdmSpells.multi
+    for key in pairs(old) do if not selected[tonumber(key)] then old=nil; break end end
+    if old then for key in pairs(selected) do if not old[key] and not old[tostring(key)] then old=nil; break end end end
+    if old then return end
+    data=copy(data); data.triggers[1].trigger.cdmSpells.multi=selected
+    api.Add(data)
+end
+function S.SyncCDM()
+    local api=E.API()
+    if E.InCombat() or not api or not api.GetData or not api.Add then return end
+    local represented={}
+    for id,entry in pairs(E.catalog) do
+        if entry.cls==E.class and entry.key and E.discovery.eligible[id] and not entry.prep
+            and (entry.module=='primary' or entry.module=='utility') then
+            represented[E.discovery.eligible[id].name]=true
+        end
+    end
+    local selected={}
+    -- FA owns cooldown state, charges, overrides and clone rendering.
+    for id,entry in pairs(E.discovery.cdm) do
+        if (entry.category=="Essential" or entry.category=="Utility" or entry.category=="SpecAgnosticEssential")
+            and not represented[entry.name] then
+            if not preparation(entry) then selected[id]=true end
+        end
+    end
+    local prefix='Eclipse | '..E.classNames[E.class]
+    syncEntries(api,prefix..' | Native cooldowns | Entries',selected)
+    local buffs,representedBuffs={},{}
+    for id,entry in pairs(E.catalog) do
+        if entry.cls==E.class and entry.module=='buffs' and entry.kind=='aura' and E.discovery.eligible[id] then
+            representedBuffs[E.discovery.eligible[id].name]=true
+        end
+    end
+    for id,entry in pairs(E.discovery.cdm) do
+        if (entry.category=='TrackedBuff' or entry.category=='TrackedBar' or entry.category=='SpecAgnosticTracked')
+            and not representedBuffs[entry.name] and not preparation(entry) then buffs[id]=true end
+    end
+    syncEntries(api,prefix..' | Native player effects | Entries',buffs)
+end
+function S.ApplyLayout()
+    local api=E.API(); if not api or not api.GetRegion then return end
+    for id,position in pairs(S.positions) do
+        local region=api.GetRegion(id)
+        -- Ordinary spell displays only, never root ancestry or native aura
+        -- buttons. Cached form selection can reposition these ordinary icons.
+        if region and region.SetOffset then region:SetOffset(position.x,0) end
+    end
+end
+function S.Refresh()
+    local available={}
+    for id,entry in pairs(E.catalog or {}) do
+        if entry.cls==E.class and entry.module=="primary" and entry.key and E.discovery.eligible[id] then
+            available[entry.key]={id=id,record=E.discovery.eligible[id]}
+        end
+    end
+    local p=E.Profile()
+    if not E.InCombat() then S.talentMode=S.TalentSchool() end
+    local mode=p.school~="Auto" and p.school or S.talentMode
+    if not mode and E.class=="WARRIOR" then
+        mode=available['Mortal Strike'] and 'Arms' or available.Bloodthirst and 'Fury'
+            or available['Shield Slam'] and 'Protection'
+    end
+    mode=mode or 'Leveling'
+    local stage=mode
+    if E.class=="WARRIOR" then
+        if mode=="Arms" and not available['Mortal Strike'] then stage="ArmsEarly" end
+        if mode=="Fury" and not available.Bloodthirst then stage="FuryEarly" end
+    end
+    if E.class=='DRUID' then
+        local power=E.Call(UnitPowerType,'player')
+        if power==1 then stage='Bear'
+        elseif power==3 then stage='Cat'
+        elseif mode=='Feral' then stage='Caster' end
+    end
+    local plans=E.plans[E.class]
+    local scheme=plans[stage] or plans.Leveling or plans[E.schools[E.class][1]]
+    S.primary,S.used,S.positions={},{},{}
+    S.mode,S.stage=mode,stage
+    for side,slots in ipairs(scheme) do
+        local visibleRank=0
+        for index,choices in ipairs(slots) do
+            if E.class=="WARRIOR" and stage=="Fury" and side==2 and index==4 and p.cleave and available.Cleave then choices={"Cleave"} end
+            for _,key in ipairs(choices) do
+                local entry=available[key]
+                if entry and not S.used[entry.record.name] then
+                    visibleRank=visibleRank+1
+                    S.primary[entry.id]=true; S.used[entry.record.name]=true
+                    S.positions[entry.id]={x=(side==1 and -1 or 1)*(83+(visibleRank-1)*47),side=side,slot=index}
+                    break
+                end
+            end
+        end
+    end
+    S.ApplyLayout(); S.SyncCDM()
+    if E.motion and E.state then E.motion.Change(E.state.open,true) end
+end
+function S.Allowed(id,entry)
+    if entry.prep then return false end
+    if entry.proc then
+        local record=E.discovery.eligible[id]
+        return record~=nil and not S.used[record.name]
+    end
+    if entry.module=="primary" and entry.key then return S.primary[id]==true end
+    if entry.module=="utility" and entry.key then
+        local record=E.discovery.eligible[id]
+        return record~=nil and not S.used[record.name]
+    end
+    return true
+end
+function E.BindAbility(id)
+    if not S.positions[id] or S.layoutTimer then return end
+    -- Newly eligible regions can be created only after the load-flag scan.
+    -- Coalesce their init callbacks after registration rather than leaving
+    -- fresh slots stacked at the generator's temporary center coordinate.
+    S.layoutTimer=C_Timer.NewTimer(0,function()
+        S.layoutTimer=nil;S.ApplyLayout()
+        if E.motion and E.state then E.motion.Change(E.state.open,true) end
+    end)
+end
+function S.Stop()
+    if S.layoutTimer then S.layoutTimer:Cancel();S.layoutTimer=nil end
+    S.primary,S.used,S.positions={},{},{}
+end
+function E.ReminderContext()
+    return E.class=='WARRIOR' and S.mode=='Arms' and E.state and E.state.HostileTarget()
+end

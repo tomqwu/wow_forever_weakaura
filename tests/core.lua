@@ -10,10 +10,13 @@ function Frame:SetSize(w,h)self.width,self.height=w,h end
 function Frame:SetPoint(...)self.point={...}end
 function Frame:ClearAllPoints()self.point=nil end
 function Frame:SetScale(scale)self.scale=scale end
+function Frame:SetParent(parent)self.parent=parent end
+function Frame:SetAnchor(...)self.nativeAnchor={...}end
+function Frame:SetOffset(x,y)self.nativeOffset={x,y}end
 function Frame:SetRegionAlpha(alpha)self.alpha=alpha end
 function Frame:SetShown(show)if show then self:Show() else self:Hide()end end
-function Frame:Hide()self.shown=false end
-function Frame:Show()self.shown=true;if self.scripts.OnShow then self.scripts.OnShow(self)end end
+function Frame:Hide()local shown=self.shown;self.shown=false;if shown and self.scripts.OnHide then self.scripts.OnHide(self)end end
+function Frame:Show()local shown=self.shown;self.shown=true;if not shown and self.scripts.OnShow then self.scripts.OnShow(self)end end
 function Frame:IsShown()return self.shown end
 function Frame:SetScript(key,callback)self.scripts[key]=callback end
 function Frame:RegisterEvent(event)self.events[event]=true end
@@ -72,8 +75,11 @@ E.Set("nameplates",true);check(flags.ECLIPSE_WARLOCK_nameplates,"Optional native
 E.Set("scale",1.25);E.Set("x",135);E.Set("y",-230);E.Set("opacity",.65)
 check(E.anchor.point[4]==135 and E.anchor.point[5]==-230,"Position persists without scaling coordinates")
 check(root.scale==1.25 and root.alpha==.65,"Scale and opacity applied to root")
+check(root.parent==E.anchor and root.nativeAnchor[2]==E.anchor and root.nativeOffset[1]==0,"Late native root is attached to companion anchor")
 check(E.anchor.scale==nil,"Position anchor stays unscaled")
 E.InitDB();check(E.Profile().x==135 and E.Profile().scale==1.25,"Reload defaults preserve saved preferences")
+E.ResetPosition();check(E.Profile().x==0 and E.Profile().y==-160 and E.Profile().scale==1.25 and not E.Profile().primary,"Position reset preserves module preferences and scale")
+E.Set('x',135);E.Set('y',-230)
 class="MAGE";E.InitDB();E.Notify()
 check(E.Profile().x==0 and E.Profile().primary,"New class gets own defaults")
 check(flags.ECLIPSE_MAGE_primary and not flags.ECLIPSE_WARLOCK_primary,"Login switches loaded modules")
