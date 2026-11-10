@@ -2,9 +2,27 @@
 
 An original ForeverAuras HUD for WoW Forever, with a Warlock-focused layout and **automatic switching across all nine classes**. Import once; the character's class chooses the active module. Each class keeps independent controls and layout preferences.
 
-**Version 0.2.0 — painted artwork update.** Nine AI-painted class emblems, a sculpted resource frame and engraved spell borders replace the first version's flat vectors. Automated checks pass; in-game combat, native aura rendering, Chinese client fonts, and logout persistence still require live validation. The preview below uses sample values and spell thumbnails.
+**Version 0.2.0 — painted artwork update.** Nine AI-painted class emblems, a sculpted resource frame and engraved spell borders replace the first version's flat vectors. Automated checks pass; in-game combat, native aura rendering, Chinese client fonts, and logout persistence still require live validation.
 
-![Warlock layout preview](preview/eclipse-warlock.png)
+## All nine class previews
+
+**One import includes every class below.** In-game, the HUD automatically loads your current character's class. Each class has its own emblem, spell catalog and saved settings.
+
+Click an image to enlarge it. These are illustrative layout previews with sample values and spell thumbnails, not live game screenshots.
+
+| Warlock · 术士 | Warrior · 战士 | Mage · 法师 |
+| :---: | :---: | :---: |
+| [<img src="preview/classes/warlock.png" width="280" alt="Warlock HUD preview">](preview/classes/warlock.png) | [<img src="preview/classes/warrior.png" width="280" alt="Warrior HUD preview">](preview/classes/warrior.png) | [<img src="preview/classes/mage.png" width="280" alt="Mage HUD preview">](preview/classes/mage.png) |
+
+| Priest · 牧师 | Rogue · 盗贼 | Druid · 德鲁伊 |
+| :---: | :---: | :---: |
+| [<img src="preview/classes/priest.png" width="280" alt="Priest HUD preview">](preview/classes/priest.png) | [<img src="preview/classes/rogue.png" width="280" alt="Rogue HUD preview">](preview/classes/rogue.png) | [<img src="preview/classes/druid.png" width="280" alt="Druid HUD preview">](preview/classes/druid.png) |
+
+| Hunter · 猎人 | Shaman · 萨满祭司 | Paladin · 圣骑士 |
+| :---: | :---: | :---: |
+| [<img src="preview/classes/hunter.png" width="280" alt="Hunter HUD preview">](preview/classes/hunter.png) | [<img src="preview/classes/shaman.png" width="280" alt="Shaman HUD preview">](preview/classes/shaman.png) | [<img src="preview/classes/paladin.png" width="280" alt="Paladin HUD preview">](preview/classes/paladin.png) |
+
+For interactive controls, download the repository and open [`preview/index.html`](preview/index.html) in a browser; use the class tabs across the top. GitHub displays the static gallery above.
 
 ## Install
 
