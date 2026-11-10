@@ -1,6 +1,12 @@
 local _, E = ...
 local zh = GetLocale() == "zhCN"
 local strings = {
+    ['Companion update required: install EclipseHUD and /reload before importing.']='需要更新配套插件：安装 EclipseHUD 后先输入 /reload，再导入。',
+
+    ['Forever cooldown layout']='系统冷却分组与顺序', ['Essential']='主要冷却', ['Utility']='辅助冷却', ['EquipSlotEssential']='装备冷却', ['HiddenActive']='未显示',
+    ['Maintenance buffs']='常驻增益',
+    ['Cooldown layout']='冷却排列', ['Forever']='系统冷却管理器', ['Class plan']='职业方案',
+
     ['Health']='生命', ['Resource']='资源', ['Mana']='法力', ['Rage']='怒气',
     ['Focus']='集中值', ['Energy']='能量', ['Combo points']='连击点', ['Pet']='宠物', ['Soul Shards']='灵魂碎片',
     ["Learned spell identities"] = "已学技能与原生光环诊断",
@@ -59,6 +65,7 @@ E.modules = {
     {"resources", "Resources"}, {"primary", "Primary abilities"},
     {"utility", "Utility abilities"}, {"dots", "Target effects"},
     {"buffs", "Player effects"}, {"cast", "Cast bar"},
+    {"maintenance", "Maintenance buffs"},
     {"pet", "Pet and class resource"}, {"art", "Artwork"},
     {"motion", "Rune animation"},
     {"nameplates", "Nameplate effects"},

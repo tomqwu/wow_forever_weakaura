@@ -20,7 +20,14 @@ with sync_playwright() as p:
     opacity=lambda:float(page.locator('.primary .tile').first.evaluate('(el)=>getComputedStyle(el).opacity'))
     assert opacity()==0,'Idle must fold primary'
     names=page.locator('.primary .tile').evaluate_all('(els)=>els.map(el=>el.getAttribute("aria-label"))')
-    assert set(names)=={'Life Tap','Fear','Health Funnel','Shadow Bolt','Immolate','Corruption','Drain Life'}
+    assert set(names)=={'Shadow Bolt','Drain Life','Drain Soul','Immolate','Corruption','Life Tap'}
+    assert page.locator('.class-label').inner_text()==''
+    assert page.locator('.maintenance .tile').count()==1
+    assert page.locator('.maintenance .time').count()==0,'Long armor duration must not sit above the emblem'
+    assert page.locator('.maintenance .tile').get_attribute('aria-label')=='Demon armor'
+    page.locator('#cooldown-layout').select_option('Class plan')
+    assert page.locator('.primary .tile[aria-label="Fear"]').count()==1,'Authored plans remain explicit'
+    page.locator('#cooldown-layout').select_option('Forever')
     assert not any('questionmark' in (src or '') for src in page.locator('img.spell').evaluate_all('(els)=>els.map(el=>el.src)'))
     page.locator('button[data-state="enemy"]').click();page.wait_for_timeout(600)
     assert opacity()==1,'Enemy target must unfold'
@@ -52,23 +59,27 @@ with sync_playwright() as p:
             page.locator('.viewport').screenshot(path=str(ROOT/'preview/classes'/f'{token.lower()}.png'))
     # Public identity fixtures exercise the same semantic palette as the import.
     color=lambda selector:page.locator(selector).evaluate('(el)=>getComputedStyle(el).backgroundColor')
-    for token,label,expected in [('WARLOCK','Mana','rgb(67, 141, 255)'),('WARRIOR','Rage','rgb(234, 90, 71)'),('ROGUE','Energy','rgb(244, 199, 71)')]:
+    for token,label,expected in [('WARLOCK','Mana','rgb(67, 141, 255)'),('WARRIOR','Rage','rgb(242, 122, 50)'),('ROGUE','Energy','rgb(244, 199, 71)')]:
         page.locator(f'[data-class="{token}"]').click()
         assert page.locator('.power .role').inner_text()==label
         assert color('.power .fill')==expected
-        assert color('.hp .fill')=='rgb(54, 200, 151)'
+        assert color('.hp .fill')=='rgb(217, 74, 90)'
         assert not page.locator('.form-control').is_visible()
     assert page.locator('.combo-bar').is_visible()
     assert page.locator('.combo-bar').inner_text()=='2 / 5'
     assert not page.locator('.pet-label').is_visible(),'Rogue has no pet health role'
     page.locator('[data-class="DRUID"]').click()
     assert page.locator('.form-control').is_visible()
-    for form,label,expected in [('Caster','Mana','rgb(67, 141, 255)'),('Cat','Energy','rgb(244, 199, 71)'),('Bear','Rage','rgb(234, 90, 71)'),('Caster','Mana','rgb(67, 141, 255)')]:
+    for form,label,expected in [('Caster','Mana','rgb(67, 141, 255)'),('Cat','Energy','rgb(244, 199, 71)'),('Bear','Rage','rgb(242, 122, 50)'),('Caster','Mana','rgb(67, 141, 255)')]:
         page.locator('#form').select_option(form)
         assert page.locator('.power .role').inner_text()==label
         assert color('.power .fill')==expected
         assert page.locator('.combo-bar').is_visible()==(form=='Cat')
     page.locator('[data-class="WARLOCK"]').click()
+    page.locator('[data-module="maintenance"]').uncheck()
+    assert page.locator('.maintenance').evaluate('(el)=>getComputedStyle(el).visibility')=='hidden'
+    assert page.locator('.hp').evaluate('(el)=>getComputedStyle(el).visibility')=='visible'
+    page.locator('[data-module="maintenance"]').check()
     page.locator('[data-module="pet"]').uncheck()
     assert page.locator('.tiny').evaluate('(el)=>getComputedStyle(el).visibility')=='hidden'
     assert page.locator('.shards').evaluate('(el)=>getComputedStyle(el).visibility')=='hidden'

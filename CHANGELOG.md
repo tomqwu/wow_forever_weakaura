@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.2 — 2026-11-10 (prerelease)
+
+- Guard imports against an old or missing in-memory companion, with one reload instruction.
+- Follow native learned Essential/Utility/item categories and ordering by default; retain class plans as an option.
+- Use crimson health, muted crimson pet health, blue mana, gold energy and orange rage with labels.
+- React immediately to combat entry/exit; retain the five-second hold for target loss alone.
+- Move long-duration upkeep into a separate maintenance module and remove HUD class captions while preserving aura IDs.
+- Client acceptance of the updated cooldown layout remains pending.
+
 ## 0.3.1 — 2026-11-10 (prerelease)
 
 - Use shared semantic bar colors: jade health, blue mana, gold energy, red rage and amber focus. Native resource-type conditions follow Druid forms; unknown resource types keep a neutral color.

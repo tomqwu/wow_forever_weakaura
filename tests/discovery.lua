@@ -93,4 +93,30 @@ E.Set('enabled',true);E.Set('resources',true);D.Refresh()
 check(flags.trim,'Qualified resource trim loads with resources enabled')
 E.Set('resources',false)
 check(not flags.trim and E.Profile().fx,'Resources off unloads trim without disabling other FX')
+-- The native provider's arranged data must override raw API categories/order.
+combat=false;D.stopped=false
+Enum.CooldownViewerCategory={Essential=0,Utility=1,TrackedBuff=2,HiddenActive=-1,EquipSlotEssential=4}
+local arranged={
+    [10]={spellID=100,isKnown=true,category=0},[11]={spellID=200,isKnown=true,category=1},
+    [12]={spellID=301,isKnown=true,category=-1},[13]={spellID=401,isKnown=false,category=0},
+    [14]={spellID=501,isKnown=true,isInvisible=true,category=0},
+    [15]={isKnown=true,equipSlot=13,category=4},
+}
+local provider={GetOrderedCooldownIDsForCategory=function(_,category,unknown)
+    assert(unknown==false)
+    return ({[0]={13,14,10},[1]={11},[-1]={12},[4]={15}})[category] or {}
+end,GetCooldownInfoForID=function(_,id)return arranged[id]end}
+CooldownViewerSettings={GetDataProvider=function()return provider end}
+D.ScanCDM()
+check(D.cdmReady and D.cdmOrder.Essential[1]==10 and #D.cdmOrder.Essential==1,'Native saved order filters unlearned/invisible identities')
+check(D.cdm[11].category=='Utility' and D.cdm[12].category=='HiddenActive','Provider placement overrides raw default categories')
+check(D.cdm[15].item and D.cdm[15].category=='EquipSlotEssential','Native equipped items need no guessed spell identity')
+local callback,removed
+EventRegistry={RegisterCallback=function(_,event,fn,owner)callback={event=event,fn=fn,owner=owner}end,
+    UnregisterCallback=function(_,event,owner)removed=event=='CooldownViewerSettings.OnDataChanged' and owner==D end}
+D.stopped=true;D.Start()
+check(callback.event=='CooldownViewerSettings.OnDataChanged','Native layout edits register a refresh callback')
+callback.fn();check(D.timer~=nil,'Native layout edits schedule a coalesced refresh')
+D.Stop();check(removed and not D.layoutCallback and not D.timer,'Disable cancels layout callback and pending discovery')
+CooldownViewerSettings=nil;EventRegistry=nil
 print("Spell discovery checks passed: "..checks)

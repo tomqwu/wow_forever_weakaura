@@ -45,4 +45,19 @@ check(close.cancelled and not S.world and not S.Visible(),'World leave cancels t
 check(not next(S.events.events),'Stop unregisters state listeners')
 E.Notify();E.ApplyLayout()
 check(not E.Gate('base','WARLOCK') and not E.handle.shown,'Late layout/notifications cannot restore world-leave controls')
+S.Start();exists=false;combat=false;E.Profile().expandCombat=true
+local changes={}
+E.motion={Change=function(open,silent)changes[#changes+1]={open=open,silent=silent}end,Stop=function()end}
+S.events.scripts.OnEvent(nil,'PLAYER_REGEN_DISABLED')
+check(S.open and changes[#changes].open and not S.closeTimer,'Combat entry starts opening in the event callback even before lockdown changes')
+combat=true;S.events.scripts.OnEvent(nil,'PLAYER_REGEN_ENABLED')
+check(not S.open and not changes[#changes].open and not S.closeTimer,'Combat exit begins folding immediately without the five-second hold')
+exists=true;attack=true;dead=false;combat=false
+S.events.scripts.OnEvent(nil,'PLAYER_REGEN_DISABLED');S.events.scripts.OnEvent(nil,'PLAYER_REGEN_ENABLED')
+check(S.open,'Independent living hostile-target condition remains after combat')
+exists=false;S.events.scripts.OnEvent(nil,'PLAYER_TARGET_CHANGED')
+check(S.closeTimer and S.closeTimer.delay==5,'Only target loss keeps the source five-second hold')
+local hold=S.closeTimer;S.events.scripts.OnEvent(nil,'PLAYER_REGEN_DISABLED')
+check(hold.cancelled and not S.closeTimer and S.open,'Immediate combat entry cancels a pending target-loss hold')
+S.Stop()
 print('HUD state checks passed: '..checks)
