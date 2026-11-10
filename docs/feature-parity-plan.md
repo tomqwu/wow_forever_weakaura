@@ -2,7 +2,7 @@
 
 ## Working state — 2026-11-10
 
-**Current phase: 0.3.2 correction in progress: native cooldown categories, maintenance placement and missing-helper guard. Live acceptance remains pending.**
+**Current phase: 0.3.2 merged, published and installed. The new top-level import and game-client acceptance remain pending.**
 
 The previous **0.2.0** release exposed the live failures below. The **0.3.0** behavior implementation and **0.3.1** resource/module follow-up
 have targeted regressions and native-source checks. Pictures,
@@ -381,11 +381,12 @@ plan update does not create a new runtime release.
 | 2026-11-10 | 02 ordering follow-up | Native sort wrapper and armor dedup regressions pass | FA multi-entry pickers sort by numeric ID, so ordinary overflow/utility/item groups now compare public clone identity ranks from the saved manager order. No aura values/visibility/timers are inspected. Actual installed/public FA dynamic-group wrappers execute that comparison with restricted state objects. Added armor-family exclusion so moving maintenance cannot recreate armor above the emblem via native buff overflow. Selection suite now 65 assertions. |
 | 2026-11-10 | 11.1–11.2 correction checks | Local verification passed; delivery next | 294 focused Lua assertions, two old/missing-helper scenarios executing 3,422 generated callbacks, ten Python groups, 1,019-descendant import round trip and package checks pass. Both installed 1.3.7 and public FA validate 176 modern displays, native color conditions and actual dynamic-group sort invocation. Chromium verifies all nine classes, native-category/class-plan fixtures, empty captions, maintenance placement/timer absence, crimson/blue/gold/orange colors and independent switches; gallery refreshed. These remain mock/native-source checks, not a live cooldown comparison. |
 
-**Implementation status:** 01/02/03/05/06/10 corrections implemented;
-then 02.3–02.6 follow the native manager's learned Essential/Utility/Items and
-hidden placement without cooldown arithmetic; then 06/10 move maintenance and
-remove the redundant caption. Preserve IDs and all nine classes. No live
-spell-name/learned list is inferred from grayscale configuration icons.
+| 2026-11-10 | 11.4/11.3 correction delivery | v0.3.2 merged, published, downloaded and installed with verified bytes | [PR #3](https://github.com/tomqwu/wow_forever_weakaura/pull/3) merged as `355fdb26d3989a573cde0e2a7ca97e36889afd07`. PR and [release-commit main CI](https://github.com/tomqwu/wow_forever_weakaura/actions/runs/42838759841) passed. [Immutable v0.3.2 prerelease](https://github.com/tomqwu/wow_forever_weakaura/releases/tag/v0.3.2) downloaded ZIP/import/receipt match local bytes and all 38 runtime files. ZIP SHA-256: `6700989db47018618e3098137f350d15f6d3e2aa2b444ccee4c916734bae4452`. Installed into the same `_forever_/Interface/AddOns/EclipseHUD` (8 files replaced, 30 unchanged); v0.3.1 backup verified at `F:\WoW-addon-backups\EclipseHUD\20261110-095502\before\EclipseHUD`. No SavedVariables edits or game restart. `/reload` and the new top-level import are required before live comparison; no further runtime validation is claimed. |
+
+**Implementation status:** the requested cooldown grouping, maintenance/caption,
+color and immediate combat-event changes are delivered. No live spell-name or
+learned list is inferred from grayscale configuration icons. Apply the new
+import after loading/reloading the companion, then collect 11.3 client evidence.
 
 **Next required evidence:** 11.3 game-client acceptance. Code and automated
 checks are implemented; the detailed runtime acceptance checkboxes remain open
