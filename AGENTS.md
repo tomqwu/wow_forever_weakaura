@@ -4,6 +4,11 @@ This repository builds a ForeverAuras import and the EclipseHUD companion addon.
 It is separate from Forever Classmate / ForeverUtilities. Do not apply that
 project's folder names, SavedVariables, installation script or release tags here.
 
+- Read `docs/feature-parity-plan.md` first. It is the persistent task checklist
+  and handoff memory requested by the user. Follow its numbered order, work on
+  one item at a time, and update the work log with evidence before advancing.
+  Do not treat artwork, an import/schema check, or a mock as live feature parity.
+
 - Read `README.md`, `docs/design.md` and `docs/validation.md` before runtime edits.
 - Edit `src/catalog.py`, `scripts/build.py`, or `src/EclipseHUD/`; regenerate
   `dist/` instead of hand-editing an encoded import.

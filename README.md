@@ -4,6 +4,12 @@ An original ForeverAuras HUD for WoW Forever, with a Warlock-focused layout and 
 
 **Version 0.2.0 — painted artwork update.** Nine AI-painted class emblems, a sculpted resource frame and engraved spell borders replace the first version's flat vectors. Automated checks pass; in-game combat, native aura rendering, Chinese client fonts, and logout persistence still require live validation.
 
+**Behavior review in progress:** live use has exposed missing low-level cooldown
+coverage, unwanted preparation icons, question-mark player effects and missing
+idle/unfold behavior. Version 0.2.0 is **not a complete feature mirror** of the
+reference WA. Work now follows the [numbered feature-parity plan](docs/feature-parity-plan.md)
+and [full original-display inventory](docs/reference-inventory.md), one item at a time.
+
 ## All nine class previews
 
 **One import includes every class below.** In-game, the HUD automatically loads your current character's class. Each class has its own emblem, spell catalog and saved settings.
