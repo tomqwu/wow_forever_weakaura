@@ -1,11 +1,11 @@
 # Eclipse feature-parity plan
 
-## Working state — 2026-11-09
+## Working state — 2026-11-10
 
-**Current phase: 0.3.1 resource readability and independent-module cleanup; live acceptance remains pending.**
+**Current phase: 0.3.1 merged and published; implementation and automated checks complete, live acceptance remains pending.**
 
-The previous **0.2.0** release exposed the live failures below. The **0.3.0**
-implementation now has targeted regressions and native-source checks. Pictures,
+The previous **0.2.0** release exposed the live failures below. The **0.3.0** behavior implementation and **0.3.1** resource/module follow-up
+have targeted regressions and native-source checks. Pictures,
 import decoding and mocks still do not establish live feature parity. The user's
 actual client evidence takes precedence over an illustrative preview.
 
@@ -372,9 +372,11 @@ plan update does not create a new runtime release.
 
 | 2026-11-10 | 11.1–11.2 continuation | 0.3.1 implementation and automated verification passed | 267 focused Lua assertions, nine Python groups, 830-descendant import round trip and ZIP source/media/hash verification pass. Installed/public FA validate 176 modern displays and execute the real color compiler through mana→energy→rage→mana with restricted amounts. Chromium verifies all nine classes, Druid form palette transitions, native-value fixtures and independent resource/pet controls; all gallery captures refreshed. `git diff --check` passes. Mock/native-source tests remain separate from game-client acceptance. |
 
-**Next implementation item:** 11.4 CI, merge and immutable 0.3.1 delivery.
-Resource colors and independent-module cleanup are implemented; live acceptance
-below stays open.
+| 2026-11-10 | 11.4 continuation | 0.3.1 merged, published and downloaded bytes verified | [PR #2](https://github.com/tomqwu/wow_forever_weakaura/pull/2) merged as `4411e3e83bb7aab30d3fa70dc0f9d58ccf177320`; PR CI and [release-commit main CI](https://github.com/tomqwu/wow_forever_weakaura/actions/runs/42760550177) passed. [Immutable v0.3.1 prerelease](https://github.com/tomqwu/wow_forever_weakaura/releases/tag/v0.3.1) has ZIP/import/receipt; all downloaded bytes and 38 runtime files match the checked local build. ZIP SHA-256: `c9ca4b6927fbfc489e66e5de711a8a507aa9429b40fb4e1d4ff382e1273eea51`. Versions and README gallery agree on 0.3.1. v0.3.0 remains unchanged. |
+
+**Implementation status:** resource readability and module cleanup are complete
+and delivered. No further code item is queued from this continuation; proceed to
+11.3 game-client acceptance when client evidence is available.
 
 **Next required evidence:** 11.3 game-client acceptance. Code and automated
 checks are implemented; the detailed runtime acceptance checkboxes remain open
