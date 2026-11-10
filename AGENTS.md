@@ -15,8 +15,11 @@ project's folder names, SavedVariables, installation script or release tags here
   client spell names. Keep per-class preferences and existing aura IDs stable.
 - Root layout belongs to the companion anchor. Defer native ancestry changes
   until combat ends. Keep mock verification distinct from game-client evidence.
-- Original art sources are SVG. Regenerate power-of-two, uncompressed RGBA TGA
-  assets with `scripts/media.py` through the build. Do not copy Guos media/code.
+- Painted art masters and exact generation prompts are in `assets/ai/`. Use the
+  built-in image_gen tool for creative art changes. `scripts/media.py` only
+  extracts sprites, resizes and exports power-of-two RGBA TGA assets. Keep
+  generated transparency. Small geometric animation accents may remain SVG.
+  Do not copy Guos media/code.
 - Run `python scripts/build.py` and `python scripts/check.py`, plus
   `git diff --check`. If a ForeverAuras checkout is available, run
   `lua tests/native-schema.lua /path/to/ForeverAuras`.

@@ -2,7 +2,7 @@
 
 An original ForeverAuras HUD for WoW Forever, with a Warlock-focused layout and **automatic switching across all nine classes**. Import once; the character's class chooses the active module. Each class keeps independent controls and layout preferences.
 
-**Version 0.1.0 — initial build.** Automated checks pass; in-game combat, native aura rendering, Chinese client fonts, and logout persistence still require live validation. The preview below is illustrative, with sample values and representative spell tiles.
+**Version 0.2.0 — painted artwork update.** Nine AI-painted class emblems, a sculpted resource frame and engraved spell borders replace the first version's flat vectors. Automated checks pass; in-game combat, native aura rendering, Chinese client fonts, and logout persistence still require live validation. The preview below uses sample values and spell thumbnails.
 
 ![Warlock layout preview](preview/eclipse-warlock.png)
 
@@ -67,11 +67,11 @@ python scripts/preview.py
 lua tests/native-schema.lua /path/to/ForeverAuras
 ```
 
-The import is generated from `src/catalog.py` and `scripts/build.py`. Original SVG source, PNG previews, and uncompressed RGBA TGA game assets live in `src/EclipseHUD/Media/`. The editable Lua/JSON export and import text live in `dist/`. The ZIP and its SHA-256 are produced locally and in CI. Do not hand-edit the encoded import.
+The import is generated from `src/catalog.py` and `scripts/build.py`. AI-generated PNG masters and their exact prompts live in [`assets/ai/`](assets/ai/). Exported PNG previews and uncompressed RGBA TGA game assets live in `src/EclipseHUD/Media/`; small geometric rune accents retain SVG sources. The editable Lua/JSON export and import text live in `dist/`. Builds reuse the checked-in masters and do not call a paid generation API. The ZIP and its SHA-256 are produced locally and in CI. Do not hand-edit the encoded import.
 
 ## Credits and license
 
-Inspired by the feature organization of the locally supplied **Guos Warrior Combat HUD v1.2.4**. Its import was inspected as a design reference. **No Guos scripts, artwork, sounds, names, or branding are included in this pack.** Eclipse's code and vector artwork are original.
+Inspired by the feature organization of the locally supplied **Guos Warrior Combat HUD v1.2.4**. Its import was inspected as a design reference. **No Guos scripts, artwork, sounds, names, or branding are included in this pack.** Eclipse's painted artwork was generated specifically for this project with the built-in image generation tool; exact prompts and source PNGs are included. Code and small geometric accents are authored for Eclipse.
 
 [ForeverAuras](https://github.com/neroxrw/foreverauras), [Blizzard's Forever API source mirror](https://github.com/Gethe/wow-ui-source/tree/forever/Interface/AddOns/Blizzard_APIDocumentationGenerated), and the installed DungeonsForever spell catalog informed compatibility checks. The client remains the authority for actual learned spells.
 

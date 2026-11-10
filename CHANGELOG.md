@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 — 2026-11-09
+
+- Replace the flat class seals with AI-painted, sculpted emblems for all nine classes.
+- Add a carved metal resource frame and an AI-painted border around spell icons.
+- Fit live bars to the new frame and increase spacing around the larger centerpiece.
+- Replace preview glyph placeholders with spell thumbnails and remove crowded labels.
+- Preserve AI masters, exact prompts, transparent exports and class-specific loading.
+
+Live-client validation remains pending.
+
 ## 0.1.0 — 2026-11-09
 
 - One ForeverAuras import with nine automatically selected class modules.
