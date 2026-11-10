@@ -33,11 +33,13 @@ Open **`/eclipse` → Behavior → Cooldown layout → Forever**. Eclipse follow
 
 In the game's **Cooldown Settings**, arrange Essential, Utility, Items and Not Displayed as desired. Eclipse follows learned entries, not every gray entry shown by the configuration window. Changes made during combat apply after combat.
 
+**CDM guide correction:** the v0.3.3 ZIP README's recommendation to set native Essential/Utility to Hidden is superseded by this guide. Keep them Always so their native event updates continue. The release assets remain unchanged.
+
 **To keep the game's right-hand Tracked Bars:**
 
 1. In **`/fa`**, leave the top-toolbar **Hide Blizzard's CDM** checkbox **off**. It hides all four viewers, including Tracked Bars.
-2. Keep the game's cooldown manager enabled. In **Game menu → Edit Mode**, set **Tracked Bars** to **Always**; keep Tracked Buffs visible too if you use them.
-3. To remove only duplicate cooldown-icon rows, select the native **Essential** and **Utility** viewers individually and set their **Visibility → Hidden**. This differs from disabling the entire manager.
+2. Keep the game's cooldown manager enabled. In **Game menu → Edit Mode**, keep **Essential, Utility, Tracked Buffs and Tracked Bars → Visibility → Always**. Native **Hidden** unregisters viewer update events and can break mirrored tracking.
+3. If you prefer the native cooldown icons too, disable duplicate **Eclipse Primary abilities / Utility abilities** modules. FA's global checkbox cannot hide only icon viewers while preserving the original native bars. Keeping native bars alongside Eclipse icons may leave duplicate native icons.
 4. Leave **`/eclipse` → Modules → Tracked bars (Eclipse)** off if you want only the game's bars.
 
 **To replace native bars with Eclipse bars:** enable **Tracked bars (Eclipse)** first. It uses native CDM aura progress for active entries from your Tracked Bars category, including DoTs/control/procs, in a stack to the right. Then you may use **Hide Blizzard's CDM** to hide the default viewers while keeping tracking enabled. Keep the native tracking viewers configured to Always for this route. Eclipse does not change these global settings automatically. To return to the default CDM later, clear the global hide and restore the relevant native viewer Visibility to Always.
@@ -155,11 +157,13 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 在游戏的 **Cooldown Settings（冷却设置）** 中调整 Essential、Utility、Items 与 Not Displayed。配置窗口中的灰色条目不代表角色已学会；战斗中提出的修改在脱战后应用。
 
+**CDM 指南更正：** v0.3.3 ZIP 内 README 中把系统 Essential/Utility 设为 Hidden 的建议已被本页取代。请保持 Always，保证原生更新事件继续工作。已发布的文件保持不变。
+
 **保留游戏原有右侧 Tracked Bars：**
 
 1. 在 **`/fa`** 顶部工具栏，**不要勾选 Hide Blizzard's CDM**。这个总开关会隐藏四类系统窗口，也包括持续时间条。
-2. 保持游戏冷却管理器启用。在 **游戏菜单 → 编辑模式** 中，把 **Tracked Bars（持续时间条）** 的可见性设为 **Always（始终）**；需要系统增益图标时，也保留 Tracked Buffs。
-3. 只想去掉重复的冷却图标时，分别选中系统 **Essential**、**Utility** 窗口，将其 **Visibility（可见性）设为 Hidden（隐藏）**，不要关闭整个冷却管理器。
+2. 保持游戏冷却管理器启用。在 **游戏菜单 → 编辑模式** 中，把 **Essential、Utility、Tracked Buffs、Tracked Bars → Visibility（可见性）** 保持为 **Always（始终）**。系统 **Hidden** 会注销窗口更新事件，可能使镜像追踪失效。
+3. 如果也使用系统冷却图标，可关闭重复的 **Eclipse 主要技能 / 辅助技能** 模块。FA 总隐藏开关不能单独隐藏图标而保留系统持续时间条；同时保留系统条与 Eclipse 图标时，可能仍有重复的系统图标。
 4. 使用系统持续时间条时，可让 **`/eclipse` → 显示模块 → 持续时间条（Eclipse）** 保持关闭。
 
 **改用 Eclipse 持续时间条：** 先启用 **持续时间条（Eclipse）**。它通过 ForeverAuras 原生 CDM 光环进度，在右侧显示你配置的 Tracked Bars 中当前激活的 DoT、控制效果和触发效果。确认启用后，才使用 **Hide Blizzard's CDM** 隐藏系统窗口；原生追踪继续开启，此方案下系统追踪窗口保持 Always。Eclipse 不会自动修改这些全局设置。之后返回系统 CDM 时，取消全局隐藏，并把相应系统窗口的可见性恢复为 Always。

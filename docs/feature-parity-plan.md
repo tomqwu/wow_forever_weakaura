@@ -405,7 +405,10 @@ plan update does not create a new runtime release.
 
 | 2026-11-10 | 11.1–11.2 final v0.3.3 verification | Automated checks passed | Full build: 1,056 displays/1,055 descendants; Warlock 14,860 characters versus combined 88,402 (83% smaller). 330 focused Lua assertions, twelve Python groups, all ten codec round trips and ZIP byte/hash checks pass. Installed FA 1.3.7 and the public checkout validate combined plus all nine class files, including native aura-progress bars and identity-only dynamic sorting. Chromium passes nine classes, no fabricated leveling cooldowns, click folding, intermediate animation and three casting modes; captures refreshed. `git diff --check` passes. |
 
-**Implementation status:** feature/document work and automated verification complete; merge/publish/install v0.3.3 next. No live runtime acceptance is claimed.
+| 2026-11-10 | 11.4 v0.3.3 delivery | Merged, published and installed; bytes verified | PR #4 merged as `9fc7c6036e90429c01d5d31987ac4d89eed15c8a`; branch, PR and main run 42925051342 passed. Immutable v0.3.3 contains ZIP/hash, combined plus nine class files and manifest. Downloaded ZIP SHA-256 `9a09d84d355759dfebc95c83ba07861d7c76bf1d9f308e50d0fd4ccd51d5a306` and every runtime/import asset match. Installed all 38 files (9 changed) to the active `_forever_/Interface/AddOns/EclipseHUD`; previous files backed up at `F:\WoW-addon-backups\EclipseHUD\20261110-183934\before\EclipseHUD`. No SavedVariables or other addon edits. |
+| 2026-11-10 | 11 documentation correction | Native Hidden guidance superseded | Final native UI source review shows `CooldownViewerMixin:OnHide` and cooldown subclass unregister events. Therefore native Essential/Utility Hidden is not a reliable selective opacity substitute. Current EN/ZH README keeps all viewers Always, offers native displays with duplicate Eclipse modules off or Eclipse tracked bars with FA global opacity hide, and explicitly supersedes the immutable v0.3.3 ZIP README recommendation. Runtime bytes/version unchanged; game-client validation remains pending. |
+
+**Implementation status:** v0.3.3 merged, published and installed; documentation correction recorded on main. No live runtime acceptance is claimed.
 
 **Next required evidence:** 11.3 game-client acceptance. Code and automated
 checks are implemented; the detailed runtime acceptance checkboxes remain open
