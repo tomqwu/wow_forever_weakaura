@@ -4,7 +4,7 @@
 
 The current README supersedes the v0.3.3 ZIP’s native Essential/Utility → Hidden guidance: native OnHide unregisters update events. Keep viewers Always. Choose native displays with duplicate Eclipse modules off, or Eclipse tracked bars with FA global opacity hide. No runtime/version change or release-asset overwrite.
 
-## 0.3.5 — unreleased
+## 0.3.5 — 2026-11-11 (prerelease)
 
 - Bundle all nine class imports inside the addon. EclipseHUD registers the current class with ForeverAuras' companion interface: `/fa` lists it as ready to install when the class group is missing or predates update tags, or as an update when the installed group carries an older build. ForeverAuras runs its own import window and the player confirms; the companion writes no aura data. `/eclipse install` opens the same window.
 - Every class display carries a `wago.io/eclipse-hud-<class>/<build>` update tag (0.3.5 = build 305). ForeverAuras parses only the number and never contacts wago.io. The combined root carries no tag.

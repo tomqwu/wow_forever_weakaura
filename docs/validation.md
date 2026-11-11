@@ -1,6 +1,6 @@
 # Validation for 0.3.5
 
-## 0.3.5 (unreleased) — auras bundled in the addon
+## 0.3.5 (prerelease) — auras bundled in the addon
 
 Automated only; nothing here is game-client evidence.
 
