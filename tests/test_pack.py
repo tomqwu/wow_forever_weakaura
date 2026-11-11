@@ -8,14 +8,22 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 sys.path.insert(0,str(ROOT/'src'))
-from build import generate, class_import, TITLE
+from build import generate, class_import, TITLE, UTF8, PRIMARY_Y
 from catalog import CLASSES, HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES
 from build import rgba
+
+SECTIONS=['Frame','Resources','Primary','Utility','Native rows','Auras','Nameplates','Alerts']
+
+def subtree(by_id,root):
+    """IDs reachable from root through controlledChildren, independent of load data."""
+    found=[root]
+    for child in by_id[root].get('controlledChildren',[]):found+=subtree(by_id,child)
+    return found
 
 class PackTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.pack=generate();cls.regions=[cls.pack['d']]+cls.pack['c']
+        cls.pack,cls.eligibility=generate();cls.regions=[cls.pack['d']]+cls.pack['c']
     def test_class_switch_and_disabled_module_lifecycle(self):
         classes=set()
         for d in self.pack['c']:
@@ -36,8 +44,11 @@ class PackTests(unittest.TestCase):
             self.assertNotIn('parent',pack['d'])
             self.assertNotIn(TITLE,by_id,'Do not update a partial shared root')
             self.assertEqual(pack['d']['actions']['init'],self.pack['d']['actions']['init'])
-            expected={key for key,d in full.items() if d['load']['class']['single']==cls}
+            # Independent of class_import's load-class predicate: the class
+            # file must be exactly the class root's reachable subtree.
+            expected=set(subtree(full,'Eclipse | '+c['name']))
             self.assertEqual(set(by_id),expected)
+            self.assertEqual(expected,{key for key,d in full.items() if d['load']['class']['single']==cls})
             self.assertFalse(seen & expected,'Each class update must have a disjoint native UID scope')
             seen.update(expected)
             for d in rows:
@@ -50,7 +61,7 @@ class PackTests(unittest.TestCase):
         self.assertTrue(all(d.get('parent') for d in self.pack['c']),'Class slicing must not mutate the combined pack')
 
     def test_readme_languages_configuration_and_screenshots(self):
-        text=(ROOT/'README.md').read_text()
+        text=(ROOT/'README.md').read_text(**UTF8)
         english,chinese=text.split('## 简体中文',1)
         self.assertIn('## English',english)
         for section in (english,chinese):
@@ -98,7 +109,7 @@ class PackTests(unittest.TestCase):
                 value=d.get(key,'')
                 if value.startswith('Interface\\AddOns\\EclipseHUD\\'):
                     self.assertTrue((ROOT/'src/EclipseHUD'/value.split('EclipseHUD\\',1)[1].replace('\\','/')).is_file(),value)
-        code=(ROOT/'src/EclipseHUD/Core.lua').read_text()
+        code=(ROOT/'src/EclipseHUD/Core.lua').read_text(**UTF8)
         for forbidden in ('COMBAT_LOG_EVENT_UNFILTERED','UnitAura(', 'GetAuraDataByIndex','GetSpellCooldown','SetScript("OnUpdate"'):
             self.assertNotIn(forbidden,code)
     def test_wow_texture_format(self):
@@ -117,8 +128,37 @@ class PackTests(unittest.TestCase):
         self.assertEqual(len(by_id),len(self.regions))
         self.assertEqual(len({d['uid'] for d in self.regions}),len(self.regions))
         self.assertEqual(by_id[TITLE]['anchorFrameFrame'],'EclipseHUDAnchor')
+        listed=[]
         for d in self.regions:
-            for child in d.get('controlledChildren',[]):self.assertEqual(by_id[child]['parent'],d['id'])
+            for child in d.get('controlledChildren',[]):
+                self.assertEqual(by_id[child]['parent'],d['id'])
+                listed.append(child)
+        # Both directions, exactly once: nothing is detached or double-listed.
+        self.assertEqual(sorted(listed),sorted(d['id'] for d in self.pack['c']))
+        self.assertEqual(sorted(subtree(by_id,TITLE)),sorted(by_id))
+
+    def test_class_root_holds_only_sections(self):
+        by_id={d['id']:d for d in self.regions}
+        for c in CLASSES.values():
+            prefix='Eclipse | '+c['name']
+            children=by_id[prefix]['controlledChildren']
+            self.assertEqual(children,[f'{prefix} | {name}' for name in SECTIONS]+[prefix+' | Cast'])
+            for name in SECTIONS:
+                section=by_id[f'{prefix} | {name}']
+                self.assertIn(section['regionType'],('group','dynamicgroup'))
+                self.assertTrue(section['controlledChildren'],section['id'])
+            for name in ('Frame','Resources','Native rows','Auras','Nameplates','Alerts'):
+                section=by_id[f'{prefix} | {name}']
+                self.assertEqual((section['xOffset'],section['yOffset']),(0,0),'Sections must not move their displays')
+            self.assertFalse(any(d['regionType'] in ('group','dynamicgroup') and not d['controlledChildren']
+                for d in self.regions),'No empty placeholder groups')
+            depth=lambda id:0 if id==prefix else 1+depth(by_id[id]['parent'])
+            self.assertLessEqual(max(depth(id) for id in subtree(by_id,prefix)),3)
+        procs=[d for d in self.regions if ' | Usable proc | ' in d['id']]
+        self.assertEqual(len(procs),4)
+        for d in procs:
+            self.assertEqual(d['parent'],'Eclipse | Warrior | Primary')
+            self.assertEqual(d['yOffset']+PRIMARY_Y,-23,'Screen position unchanged from the class root')
 
     def test_native_effect_animation_and_resource_curve(self):
         effects=[d for d in self.regions if ' | FX | ' in d['id']]
@@ -129,10 +169,13 @@ class PackTests(unittest.TestCase):
             self.assertEqual(d['blizzardAuraDisplay']['auraMain']['type'],'pulse')
         for cls,c in CLASSES.items():
             by_tier={d['id'].rsplit(' | ',1)[1]:d for d in effects if d['load']['class']['single']==cls}
-            parent=next(d for d in self.regions if d['id']==f"Eclipse | {c['name']}")
-            order=parent['controlledChildren']
+            prefix=f"Eclipse | {c['name']}"
+            frame=next(d for d in self.regions if d['id']==prefix+' | Frame')
+            order=frame['controlledChildren']
             self.assertGreater(order.index(by_tier['defense']['id']),order.index(by_tier['major']['id']))
-            self.assertLess(order.index(by_tier['defense']['id']),order.index(f"Eclipse | {c['name']} | Primary"))
+            # FA assigns frame levels depth-first in list order: FX stays behind the seal.
+            self.assertLess(order.index(by_tier['defense']['id']),order.index(prefix+' | Seal'))
+            self.assertLess(order.index(prefix+' | Living runes'),order.index(by_tier['major']['id']))
             resource=next(d for d in self.regions if d['id']==f"Eclipse | {c['name']} | FX resource intensity")
             self.assertEqual(resource['triggers'][1]['trigger']['event'],'Power')
             self.assertTrue(all(x['check']['variable']=='percentpower' for x in resource['conditions']))
@@ -142,9 +185,8 @@ class PackTests(unittest.TestCase):
         for c in CLASSES.values():
             prefix='Eclipse | '+c['name']
             for slot in range(1,9):
-                group=by_id[f'{prefix} | Primary | Native {slot}']
-                self.assertEqual(group['regionType'],'group')
-                icon=by_id[group['id']+' | Entry']
+                self.assertNotIn(f'{prefix} | Primary | Native {slot}',by_id,'Empty v0.3.2 slot groups are removed')
+                icon=by_id[f'{prefix} | Primary | Native {slot} | Entry']
                 self.assertEqual(icon['triggers'][1]['trigger']['event'],'Blizzard Cooldown Manager')
                 self.assertEqual(icon['triggers'][1]['trigger']['cdmShow'],'cooldown')
                 self.assertFalse(icon['triggers'][1]['trigger']['use_cdmShowGCD'])
@@ -156,8 +198,9 @@ class PackTests(unittest.TestCase):
             self.assertIn('_trackedBars',tracked['load']['loadFlag'])
             self.assertGreater(by_id[prefix+' | Native tracked bars']['xOffset'],250)
             self.assertEqual(by_id[prefix+' | Native items | Entries']['triggers'][1]['trigger']['event'],'Blizzard CDM Item')
-            self.assertIn('_maintenance',by_id[prefix+' | Maintenance']['load']['loadFlag'])
-            self.assertLess(by_id[prefix+' | Maintenance']['xOffset'],-250)
+            if prefix+' | Maintenance' in by_id:
+                self.assertIn('_maintenance',by_id[prefix+' | Maintenance']['load']['loadFlag'])
+                self.assertLess(by_id[prefix+' | Maintenance']['xOffset'],-250)
         armor=by_id['Eclipse | Warlock | Player effects | Demon armor']
         self.assertEqual(armor['parent'],'Eclipse | Warlock | Maintenance')
         self.assertIn('_maintenance_',armor['load']['loadFlag'])
@@ -201,6 +244,6 @@ class PackTests(unittest.TestCase):
             self.assertEqual(image.getpixel((image.width//2,image.height//2))[3],0,'Spell artwork remains visible through the border')
         for name in ('warlock-seal','resource-frame','class-seals-atlas','icon-frame'):
             self.assertTrue((ROOT/'assets/ai'/(name+'.png')).is_file())
-            self.assertIn('Built-in image_gen',(ROOT/'assets/ai'/(name+'.prompt.txt')).read_text())
+            self.assertIn('Built-in image_gen',(ROOT/'assets/ai'/(name+'.prompt.txt')).read_text(**UTF8))
 
 if __name__=='__main__':unittest.main()

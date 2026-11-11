@@ -4,6 +4,14 @@
 
 The current README supersedes the v0.3.3 ZIP’s native Essential/Utility → Hidden guidance: native OnHide unregisters update events. Keep viewers Always. Choose native displays with duplicate Eclipse modules off, or Eclipse tracked bars with FA global opacity hide. No runtime/version change or release-asset overwrite.
 
+## 0.3.4 — unreleased
+
+- Organise each class group into sections (Frame, Resources, Primary, Utility, Native rows, Auras, Nameplates, Alerts) plus the cast bar; no loose displays at the class root. IDs/UIDs and screen positions are unchanged; Warrior usable-proc cues move into Primary with an equivalent offset. Remove the eight empty v0.3.2 "Native N" slot groups and the empty Maintenance rows of Warrior, Rogue and Shaman.
+- Companion never mutates displays during a ForeverAuras import: layout, CDM selection sync, ability binding and root show/hide hooks wait for the import to finish. A long import no longer stops the bind retry; it continues slowly instead of leaving the layout unapplied.
+- Reorder native rows/wings after a Cooldown Manager reorder (the previous re-sort call moved nothing). Guard user-edited CDM triggers; hook root and cooldown regions once; keep resource-bar hooks from raising into FA; fix a nil-class error on UI hide; keep acquiring remaining cast bars when one is unreadable.
+- Build: deterministic release ZIP, UTF-8/LF output, stale class files cleared, explicit generator outputs. Checks verify the hierarchy in both directions, compile custom text/sort/trigger logic, round-trip the combined import, and assert one version/import API/TOC interface across files. CI fails when committed imports are out of date.
+- Document the aura structure and recovery from an interrupted import (EN/ZH). Game-client acceptance remains pending.
+
 ## 0.3.3 — 2026-11-10 (prerelease)
 
 - Add nine smaller class imports alongside the combined file. Class-group IDs/UIDs stay stable; class-only updates preserve existing parents/other classes, and standalone roots use the companion anchor. The stable import API preserves v0.3.2 compatibility.

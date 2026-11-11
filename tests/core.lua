@@ -153,7 +153,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==1 and E.releaseVersion=='0.3.3','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==1 and E.releaseVersion=='0.3.4','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return EclipseHUD and EclipseHUD.version=="0.3.2" and EclipseHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true
@@ -166,6 +166,13 @@ E.bindTimer.callback()
 check(not E.bindTimer and E.GetRootID()==commonRoot,'Completed class update resolves its preserved combined parent')
 importing=true;E.Bind();local pendingBind=E.bindTimer;E.Shutdown()
 check(pendingBind.cancelled and not E.bindTimer,'World leave cancels pending import binding')
+local spy={SetParent=function(self)self.moved=true end}
+ForeverAuras.GetRegion=function()return spy end
+E.pending=nil;E.ApplyLayout()
+check(not spy.moved and E.pending and E.bindTimer,'Layout never re-parents a root during a native import')
+E.bindAttempts=1200;E.bindTimer.callback()
+check(E.bindTimer and E.bindAttempts==1201,'A long import keeps a slow bind retry instead of giving up')
+E.Shutdown();importing=false
 ForeverAuras.IsImporting=nil
 ForeverAuras.GetData=nil;ForeverAuras.GetRegion=previousGetRegion
 print("Companion behaviour checks passed: "..checks)

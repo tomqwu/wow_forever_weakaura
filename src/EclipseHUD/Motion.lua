@@ -43,6 +43,8 @@ local function entry(id,distance,rank,count,resource)
 end
 function M.Gather()
     local active={}
+    -- UIParent show/hide (Alt-Z) can arrive before a supported class is known.
+    if not E.class then return end
     local p=E.Profile()
     local counts={0,0}
     local positions=p and p.primary and E.selection and E.selection.positions or {}

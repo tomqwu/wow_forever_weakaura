@@ -53,9 +53,15 @@ function E.SortCDM(a,b)
     local ar,ai=key(a);local br,bi=key(b)
     return ar~=br and ar<br or ar==br and ai<bi
 end
+local function cdmTrigger(data)
+    -- The user may have edited or replaced this entry's trigger in /fa.
+    local first=type(data)=='table' and type(data.triggers)=='table' and data.triggers[1]
+    local trigger=type(first)=='table' and first.trigger
+    if type(trigger)=='table' and type(trigger.cdmSpells)=='table' and type(trigger.cdmSpells.multi)=='table' then return trigger end
+end
 local function syncEntries(api,id,selected,show)
     local data=api.GetData(id)
-    if not data then return end
+    if not cdmTrigger(data) then return end
     local old=data.triggers[1].trigger.cdmSpells.multi
     for key in pairs(old) do if not selected[tonumber(key)] then old=nil; break end end
     if old then for key in pairs(selected) do if not old[key] and not old[tostring(key)] then old=nil; break end end end
@@ -67,6 +73,9 @@ end
 function S.SyncCDM()
     local api=E.API()
     if E.InCombat() or not api or not api.GetData or not api.Add then return end
+    -- api.Add during an import would replace displays mid-update (the Druid
+    -- form handler reaches here without the discovery import guard).
+    if E.Importing() then E.Bind(); return end
     local represented={}
     for id,entry in pairs(E.catalog) do
         if entry.cls==E.class and entry.key and E.discovery.eligible[id] and not entry.prep
@@ -119,10 +128,19 @@ function S.SyncCDM()
     syncEntries(api,prefix..' | Native player effects | Entries',buffs)
     syncEntries(api,prefix..' | Native tracked bars | Entries',bars)
     -- Native multi-entry pickers sort IDs internally. Re-sort ordinary clone
-    -- containers by the public manager order, only outside combat.
+    -- containers by the public manager order, only outside combat. FA's
+    -- SortUpdatedChildren only moves children flagged as updated, so a pure
+    -- manager reorder needs a full reload; do that only when the order changed.
+    local ranks={}
+    for id,rank in pairs(E.discovery.cdmRank or {})do ranks[#ranks+1]=id..'='..rank end
+    table.sort(ranks)
+    local key=table.concat(ranks,',')
+    if key==S.rankKey then return end
+    S.rankKey=key
     for _,name in ipairs({'Native cooldowns','Native utility','Native items','Native tracked bars','Primary | Native left','Primary | Native right'})do
         local region=api.GetRegion and api.GetRegion(prefix..' | '..name)
-        if region and region.SortUpdatedChildren then region:SortUpdatedChildren() end
+        if region and region.ReloadControlledChildren then region:ReloadControlledChildren()
+        elseif region and region.SortUpdatedChildren then region:SortUpdatedChildren() end
     end
 end
 function S.ApplyLayout()
@@ -231,12 +249,18 @@ function E.BindAbility(id)
     -- Coalesce their init callbacks after registration rather than leaving
     -- fresh slots stacked at the generator's temporary center coordinate.
     S.layoutTimer=C_Timer.NewTimer(0,function()
-        S.layoutTimer=nil;S.ApplyLayout()
+        S.layoutTimer=nil
+        -- Init actions also run while an import rebuilds the groups. Hand off
+        -- to the bind retry, which refreshes selection and layout afterwards.
+        -- (Ordinary icon offsets stay allowed in combat for form switches.)
+        if E.Importing() then E.Bind();return end
+        S.ApplyLayout()
         if E.motion and E.state then E.motion.Reconcile() end
     end)
 end
 function S.Stop()
     if S.layoutTimer then S.layoutTimer:Cancel();S.layoutTimer=nil end
+    S.rankKey=nil
     S.primary,S.used,S.positions={},{},{}
     S.nativeMode=false;S.nativeSlots,S.nativeUsed={},{}
 end

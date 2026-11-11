@@ -5,7 +5,7 @@ EclipseHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.3.3"
+E.releaseVersion = "0.3.4"
 E.importAPI = 1
 E.rootID = "Eclipse | Class Combat HUD"
 E.classNames = {
@@ -44,8 +44,15 @@ outline:Hide()
 E.outline = outline
 local events = CreateFrame("Frame")
 E.events = events
+E.hookedRoots = setmetatable({}, {__mode="k"})
 local function readable(v) return not issecretvalue or not issecretvalue(v) end
 function E.API() return ForeverAuras or WeakAuras end
+-- True while FA's import/update coroutine runs. Its phase 1 re-adds every
+-- display without a parent; nothing here may move or re-add regions then.
+function E.Importing()
+    local api=E.API()
+    return api and api.IsImporting and api.IsImporting()==true or false
+end
 function E.GetRootID()
     local api=E.API()
     local classID=E.class and ('Eclipse | '..E.classNames[E.class])
@@ -147,6 +154,9 @@ function E.Notify()
 end
 function E.ApplyLayout()
     if E.InCombat() then E.pending = true; return end
+    -- Never re-parent a root the importer has temporarily detached; the bind
+    -- retry applies the layout once the import finishes.
+    if E.Importing() then E.pending = true; E.Bind(); return end
     local p = E.Profile()
     if not p then handle:Hide(); return end
     anchor:ClearAllPoints()
@@ -178,21 +188,23 @@ local function finishBind()
     local api=E.API()
     -- Import updates temporarily strip the root's parent in phase 1. Wait for
     -- the public import state to settle before choosing/anchoring its root.
-    if api and api.IsImporting and api.IsImporting() then
-        if E.bindAttempts<1200 then
-            E.bindAttempts=E.bindAttempts+1
-            E.bindTimer=C_Timer.NewTimer(.1,finishBind)
-        else E.pending=true end
+    -- A large import can outlast the fast window, so keep retrying slowly
+    -- rather than giving up and leaving the layout unapplied until combat.
+    if E.Importing() then
+        E.bindAttempts=E.bindAttempts+1
+        E.bindTimer=C_Timer.NewTimer(E.bindAttempts<1200 and .1 or 1,finishBind)
         return
     end
     E.ApplyLayout()
     if E.discovery then E.discovery.Schedule() end
     if E.RefreshFX then E.RefreshFX(true) end
     local region=api and api.GetRegion and api.GetRegion(E.GetRootID())
-    if region and region.HookScript and E.boundRegion~=region then
-        E.boundRegion=region
-        region:HookScript('OnHide',function()if E.motion then E.motion.Stop() end end)
-        region:HookScript('OnShow',function()if E.motion and E.state then E.motion.Reconcile() end end)
+    -- Hook each root region once: the root can switch between the combined
+    -- and a standalone class group, and re-hooking would stack handlers.
+    if region and region.HookScript and not E.hookedRoots[region] then
+        E.hookedRoots[region]=true
+        region:HookScript('OnHide',function()if E.motion and not E.Importing() then E.motion.Stop() end end)
+        region:HookScript('OnShow',function()if E.motion and E.state and not E.Importing() then E.motion.Reconcile() end end)
     end
 end
 function E.Bind()
@@ -322,12 +334,11 @@ function E.Shutdown()
     if E.StopCasting then E.StopCasting() end
     if E.StopFX then E.StopFX() end
     if E.StopAlerts then E.StopAlerts() end
-    local native=E.API()
-    if native and native.SetLoadFlag then native.SetLoadFlag('ECLIPSE_WARRIOR_pet_offhand',false) end
     E.hovering, E.utilityPinned = false, false
     handle:Hide()
     local api = E.API()
     if api and api.SetLoadFlag then
+        api.SetLoadFlag('ECLIPSE_WARRIOR_pet_offhand',false)
         for class in pairs(E.classNames) do
             api.SetLoadFlag("ECLIPSE_"..class.."_base", false)
             for _, module in ipairs(E.modules) do api.SetLoadFlag("ECLIPSE_"..class.."_"..module[1], false) end

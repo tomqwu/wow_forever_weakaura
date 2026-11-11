@@ -70,6 +70,29 @@ S.SyncCDM()
 check(data.triggers[1].trigger.cdmSpells.multi[100] and not data.triggers[1].trigger.cdmSpells.multi[101],'Native learned combat overflow excludes preparation')
 check(buffData.triggers[1].trigger.cdmSpells.multi[102] and not buffData.triggers[1].trigger.cdmSpells.multi[103],'Additional learned tracked buffs/counters exclude preparation')
 S.SyncCDM();check(writes==2,'Unchanged CDM selections do not rewrite imports')
+D.cdm[104]={name='Native extra 2',category='Essential',identities={}}
+ForeverAuras.IsImporting=function()return true end
+S.SyncCDM();check(writes==2,'CDM selection never calls Add during a native import')
+ForeverAuras.IsImporting=nil
+if E.bindTimer then E.bindTimer:Cancel();E.bindTimer=nil end
+S.SyncCDM();check(writes==3 and data.triggers[1].trigger.cdmSpells.multi[104],'Deferred CDM selection applies after the import')
+D.cdm[104]=nil
+local edited={triggers={{trigger={type='aura2'}}}}
+local previousData=ForeverAuras.GetData
+ForeverAuras.GetData=function(id)if id:find('Native cooldowns',1,true)then return edited end return previousData(id)end
+check(pcall(S.SyncCDM),'A user-edited CDM entry trigger is skipped, not indexed')
+ForeverAuras.GetData=previousData
+local reloads,previousRegion=0,ForeverAuras.GetRegion
+ForeverAuras.GetRegion=function(id)
+    if id:find('Native cooldowns',1,true)then return {ReloadControlledChildren=function()reloads=reloads+1 end} end
+    return previousRegion(id)
+end
+S.rankKey=nil;D.cdmRank={[100]=1}
+S.SyncCDM();S.SyncCDM()
+check(reloads==1,'Native rows reload once for a new Cooldown Manager order, not on every sync')
+D.cdmRank={[100]=2};S.SyncCDM()
+check(reloads==2,'A Cooldown Manager reorder reloads native rows')
+ForeverAuras.GetRegion=previousRegion;D.cdmRank={}
 ForeverAuras.GetData=nil
 UnitPowerType=function()return 3 end
 loadout('DRUID',{"Tiger's Fury",'Barkskin','Shred','Claw','Rake','Rip','Faerie Fire','Maul','Bash','Frenzied Regeneration'})

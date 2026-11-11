@@ -30,7 +30,7 @@ def export(directory, name, image, size, padding=0, trim=True):
 
 def vector(directory,name,body,width,height):
     svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}">{body}</svg>'
-    (directory/(name+'.svg')).write_text(svg)
+    (directory/(name+'.svg')).write_text(svg,encoding='utf-8',newline='\n')
     image = Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode()))).convert('RGBA')
     export(directory,name,image,(width,height),trim=False)
 

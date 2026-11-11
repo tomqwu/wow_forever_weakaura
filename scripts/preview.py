@@ -134,5 +134,13 @@ select(active);state(params.get('state')||'idle');
 </script></html>'''
 target=ROOT/'preview/index.html'
 catalog={key:dict(value,candidates=candidates(key),alerts=[name for seed,name in candidates(key) if seed in dict(ALERTS[key])]) for key,value in CLASSES.items()}
-target.write_text(HTML.replace('CATALOG',json.dumps(catalog,ensure_ascii=False)).replace('ICONS',(ROOT/'preview/spell-icons.json').read_text()).replace('PLANS',json.dumps(PLANS)).replace('SCHOOLS',json.dumps(SCHOOLS)).replace('VERSION_LABEL','v'+VERSION).replace('RESOURCE_PALETTE',json.dumps(RESOURCE_STYLES)).replace('PET_HEALTH_FILL',json.dumps(PET_HEALTH_COLOR)).replace('HEALTH_FILL',json.dumps(HEALTH_COLOR)))
+# Order matters: PET_HEALTH_FILL contains HEALTH_FILL, so it is replaced first.
+replacements=[('CATALOG',json.dumps(catalog,ensure_ascii=False)),
+    ('ICONS',(ROOT/'preview/spell-icons.json').read_text(encoding='utf-8')),
+    ('PLANS',json.dumps(PLANS)),('SCHOOLS',json.dumps(SCHOOLS)),('VERSION_LABEL','v'+VERSION),
+    ('RESOURCE_PALETTE',json.dumps(RESOURCE_STYLES)),('PET_HEALTH_FILL',json.dumps(PET_HEALTH_COLOR)),
+    ('HEALTH_FILL',json.dumps(HEALTH_COLOR))]
+html=HTML
+for token,value in replacements: html=html.replace(token,value)
+target.write_text(html,encoding='utf-8',newline='\n')
 print(target)
