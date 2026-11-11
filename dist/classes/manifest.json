@@ -1,104 +1,122 @@
 {
-  "version": "0.3.4",
+  "version": "0.3.5",
   "imports": [
     {
       "classToken": "WARLOCK",
       "name": "Warlock",
       "file": "Eclipse-Warlock.txt",
-      "characters": 14826,
-      "bytes": 14827,
-      "sha256": "9e6f043c7c206129d312e2e67325551d9685ef86474c9bc00789d3b3c10c14f8",
+      "characters": 14896,
+      "bytes": 14897,
+      "sha256": "4cdc4b9bf88112f54698f7697262a2162671a40f12a4fcb53d4178c9683db6ed",
       "displays": 126,
       "rootID": "Eclipse | Warlock",
-      "rootUID": "24cb9d435a3"
+      "rootUID": "24cb9d435a3",
+      "updateSlug": "eclipse-hud-warlock",
+      "updateBuild": 305
     },
     {
       "classToken": "WARRIOR",
       "name": "Warrior",
       "file": "Eclipse-Warrior.txt",
-      "characters": 18033,
-      "bytes": 18034,
-      "sha256": "063abc86d6be2aece0f759c140f0915d47e67cc3e8ece78826ac255c58145083",
+      "characters": 18081,
+      "bytes": 18082,
+      "sha256": "f650db4ba63ccbb0f1c08f13c5128c022f838072dc0c29e782b6904d3cf5cfd5",
       "displays": 168,
       "rootID": "Eclipse | Warrior",
-      "rootUID": "cc5a7915ede"
+      "rootUID": "cc5a7915ede",
+      "updateSlug": "eclipse-hud-warrior",
+      "updateBuild": 305
     },
     {
       "classToken": "MAGE",
       "name": "Mage",
       "file": "Eclipse-Mage.txt",
-      "characters": 13234,
-      "bytes": 13235,
-      "sha256": "06bed9d44bde7ddc6b295f8663861f0c8f5c620e41ae7dd1632b400168eb11ed",
+      "characters": 13269,
+      "bytes": 13270,
+      "sha256": "3307f212a7fa0b6aeee4b2a063a56006bf82e73006ac9e4cb95c23bc628472fb",
       "displays": 105,
       "rootID": "Eclipse | Mage",
-      "rootUID": "82fd023df1c"
+      "rootUID": "82fd023df1c",
+      "updateSlug": "eclipse-hud-mage",
+      "updateBuild": 305
     },
     {
       "classToken": "PRIEST",
       "name": "Priest",
       "file": "Eclipse-Priest.txt",
-      "characters": 13290,
-      "bytes": 13291,
-      "sha256": "33852e9ea04da51241f709539b78ca5464fc65a23f174d829e1eaf9356f78184",
+      "characters": 13341,
+      "bytes": 13342,
+      "sha256": "80808eaad6ec9bba694445d4ad948aad467e75a9bb02028501516c48b543669f",
       "displays": 105,
       "rootID": "Eclipse | Priest",
-      "rootUID": "ea5308d7128"
+      "rootUID": "ea5308d7128",
+      "updateSlug": "eclipse-hud-priest",
+      "updateBuild": 305
     },
     {
       "classToken": "ROGUE",
       "name": "Rogue",
       "file": "Eclipse-Rogue.txt",
-      "characters": 13393,
-      "bytes": 13394,
-      "sha256": "87ee3d747195d69ff42d88442a000070f02562c8c139dbddfa8fcdeff49c73de",
+      "characters": 13450,
+      "bytes": 13451,
+      "sha256": "87f3e004b4d5e39822323dbd3c438b7bc91630b8681d780988c8ad8a005f3ac5",
       "displays": 105,
       "rootID": "Eclipse | Rogue",
-      "rootUID": "ab6b0f65d86"
+      "rootUID": "ab6b0f65d86",
+      "updateSlug": "eclipse-hud-rogue",
+      "updateBuild": 305
     },
     {
       "classToken": "DRUID",
       "name": "Druid",
       "file": "Eclipse-Druid.txt",
-      "characters": 14040,
-      "bytes": 14041,
-      "sha256": "883f670e7c68d23e2d23539116db2baeba57207a6d387d4a19181e8a6c2404aa",
+      "characters": 14101,
+      "bytes": 14102,
+      "sha256": "9f1186e0e3b26f444c7a736e99fc5fd827d66e92af5f5aa64d026d7f9f829868",
       "displays": 115,
       "rootID": "Eclipse | Druid",
-      "rootUID": "aa6951c9634"
+      "rootUID": "aa6951c9634",
+      "updateSlug": "eclipse-hud-druid",
+      "updateBuild": 305
     },
     {
       "classToken": "HUNTER",
       "name": "Hunter",
       "file": "Eclipse-Hunter.txt",
-      "characters": 13721,
-      "bytes": 13722,
-      "sha256": "4a2a70aa8b81e240f8dbf0d702e9d6477e97e4b653fa3f73c59981c2caf4340c",
+      "characters": 13760,
+      "bytes": 13761,
+      "sha256": "f9da1286dabe58549be69567f9405f090436f3fb646bbb49ecfc9e29518f24f9",
       "displays": 110,
       "rootID": "Eclipse | Hunter",
-      "rootUID": "96ae1033f10"
+      "rootUID": "96ae1033f10",
+      "updateSlug": "eclipse-hud-hunter",
+      "updateBuild": 305
     },
     {
       "classToken": "SHAMAN",
       "name": "Shaman",
       "file": "Eclipse-Shaman.txt",
-      "characters": 12765,
-      "bytes": 12766,
-      "sha256": "314aae0352718b1cee68e695095b111ae0ff6865cba605f839dfb1e56aad3431",
+      "characters": 12829,
+      "bytes": 12830,
+      "sha256": "290ac03c21f8ccddf3a321795b31bd3de50e4fd9ca60b3c70a72e7a8dcb89201",
       "displays": 97,
       "rootID": "Eclipse | Shaman",
-      "rootUID": "22babdb48a1"
+      "rootUID": "22babdb48a1",
+      "updateSlug": "eclipse-hud-shaman",
+      "updateBuild": 305
     },
     {
       "classToken": "PALADIN",
       "name": "Paladin",
       "file": "Eclipse-Paladin.txt",
-      "characters": 13118,
-      "bytes": 13119,
-      "sha256": "390686c76ec8fec6c0da804b5ec810ac332a2a891019357bab9dc2e650cf3ff8",
+      "characters": 13176,
+      "bytes": 13177,
+      "sha256": "61837a772e83c628ae9ac1957f72d5046bef582b045ff02d4eae717feee2e91b",
       "displays": 103,
       "rootID": "Eclipse | Paladin",
-      "rootUID": "d6ba3ebf430"
+      "rootUID": "d6ba3ebf430",
+      "updateSlug": "eclipse-hud-paladin",
+      "updateBuild": 305
     }
   ]
 }

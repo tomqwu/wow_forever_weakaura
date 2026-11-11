@@ -1,9 +1,9 @@
 ## Interface: 16001
 ## Title: Eclipse | Class Combat HUD
-## Notes: Controls and original media for the Eclipse ForeverAuras class HUD.
-## Notes-zhCN: Eclipse 职业战斗界面的控制面板与原创材质。需导入配套 ForeverAuras 字符串。
+## Notes: Controls, original media and bundled ForeverAuras imports for the Eclipse class HUD. Install or update from /fa or /eclipse install.
+## Notes-zhCN: Eclipse 职业战斗界面的控制面板、原创材质与随附的 ForeverAuras 导入。可在 /fa 中或输入 /eclipse install 安装与更新。
 ## Author: Eclipse HUD contributors
-## Version: 0.3.4
+## Version: 0.3.5
 ## Dependencies: ForeverAuras
 ## SavedVariables: EclipseHUDDB
 ## IconTexture: Interface\AddOns\EclipseHUD\Media\crest-warlock.tga

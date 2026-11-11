@@ -5,7 +5,7 @@ EclipseHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.3.4"
+E.releaseVersion = "0.3.5"
 E.importAPI = 1
 E.rootID = "Eclipse | Class Combat HUD"
 E.classNames = {
@@ -260,6 +260,61 @@ function E.ResetPosition()
     E.ApplyLayout(); E.Notify()
     if E.RefreshOptions then E.RefreshOptions() end
 end
+-- Bundled class imports. ForeverAuras' companion interface lists the current
+-- class in /fa: "ready to install" when the group is missing (or predates
+-- update tags), or an update when the installed tag's build is older. FA runs
+-- the import and shows its window first; nothing here writes aura data.
+local function bundleFor(class) return class and E.bundledImports and E.bundledImports[class] end
+local function companionEntry(bundle)
+    return {name=bundle.rootID..' '..bundle.version, author='Eclipse HUD', encoded=bundle.encoded, wagoVersion=bundle.build,
+        versionNote=E.L('Bundled with EclipseHUD. ForeverAuras shows its import window before changing anything.')}
+end
+function E.InstalledBuild(rootID)
+    local api=E.API()
+    local data=api and api.GetData and api.GetData(rootID)
+    if type(data)~='table' then return nil end
+    local url=type(data.url)=='string' and data.url or ''
+    return tonumber(url:match('wago%.io/[^/]+/(%d+)')) or 0
+end
+-- Displays of this class left without a parent by an import that stopped
+-- part way. Read-only scan of FA's saved table; the class root itself is a
+-- legitimate parentless display for a standalone class install.
+function E.DetachedDisplays(rootID)
+    local saved=ForeverAurasSaved and ForeverAurasSaved.displays
+    if type(saved)~='table' then return 0 end
+    local prefix,count=rootID..' | ',0
+    for id,data in pairs(saved) do
+        if type(id)=='string' and id:sub(1,#prefix)==prefix and type(data)=='table' and data.parent==nil then count=count+1 end
+    end
+    return count
+end
+local function warnDetached(rootID,count)
+    print('Eclipse: '..E.L('%d displays of "%s" are outside their group because an earlier import stopped part way. In /fa, delete every top-level "%s" entry, then run /eclipse install.'):format(count,rootID,rootID))
+end
+function E.RegisterBundledImport()
+    local bundle,api=bundleFor(E.class),E.API()
+    if E.bundleRegistered or not bundle or not api or not api.AddCompanionData then return end
+    E.bundleRegistered=true
+    api.AddCompanionData({slugs={[bundle.slug]=companionEntry(bundle)}})
+    local installed=E.InstalledBuild(bundle.rootID)
+    -- FA's import window matches an existing group by UID and offers Update.
+    if not installed or installed==0 then api.AddCompanionData({stash={[bundle.rootID]=companionEntry(bundle)}}) end
+end
+function E.CheckDetached()
+    local bundle=bundleFor(E.class)
+    if E.detachedChecked or not bundle then return end
+    E.detachedChecked=true
+    local count=E.DetachedDisplays(bundle.rootID)
+    if count>0 then warnDetached(bundle.rootID,count) end
+end
+function E.InstallBundled(force)
+    local bundle,api=bundleFor(E.class),E.API()
+    if not bundle or not api or not api.Import then print('Eclipse: '..E.L('No bundled import is available for this class.'));return end
+    local count=E.DetachedDisplays(bundle.rootID)
+    -- An import over detached displays meets their old UIDs outside the group.
+    if count>0 and not force then warnDetached(bundle.rootID,count);return end
+    api.Import(bundle.encoded)
+end
 local hoverTimer
 local function stopHover()
     if hoverTimer then hoverTimer:Cancel(); hoverTimer = nil end
@@ -356,6 +411,8 @@ events:SetScript("OnEvent", function(_, event, addon)
     if event == "ADDON_LOADED" then
         if addon ~= "EclipseHUD" then return end
         E.InitDB(); events:UnregisterEvent("ADDON_LOADED")
+        -- Before FA's login announcement, so /fa lists the bundled import.
+        E.RegisterBundledImport()
     elseif event == "PLAYER_LEAVING_WORLD" then E.Shutdown(); return
     elseif event == "PLAYER_REGEN_DISABLED" then E.StopDrag(false)
     elseif event == "PLAYER_REGEN_ENABLED" then
@@ -377,6 +434,7 @@ events:SetScript("OnEvent", function(_, event, addon)
         E.InitDB(); E.ApplyLayout()
         if E.discovery then E.discovery.Start() end
         if E.state then E.state.Start() end
+        if event == "PLAYER_ENTERING_WORLD" then E.RegisterBundledImport(); E.CheckDetached() end
     end
     E.Notify()
 end)

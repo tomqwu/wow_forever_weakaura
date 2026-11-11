@@ -2,18 +2,20 @@
 
 ## English
 
-**Version 0.3.4 — organised aura tree and safer imports (prerelease).** One companion supports all nine classes, with independent preferences and automatic class loading. Import only the classes you play, or use the combined file. [Warlock only](dist/classes/Eclipse-Warlock.txt) is roughly 83% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
+**Version 0.3.5 — auras bundled in the addon (prerelease).** One companion supports all nine classes, with independent preferences and automatic class loading. The addon now carries the auras for every class: install it, and ForeverAuras offers your class's group in `/fa`. No string to paste. Manual class files remain available: [Warlock only](dist/classes/Eclipse-Warlock.txt) is roughly 83% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
 
 ### Install or update
 
-1. Install **[ForeverAuras](https://github.com/neroxrw/foreverauras)**. The current source checked here is 1.3.7; the Forever interface is `16001`.
+1. Install **[ForeverAuras](https://github.com/neroxrw/foreverauras)**. The current source checked here is 1.3.7; the Forever interface is `16001`. EclipseHUD declares it as a dependency and does not load without it.
 2. Download the [release ZIP](https://github.com/tomqwu/wow_forever_weakaura/releases) and copy **`EclipseHUD/`** into your current client's `Interface/AddOns/`. The TOC belongs directly inside that folder.
-3. Enable EclipseHUD and ForeverAuras, then **`/reload` before importing**.
-4. Out of combat, open **`/fa` → Import** and paste your class file from **`imports/`** in the ZIP. Choose **Update** for an existing class group. It preserves the combined parent and other classes; avoid **Import as Copy** for updates.
-5. A fresh class file also works standalone. The optional **`Eclipse-Class-Combat-HUD.txt`** installs/updates a combined group. Use class files for standalone class updates.
+3. Enable EclipseHUD and ForeverAuras, then **`/reload`**.
+4. Out of combat, open **`/fa`**. Your class appears under **ready to be installed** (first install, or a group installed before 0.3.5) or under **updates** (an older tagged group). Click it: ForeverAuras opens its own import window, and you confirm **Import** or **Update** there. **`/eclipse install`** opens the same window directly.
+5. Choose **Update** for an existing class group; it preserves the combined parent and other classes. Avoid **Import as Copy** for updates.
 6. Use **`/eclipse`** or **`/ehud`** for controls. Existing positions/preferences survive; **Position → Reset position** changes only X/Y.
 
-New class imports need the v0.3.4 companion or compatible import API. Existing v0.3.2 and v0.3.3 class strings remain compatible, so you can update one class at a time. The new compact wings and optional tracked-bar renderer need that class’s updated file. The ZIP includes nine class files, the combined file, and a size/SHA-256 manifest.
+The bundled import always matches the installed companion. Only the class you are playing is offered; log in on another class to install or update it. ForeverAuras recognises updates through a `wago.io/eclipse-hud-<class>/<build>` tag on each display. It reads only the build number and never connects to wago.io, so ignore that link if `/fa` shows it.
+
+**Manual import** still works: paste a class file from **`imports/`** in the ZIP into **`/fa` → Import**. The optional **`Eclipse-Class-Combat-HUD.txt`** installs or updates a combined nine-class group. Class imports need the v0.3.5 companion or a compatible import API. Existing v0.3.2–v0.3.4 class strings remain compatible, so you can update one class at a time. The new compact wings and optional tracked-bar renderer need that class’s updated file. The ZIP includes nine class files, the combined file, and a size/SHA-256 manifest.
 
 ### Aura structure
 
@@ -33,7 +35,7 @@ Each class is one group whose direct children are organising sections, with noth
 
 Sections sit at `(0,0)`, so every display keeps its position. Display names and IDs are unchanged; an **Update** moves existing displays into their sections and removes the empty v0.3.2 slot groups.
 
-**If an import or update stops part way** (loose `Eclipse | <Class> | …` entries at the top of the `/fa` list, bars at screen centre that ignore dragging): ForeverAuras stopped its import before it restored those parents, so updating again cannot reattach them. Delete every top-level `Eclipse | <Class>` entry for that class, import the class file again, and wait for the import window to finish before any `/reload`. Your `/eclipse` settings live separately and are kept. If it stops again, turn on Lua errors with `/console scriptErrors 1` and report the error text.
+**If an import or update stops part way** (loose `Eclipse | <Class> | …` entries at the top of the `/fa` list, bars at screen centre that ignore dragging): ForeverAuras stopped its import before it restored those parents, so updating again cannot reattach them. EclipseHUD detects this at login and prints a warning, and `/eclipse install` refuses to import over it (`/eclipse install force` overrides). Delete every top-level `Eclipse | <Class>` entry for that class, run `/eclipse install` (or import the class file again), and wait for the import window to finish before any `/reload`. Your `/eclipse` settings live separately and are kept. If it stops again, turn on Lua errors with `/console scriptErrors 1` and report the error text.
 
 | Class | Smaller import |
 | --- | --- |
@@ -146,18 +148,20 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 ## 简体中文
 
-**版本 0.3.4：分区整理的光环结构与更安全的导入（预发布）。** 一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。可只导入所玩职业，也可使用九职业合并文件。[术士独立导入](dist/classes/Eclipse-Warlock.txt)比合并文件约小 83%；[精确大小](dist/classes/README.md)由构建自动生成。
+**版本 0.3.5：光环随插件附带（预发布）。** 一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。插件现已附带所有职业的光环：安装后，ForeverAuras 会在 `/fa` 中提供当前职业的光环组，无需粘贴字符串。手动职业文件仍可使用：[术士独立导入](dist/classes/Eclipse-Warlock.txt)比合并文件约小 83%；[精确大小](dist/classes/README.md)由构建自动生成。
 
 ### 安装与更新
 
-1. 先安装 **[ForeverAuras](https://github.com/neroxrw/foreverauras)**。当前校验的安装源码版本为 1.3.7，无限服接口版本为 `16001`。
+1. 先安装 **[ForeverAuras](https://github.com/neroxrw/foreverauras)**。当前校验的安装源码版本为 1.3.7，无限服接口版本为 `16001`。EclipseHUD 将其声明为依赖，未安装时不会加载。
 2. 下载[发布 ZIP](https://github.com/tomqwu/wow_forever_weakaura/releases)，把 **`EclipseHUD/`** 放入当前客户端的 `Interface/AddOns/`，TOC 文件应直接位于该文件夹中。
-3. 启用 EclipseHUD 与 ForeverAuras，**先输入 `/reload`，再导入字符串**。
-4. 脱离战斗后打开 **`/fa` → 导入**，粘贴 ZIP 内 **`imports/`** 中对应职业的文件。已有职业组请选择 **更新（Update）**，不要导入为副本。更新仅涉及该职业，保留其原有合并父组及其他职业。
-5. 首次安装也可只导入一个职业。可选的 **`Eclipse-Class-Combat-HUD.txt`** 用于安装或更新合并组；独立职业安装继续使用职业文件更新。
+3. 启用 EclipseHUD 与 ForeverAuras，然后输入 **`/reload`**。
+4. 脱离战斗后打开 **`/fa`**。当前职业会出现在 **待安装（ready to be installed）**（首次安装，或 0.3.5 之前安装的组）或 **更新** 列表中（带有旧版本标记的组）。点击后，ForeverAuras 会打开自己的导入窗口，由你确认 **导入** 或 **更新**。也可输入 **`/eclipse install`** 直接打开同一窗口。
+5. 已有职业组请选择 **更新（Update）**，不要导入为副本。更新仅涉及该职业，保留其原有合并父组及其他职业。
 6. 输入 **`/eclipse`** 或 **`/ehud`** 配置。升级保留位置和偏好；**位置与缩放 → 重置位置** 只重置 X/Y。
 
-新职业文件需要 0.3.4 配套插件或兼容的导入接口。原有 0.3.2 与 0.3.3 职业字符串仍可使用，因此可以逐个职业更新；新紧凑排列和可选持续时间条需要更新该职业文件。ZIP 同时包含九份独立文件、合并文件，以及大小和 SHA-256 清单。
+随附的导入始终与已安装的配套插件一致。只提供当前所玩的职业；如需安装或更新其他职业，请登录该职业的角色。ForeverAuras 通过每个显示上的 `wago.io/eclipse-hud-<职业>/<构建号>` 标记识别更新：它只读取构建号，不会连接 wago.io；若 `/fa` 中显示该链接，可忽略。
+
+**手动导入**仍然可用：把 ZIP 内 **`imports/`** 中的职业文件粘贴到 **`/fa` → 导入**。可选的 **`Eclipse-Class-Combat-HUD.txt`** 用于安装或更新九职业合并组。职业文件需要 0.3.5 配套插件或兼容的导入接口；原有 0.3.2–0.3.4 职业字符串仍可使用，因此可以逐个职业更新。ZIP 同时包含九份独立文件、合并文件，以及大小和 SHA-256 清单。
 
 ### 光环结构
 
@@ -177,7 +181,7 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 分区位于 `(0,0)`，因此每个显示的位置不变；显示名称与 ID 不变。选择 **更新（Update）** 会把现有显示移入对应分区，并删除 0.3.2 遗留的空槽位组。
 
-**如果导入或更新中途停止**（`/fa` 列表顶层出现散放的 `Eclipse | <职业> | …` 条目，条形停在屏幕中央且无法拖动）：说明 ForeverAuras 在恢复这些父组之前停止了导入，再次更新也无法重新挂回。请删除该职业所有顶层 `Eclipse | <职业>` 条目，重新导入职业文件，并等导入窗口完成后再 `/reload`。`/eclipse` 设置单独保存，不受影响。如果再次停止，请用 `/console scriptErrors 1` 打开 Lua 错误提示，并报告错误内容。
+**如果导入或更新中途停止**（`/fa` 列表顶层出现散放的 `Eclipse | <职业> | …` 条目，条形停在屏幕中央且无法拖动）：说明 ForeverAuras 在恢复这些父组之前停止了导入，再次更新也无法重新挂回。EclipseHUD 会在登录时检测到这种情况并提示，`/eclipse install` 也会拒绝在此状态下导入（`/eclipse install force` 可强制）。请删除该职业所有顶层 `Eclipse | <职业>` 条目，输入 `/eclipse install`（或重新导入职业文件），并等导入窗口完成后再 `/reload`。`/eclipse` 设置单独保存，不受影响。如果再次停止，请用 `/console scriptErrors 1` 打开 Lua 错误提示，并报告错误内容。
 
 | 职业 | 独立导入 |
 | --- | --- |

@@ -8,7 +8,7 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 sys.path.insert(0,str(ROOT/'src'))
-from build import generate, class_import, TITLE, UTF8, PRIMARY_Y
+from build import generate, class_import, TITLE, UTF8, PRIMARY_Y, VERSION
 from catalog import CLASSES, HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES
 from build import rgba
 
@@ -136,6 +136,19 @@ class PackTests(unittest.TestCase):
         # Both directions, exactly once: nothing is detached or double-listed.
         self.assertEqual(sorted(listed),sorted(d['id'] for d in self.pack['c']))
         self.assertEqual(sorted(subtree(by_id,TITLE)),sorted(by_id))
+
+    def test_update_tags_link_displays_to_bundled_build(self):
+        build=sum(int(part)*scale for part,scale in zip(VERSION.split('.'),(10000,100,1)))
+        self.assertNotIn('url',self.pack['d'],'The combined root is not a companion update target')
+        for d in self.pack['c']:
+            cls=d['load']['class']['single']
+            self.assertEqual(d['url'],f'https://wago.io/eclipse-hud-{cls.lower()}/{build}',d['id'])
+            # FA's own parser: wago.io/<slug>/<number>
+            self.assertRegex(d['url'],r'wago\.io/[^/]+/[0-9]+$')
+        manifest=json.loads((ROOT/'dist/classes/manifest.json').read_text(**UTF8))
+        for record in manifest['imports']:
+            self.assertEqual(record['updateBuild'],build)
+            self.assertEqual(record['updateSlug'],'eclipse-hud-'+record['classToken'].lower())
 
     def test_class_root_holds_only_sections(self):
         by_id={d['id']:d for d in self.regions}

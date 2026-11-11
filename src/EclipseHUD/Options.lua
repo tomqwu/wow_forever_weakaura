@@ -141,7 +141,9 @@ end
 SLASH_ECLIPSEHUD1 = "/eclipse"
 SLASH_ECLIPSEHUD2 = "/ehud"
 SlashCmdList.ECLIPSEHUD = function(message)
-    if message and message:match("^%s*spells%s*$") and E.ReportSpells then E.ReportSpells()
+    local install=message and message:match("^%s*install%s*(%a*)%s*$")
+    if install and E.InstallBundled then E.InstallBundled(install=="force")
+    elseif message and message:match("^%s*spells%s*$") and E.ReportSpells then E.ReportSpells()
     elseif message and message:match("^%s*inspect%s*$") and E.state then E.state.Inspect()
     else E.ToggleOptions() end
 end
