@@ -1,5 +1,8 @@
 -- Use the exact LibSerialize + LibDeflate wire format accepted by FA.
 strmatch = string.match
+-- The game client is Lua 5.1; keep the tool usable on newer interpreters.
+local unpack = unpack or table.unpack
+local compile = loadstring or load
 local base = arg[0]:match("^(.*[/\\])") or "scripts/"
 dofile(base .. "../vendor/LibStub.lua")
 dofile(base .. "../vendor/LibSerialize.lua")
@@ -42,14 +45,31 @@ elseif arg[1] == "verify" then
         assert(not uids[d.uid],"Duplicate UID: "..d.uid);uids[d.uid]=true
         for _,t in ipairs(d.triggers) do
             for _,key in ipairs({"custom","customDuration","customName","customIcon","customStacks"}) do
-                if t.trigger[key] then assert(loadstring("return "..t.trigger[key]),d.id.." "..key) end
+                if t.trigger[key] then assert(compile("return "..t.trigger[key]),d.id.." "..key) end
             end
         end
-        for _,a in pairs(d.actions) do if a.custom then assert(loadstring(a.custom)) end end
+        -- Display-level functions FA compiles as "return <code>".
+        for _,key in ipairs({"customText","customSort"}) do
+            if d[key] then assert(compile("return "..d[key]),d.id.." "..key) end
+        end
+        if d.triggers.customTriggerLogic then
+            assert(compile("return "..d.triggers.customTriggerLogic),d.id.." customTriggerLogic")
+        end
+        for phase,a in pairs(d.actions) do if a.custom then assert(compile(a.custom),d.id.." "..phase.." action") end end
     end
+    -- Both directions: every parent lists its child exactly once, and every
+    -- listed child points back, so no display can be silently detached.
+    local listed={}
     for _,d in pairs(ids) do
-        if d.parent then assert(ids[d.parent],"Missing parent") end
-        for _,id in ipairs(d.controlledChildren or {}) do assert(ids[id].parent==d.id,"Broken child") end
+        for _,id in ipairs(d.controlledChildren or {}) do
+            assert(ids[id],"Missing child: "..id)
+            assert(ids[id].parent==d.id,"Broken child: "..id)
+            assert(not listed[id],"Child listed twice: "..id);listed[id]=true
+        end
+    end
+    for id,d in pairs(ids) do
+        if d.parent then assert(ids[d.parent],"Missing parent: "..id);assert(listed[id],"Unlisted child: "..id)
+        else assert(d==data.d,"Second root: "..id) end
     end
     print("Decoded import verified: "..#data.c.." children, unique IDs, hierarchy, Lua compilation")
 else error("Usage: codec.lua encode INPUT.lua OUTPUT.txt | verify INPUT.txt [EXPECTED.lua]") end

@@ -1,5 +1,5 @@
 local _, E = ...
-local P={cooldowns={},resources={},pending={}}
+local P={cooldowns={},resources={},pending={},hooked=setmetatable({},{__mode='k'})}
 E.presentation=P
 local formatter
 local function enabled(class,module)
@@ -59,7 +59,15 @@ function E.StyleCooldown(region,class,module)
         item.original=E.Call(item.cd.GetCountdownFormatter,item.cd)
         item.threshold=E.Call(item.cd.GetCountdownMillisecondsThreshold,item.cd)
         P.cooldowns[region]=item
-        if region.HookScript then region:HookScript('OnShow',function()applyCooldown(item)end) end
+        -- One hook per region; it follows the current item, so a replaced
+        -- cooldown widget does not leave a stale handler behind.
+        if region.HookScript and not P.hooked[region] then
+            P.hooked[region]=true
+            region:HookScript('OnShow',function()
+                local current=P.cooldowns[region]
+                if current then applyCooldown(current) end
+            end)
+        end
     end
     applyCooldown(item)
 end
@@ -101,8 +109,10 @@ function E.StyleResource(region,class,side)
         end
         if hooksecurefunc then
             for _,target in ipairs({{region,'UpdateStatusBarTexture'},{region.bar,'UpdateAnchors'}}) do
+                -- These run synchronously inside FA's Add, including its
+                -- import coroutine: an error here must never escape into FA.
                 if target[1][target[2]] then hooksecurefunc(target[1],target[2],function()
-                    if not item.restoring then applyResource(item) end
+                    if not item.restoring and not E.Importing() then pcall(applyResource,item) end
                 end) end
             end
         end

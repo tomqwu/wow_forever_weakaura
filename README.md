@@ -2,7 +2,7 @@
 
 ## English
 
-**Version 0.3.3 — smaller class imports and HUD controls (prerelease).** One companion supports all nine classes, with independent preferences and automatic class loading. Import only the classes you play, or use the combined file. [Warlock only](dist/classes/Eclipse-Warlock.txt) is roughly 83% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
+**Version 0.3.4 — organised aura tree and safer imports (prerelease).** One companion supports all nine classes, with independent preferences and automatic class loading. Import only the classes you play, or use the combined file. [Warlock only](dist/classes/Eclipse-Warlock.txt) is roughly 83% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
 
 ### Install or update
 
@@ -13,7 +13,27 @@
 5. A fresh class file also works standalone. The optional **`Eclipse-Class-Combat-HUD.txt`** installs/updates a combined group. Use class files for standalone class updates.
 6. Use **`/eclipse`** or **`/ehud`** for controls. Existing positions/preferences survive; **Position → Reset position** changes only X/Y.
 
-New class imports need the v0.3.3 companion or compatible import API. Existing v0.3.2 class strings remain compatible, so you can update one class at a time. The new compact wings and optional tracked-bar renderer need that class’s updated file. The ZIP includes nine class files, the combined file, and a size/SHA-256 manifest.
+New class imports need the v0.3.4 companion or compatible import API. Existing v0.3.2 and v0.3.3 class strings remain compatible, so you can update one class at a time. The new compact wings and optional tracked-bar renderer need that class’s updated file. The ZIP includes nine class files, the combined file, and a size/SHA-256 manifest.
+
+### Aura structure
+
+Each class is one group whose direct children are organising sections, with nothing loose beside them except the cast bar:
+
+| Section | Contents |
+| --- | --- |
+| Frame | Chassis, living runes, combat effects, seal, caption (drawn first, behind everything) |
+| Resources | Health, class resource, pet health, shards/combo points/swing timers/totems |
+| Primary | Main ability wings (native left/right) and Warrior usable-proc cues |
+| Utility | Small on-cooldown Defense/Offense/Control rows |
+| Native rows | Overflow cooldowns, utility and equipped items from the Cooldown Manager |
+| Auras | Target effects, player effects, maintenance, tracked bars, reminders, weapon coatings |
+| Nameplates | Optional nameplate debuff icons |
+| Alerts | Invisible ready-alert triggers |
+| Cast | Optional Eclipse cast bar |
+
+Sections sit at `(0,0)`, so every display keeps its position. Display names and IDs are unchanged; an **Update** moves existing displays into their sections and removes the empty v0.3.2 slot groups.
+
+**If an import or update stops part way** (loose `Eclipse | <Class> | …` entries at the top of the `/fa` list, bars at screen centre that ignore dragging): ForeverAuras stopped its import before it restored those parents, so updating again cannot reattach them. Delete every top-level `Eclipse | <Class>` entry for that class, import the class file again, and wait for the import window to finish before any `/reload`. Your `/eclipse` settings live separately and are kept. If it stops again, turn on Lua errors with `/console scriptErrors 1` and report the error text.
 
 | Class | Smaller import |
 | --- | --- |
@@ -126,7 +146,7 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 ## 简体中文
 
-**版本 0.3.3：独立职业导入与界面控制（预发布）。** 一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。可只导入所玩职业，也可使用九职业合并文件。[术士独立导入](dist/classes/Eclipse-Warlock.txt)比合并文件约小 83%；[精确大小](dist/classes/README.md)由构建自动生成。
+**版本 0.3.4：分区整理的光环结构与更安全的导入（预发布）。** 一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。可只导入所玩职业，也可使用九职业合并文件。[术士独立导入](dist/classes/Eclipse-Warlock.txt)比合并文件约小 83%；[精确大小](dist/classes/README.md)由构建自动生成。
 
 ### 安装与更新
 
@@ -137,7 +157,27 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 5. 首次安装也可只导入一个职业。可选的 **`Eclipse-Class-Combat-HUD.txt`** 用于安装或更新合并组；独立职业安装继续使用职业文件更新。
 6. 输入 **`/eclipse`** 或 **`/ehud`** 配置。升级保留位置和偏好；**位置与缩放 → 重置位置** 只重置 X/Y。
 
-新职业文件需要 0.3.3 配套插件或兼容的导入接口。原有 0.3.2 职业字符串仍可使用，因此可以逐个职业更新；新紧凑排列和可选持续时间条需要更新该职业文件。ZIP 同时包含九份独立文件、合并文件，以及大小和 SHA-256 清单。
+新职业文件需要 0.3.4 配套插件或兼容的导入接口。原有 0.3.2 与 0.3.3 职业字符串仍可使用，因此可以逐个职业更新；新紧凑排列和可选持续时间条需要更新该职业文件。ZIP 同时包含九份独立文件、合并文件，以及大小和 SHA-256 清单。
+
+### 光环结构
+
+每个职业是一个组，其直接子项只有分区组；除施法条外，没有散放的显示：
+
+| 分区 | 内容 |
+| --- | --- |
+| Frame（框架） | 底座、流动符文、战斗特效、徽记、标题（最先绘制，位于最底层） |
+| Resources（资源） | 生命值、职业资源、宠物生命、灵魂碎片/连击点/挥击计时/图腾 |
+| Primary（主技能） | 主技能左右两翼（原生）与战士可用触发提示 |
+| Utility（辅助） | 仅冷却中显示的防御/进攻/控制小图标行 |
+| Native rows（原生行） | 冷却管理器中的溢出冷却、辅助技能与装备物品 |
+| Auras（光环） | 目标效果、自身效果、维持类光环、持续时间条、提醒、武器涂层 |
+| Nameplates（姓名板） | 可选的姓名板减益图标 |
+| Alerts（提示） | 不可见的就绪提示触发器 |
+| Cast（施法条） | 可选的 Eclipse 施法条 |
+
+分区位于 `(0,0)`，因此每个显示的位置不变；显示名称与 ID 不变。选择 **更新（Update）** 会把现有显示移入对应分区，并删除 0.3.2 遗留的空槽位组。
+
+**如果导入或更新中途停止**（`/fa` 列表顶层出现散放的 `Eclipse | <职业> | …` 条目，条形停在屏幕中央且无法拖动）：说明 ForeverAuras 在恢复这些父组之前停止了导入，再次更新也无法重新挂回。请删除该职业所有顶层 `Eclipse | <职业>` 条目，重新导入职业文件，并等导入窗口完成后再 `/reload`。`/eclipse` 设置单独保存，不受影响。如果再次停止，请用 `/console scriptErrors 1` 打开 Lua 错误提示，并报告错误内容。
 
 | 职业 | 独立导入 |
 | --- | --- |

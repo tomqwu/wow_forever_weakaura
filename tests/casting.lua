@@ -33,6 +33,14 @@ C.Release('AnotherAddon')
 check(PlayerCastingBarFrame.showCastbar and GamepadPlayerCastingBarFrame.showCastbar,'Final release restores original request')
 E.Set('hideDefaultCast',true);PlayerCastingBarFrame:SetAndUpdateShowCastbar(false);E.Set('hideDefaultCast',false)
 check(PlayerCastingBarFrame.showCastbar==false,'Latest external suppression request is retained')
+issecretvalue=function(v)return v=='secret' end
+CastingBarFrame=bar('secret')
+local lateGamepad=bar(true);GamepadPlayerCastingBarFrame=lateGamepad
+E.Set('hideDefaultCast',true)
+check(not lateGamepad.showCastbar,'An unreadable bar is skipped; later bars are still acquired')
+E.Set('hideDefaultCast',false)
+check(lateGamepad.showCastbar,'The later bar is restored on release')
+issecretvalue=nil;CastingBarFrame=nil
 local effects={}
 E.CastMotion=function(kind)effects[#effects+1]=kind end
 C_Timer.NewTimer=function(_,fn)return {callback=fn,Cancel=function(self)self.cancelled=true end}end

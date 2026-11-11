@@ -40,6 +40,11 @@ check(math.abs(mid-.5)<.0001 and math.abs(alpha-.5)<.0001,'Mid-transition sample
 M.Change(false,false)
 check(math.abs(M.entries.first.transition.from-.5)<.0001,'Interrupted close starts from current position')
 check(math.abs(M.entries.first.transition.alpha-.5)<.0001,'Interrupted close preserves current opacity')
+do
+    local class=E.class;E.class=nil
+    assert(pcall(M.Gather),'UI hide before a supported class is known must not error')
+    E.class=class
+end
 local resource=M.entries['Eclipse | Warlock | Health']
 M.Change(true,false);check(resource.transition.alpha==1,'Opening resources remain visible while sliding')
 now=1

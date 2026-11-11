@@ -1,4 +1,14 @@
-# Validation for 0.3.3
+# Validation for 0.3.4
+
+## 0.3.4 (unreleased) — aura structure and import safety
+
+Automated only; nothing here is game-client evidence.
+
+- `tests/test_pack.py` asserts each class root lists exactly the eight sections plus Cast, sections at `(0,0)` hold children, no empty groups remain, depth is at most three below the class root, and Warrior proc cues keep their former screen offset inside Primary. Class-file scopes are compared against the class root's reachable subtree, not the generator's own load predicate. Parent/child links are checked both ways, exactly once.
+- `scripts/codec.lua verify` now fails on an unlisted child, a child listed twice or a second root, and compiles custom text, custom sort and custom trigger logic. The combined import is round-tripped against its source table, like the class files.
+- FA's updater treats child `xOffset`/`yOffset` as Group Arrangement (default on), so an Update applies the moved proc offsets (`OptionsFrames/Update.lua` category mapping; source review, not a live update).
+- Companion import safety: layout, CDM sync and ability binding defer while `IsImporting()` is true; root show/hide hooks are installed once and ignore import-time show/hide. A live interrupted Warlock update (21 parentless roots, stopped in phase 2 before `Primary | Native 4 | Entry`) is recorded in the plan's work log. Its triggering error has not been captured; the review found no companion path that raises into, or calls `Add` within, the import coroutine.
+- Pending live checks: a fresh class import and an Update from 0.3.3 both finish with every display inside its section; dragging moves the whole HUD; FX stays behind the seal.
 
 ## Automated evidence
 

@@ -15,10 +15,11 @@ local function acquireBars()
     if not next(C.owners) then return end
     for _,name in ipairs({'PlayerCastingBarFrame','CastingBarFrame','GamepadPlayerCastingBarFrame'}) do
         local bar=_G[name]
-        if bar then
-            local record=C.bars[bar]
+        local record=bar and C.bars[bar]
+        -- Skip (do not abort the loop for) a bar whose state is unreadable;
+        -- the remaining bars still need ownership.
+        if bar and (record or E.Readable(bar.showCastbar)) then
             if not record then
-                if not E.Readable(bar.showCastbar) then return end
                 record={requested=bar.showCastbar};C.bars[bar]=record
                 if bar.HookScript then bar:HookScript('OnShow',function()
                     if next(C.owners) then bar:Hide() end
