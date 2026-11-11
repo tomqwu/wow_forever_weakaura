@@ -4,7 +4,7 @@
 
 The current README supersedes the v0.3.3 ZIP’s native Essential/Utility → Hidden guidance: native OnHide unregisters update events. Keep viewers Always. Choose native displays with duplicate Eclipse modules off, or Eclipse tracked bars with FA global opacity hide. No runtime/version change or release-asset overwrite.
 
-## 0.3.4 — unreleased
+## 0.3.4 — 2026-11-11 (prerelease)
 
 - Organise each class group into sections (Frame, Resources, Primary, Utility, Native rows, Auras, Nameplates, Alerts) plus the cast bar; no loose displays at the class root. IDs/UIDs and screen positions are unchanged; Warrior usable-proc cues move into Primary with an equivalent offset. Remove the eight empty v0.3.2 "Native N" slot groups and the empty Maintenance rows of Warrior, Rogue and Shaman.
 - Companion never mutates displays during a ForeverAuras import: layout, CDM selection sync, ability binding and root show/hide hooks wait for the import to finish. A long import no longer stops the bind retry; it continues slowly instead of leaving the layout unapplied.
