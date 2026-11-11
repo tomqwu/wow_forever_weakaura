@@ -8,15 +8,15 @@ Use the combined import for a fresh nine-class installation or to update an exis
 
 | Class | Import | Characters | Displays |
 | --- | --- | ---: | ---: |
-| Warlock | [Eclipse-Warlock.txt](Eclipse-Warlock.txt) | 14,826 | 126 |
-| Warrior | [Eclipse-Warrior.txt](Eclipse-Warrior.txt) | 18,033 | 168 |
-| Mage | [Eclipse-Mage.txt](Eclipse-Mage.txt) | 13,234 | 105 |
-| Priest | [Eclipse-Priest.txt](Eclipse-Priest.txt) | 13,290 | 105 |
-| Rogue | [Eclipse-Rogue.txt](Eclipse-Rogue.txt) | 13,393 | 105 |
-| Druid | [Eclipse-Druid.txt](Eclipse-Druid.txt) | 14,040 | 115 |
-| Hunter | [Eclipse-Hunter.txt](Eclipse-Hunter.txt) | 13,721 | 110 |
-| Shaman | [Eclipse-Shaman.txt](Eclipse-Shaman.txt) | 12,765 | 97 |
-| Paladin | [Eclipse-Paladin.txt](Eclipse-Paladin.txt) | 13,118 | 103 |
+| Warlock | [Eclipse-Warlock.txt](Eclipse-Warlock.txt) | 14,896 | 126 |
+| Warrior | [Eclipse-Warrior.txt](Eclipse-Warrior.txt) | 18,081 | 168 |
+| Mage | [Eclipse-Mage.txt](Eclipse-Mage.txt) | 13,269 | 105 |
+| Priest | [Eclipse-Priest.txt](Eclipse-Priest.txt) | 13,341 | 105 |
+| Rogue | [Eclipse-Rogue.txt](Eclipse-Rogue.txt) | 13,450 | 105 |
+| Druid | [Eclipse-Druid.txt](Eclipse-Druid.txt) | 14,101 | 115 |
+| Hunter | [Eclipse-Hunter.txt](Eclipse-Hunter.txt) | 13,760 | 110 |
+| Shaman | [Eclipse-Shaman.txt](Eclipse-Shaman.txt) | 12,829 | 97 |
+| Paladin | [Eclipse-Paladin.txt](Eclipse-Paladin.txt) | 13,176 | 103 |
 
 ## 简体中文
 
@@ -26,12 +26,12 @@ Use the combined import for a fresh nine-class installation or to update an exis
 
 | 职业 | 导入文件 | 字符数 | 显示数量 |
 | --- | --- | ---: | ---: |
-| 术士 | [Eclipse-Warlock.txt](Eclipse-Warlock.txt) | 14,826 | 126 |
-| 战士 | [Eclipse-Warrior.txt](Eclipse-Warrior.txt) | 18,033 | 168 |
-| 法师 | [Eclipse-Mage.txt](Eclipse-Mage.txt) | 13,234 | 105 |
-| 牧师 | [Eclipse-Priest.txt](Eclipse-Priest.txt) | 13,290 | 105 |
-| 盗贼 | [Eclipse-Rogue.txt](Eclipse-Rogue.txt) | 13,393 | 105 |
-| 德鲁伊 | [Eclipse-Druid.txt](Eclipse-Druid.txt) | 14,040 | 115 |
-| 猎人 | [Eclipse-Hunter.txt](Eclipse-Hunter.txt) | 13,721 | 110 |
-| 萨满祭司 | [Eclipse-Shaman.txt](Eclipse-Shaman.txt) | 12,765 | 97 |
-| 圣骑士 | [Eclipse-Paladin.txt](Eclipse-Paladin.txt) | 13,118 | 103 |
+| 术士 | [Eclipse-Warlock.txt](Eclipse-Warlock.txt) | 14,896 | 126 |
+| 战士 | [Eclipse-Warrior.txt](Eclipse-Warrior.txt) | 18,081 | 168 |
+| 法师 | [Eclipse-Mage.txt](Eclipse-Mage.txt) | 13,269 | 105 |
+| 牧师 | [Eclipse-Priest.txt](Eclipse-Priest.txt) | 13,341 | 105 |
+| 盗贼 | [Eclipse-Rogue.txt](Eclipse-Rogue.txt) | 13,450 | 105 |
+| 德鲁伊 | [Eclipse-Druid.txt](Eclipse-Druid.txt) | 14,101 | 115 |
+| 猎人 | [Eclipse-Hunter.txt](Eclipse-Hunter.txt) | 13,760 | 110 |
+| 萨满祭司 | [Eclipse-Shaman.txt](Eclipse-Shaman.txt) | 12,829 | 97 |
+| 圣骑士 | [Eclipse-Paladin.txt](Eclipse-Paladin.txt) | 13,176 | 103 |

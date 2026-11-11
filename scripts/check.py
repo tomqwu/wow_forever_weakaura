@@ -34,7 +34,7 @@ assert first and first.group(1)==VERSION,f'Newest CHANGELOG entry must be {VERSI
 assert re.search(rf'name: Eclipse-Class-Combat-HUD-v{version}$',text('.github/workflows/check.yml'),re.M),'Workflow artifact name'
 
 for path in sorted((ROOT/'src/EclipseHUD').glob('*.lua')):run(['luac','-p',str(path)])
-for suite in ('core','bridge','discovery','selection','state','motion','presentation','casting','alerts','effects','options'):
+for suite in ('core','bridge','discovery','selection','state','motion','presentation','casting','alerts','effects','options','bundle'):
     run(['lua',f'tests/{suite}.lua'])
 run([sys.executable,'-m','unittest','discover','-s','tests','-v'])
 run(['lua','scripts/codec.lua','verify','dist/Eclipse-Class-Combat-HUD.txt','dist/Eclipse-Class-Combat-HUD.lua'])

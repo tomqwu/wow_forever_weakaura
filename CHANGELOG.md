@@ -4,6 +4,13 @@
 
 The current README supersedes the v0.3.3 ZIP’s native Essential/Utility → Hidden guidance: native OnHide unregisters update events. Keep viewers Always. Choose native displays with duplicate Eclipse modules off, or Eclipse tracked bars with FA global opacity hide. No runtime/version change or release-asset overwrite.
 
+## 0.3.5 — unreleased
+
+- Bundle all nine class imports inside the addon. EclipseHUD registers the current class with ForeverAuras' companion interface: `/fa` lists it as ready to install when the class group is missing or predates update tags, or as an update when the installed group carries an older build. ForeverAuras runs its own import window and the player confirms; the companion writes no aura data. `/eclipse install` opens the same window.
+- Every class display carries a `wago.io/eclipse-hud-<class>/<build>` update tag (0.3.5 = build 305). ForeverAuras parses only the number and never contacts wago.io. The combined root carries no tag.
+- Detect displays left parentless by an interrupted import: one login warning (EN/ZH) with recovery steps, and `/eclipse install` refuses to import over them unless `force` is given. Read-only scan of ForeverAuras' saved table.
+- The imports live in the generated `Catalog.lua`, so the TOC file list is unchanged and `/reload` picks up the update. New bundle test suite; manifest records each class's update slug and build.
+
 ## 0.3.4 — 2026-11-11 (prerelease)
 
 - Organise each class group into sections (Frame, Resources, Primary, Utility, Native rows, Auras, Nameplates, Alerts) plus the cast bar; no loose displays at the class root. IDs/UIDs and screen positions are unchanged; Warrior usable-proc cues move into Primary with an equivalent offset. Remove the eight empty v0.3.2 "Native N" slot groups and the empty Maintenance rows of Warrior, Rogue and Shaman.

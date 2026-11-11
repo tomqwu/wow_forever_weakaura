@@ -1,3 +1,19 @@
+# Validation for 0.3.5
+
+## 0.3.5 (unreleased) — auras bundled in the addon
+
+Automated only; nothing here is game-client evidence.
+
+- `tests/bundle.lua` (18 checks) loads the actual Core, Catalog, Locale and Options code. It covers:
+  - all nine bundled strings, each byte-identical to its published class file;
+  - install, update, installed-without-tag, current and unsupported-class registration states, registered once per session, with separate install and update tables;
+  - the detached-display count, which excludes the standalone root and other classes;
+  - `/eclipse install`, which is refused over detached displays, opens with `force` or once clean, and is reachable through the slash command;
+  - the Chinese warning, which keeps the English placeholder order.
+- `tests/test_pack.py` asserts every class display's update tag matches FA's `wago.io/<slug>/<number>` pattern and the current build, that the combined root has no tag, and that the manifest slug/build match.
+- FA source review (`ForeverAuras.lua` `AddCompanionData`/`PostAddCompanion`/`CountWagoUpdates`; `ForeverAurasOptions.lua` pending install/update lists and their buttons): the registered fields (`name`, `author`, `encoded`, `wagoVersion`, `versionNote`) are the ones FA reads. Clicking either calls FA's `Import`. Not yet seen in the client.
+- Pending live checks: after installing 0.3.5 and `/reload`, `/fa` lists the class under ready to install or updates; the window imports or updates cleanly; after a `/reload` it is no longer listed; the detached warning appears only when parentless displays exist.
+
 # Validation for 0.3.4
 
 ## 0.3.4 (prerelease) — aura structure and import safety

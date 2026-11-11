@@ -9,6 +9,9 @@ local strings = {
     ['Cast bar display']='施法条显示', ['Default']='系统施法条', ['Eclipse']='Eclipse 施法条', ['Both']='同时显示', ['Eclipse cast bar']='Eclipse 施法条',
 
     ['Companion update required: install EclipseHUD and /reload before importing.']='需要更新配套插件：安装 EclipseHUD 后先输入 /reload，再导入。',
+    ['Bundled with EclipseHUD. ForeverAuras shows its import window before changing anything.']='随 EclipseHUD 插件附带。ForeverAuras 会先显示导入窗口，确认后才会更改。',
+    ['%d displays of "%s" are outside their group because an earlier import stopped part way. In /fa, delete every top-level "%s" entry, then run /eclipse install.']='有 %d 个“%s”显示不在其组内，原因是之前的导入中途停止。请在 /fa 中删除所有顶层的“%s”条目，然后输入 /eclipse install。',
+    ['No bundled import is available for this class.']='该职业没有随插件附带的导入。',
 
     ['Forever cooldown layout']='系统冷却分组与顺序', ['Essential']='主要冷却', ['Utility']='辅助冷却', ['EquipSlotEssential']='装备冷却', ['HiddenActive']='未显示',
     ['Maintenance buffs']='常驻增益',
