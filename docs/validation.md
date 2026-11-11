@@ -1,6 +1,6 @@
 # Validation for 0.3.4
 
-## 0.3.4 (unreleased) — aura structure and import safety
+## 0.3.4 (prerelease) — aura structure and import safety
 
 Automated only; nothing here is game-client evidence.
 
