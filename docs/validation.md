@@ -10,6 +10,10 @@ Automated only; nothing here is game-client evidence.
 - Companion import safety: layout, CDM sync and ability binding defer while `IsImporting()` is true; root show/hide hooks are installed once and ignore import-time show/hide. A live interrupted Warlock update (21 parentless roots, stopped in phase 2 before `Primary | Native 4 | Entry`) is recorded in the plan's work log. Its triggering error has not been captured; the review found no companion path that raises into, or calls `Add` within, the import coroutine.
 - Pending live checks: a fresh class import and an Update from 0.3.3 both finish with every display inside its section; dragging moves the whole HUD; FX stays behind the seal.
 
+## Published v0.3.4
+
+[PR #5](https://github.com/tomqwu/wow_forever_weakaura/pull/5) (structure, import safety, tooling) and [PR #7](https://github.com/tomqwu/wow_forever_weakaura/pull/7) (changelog date) merged; [main CI](https://github.com/tomqwu/wow_forever_weakaura/actions/runs/43076439748) passed on the release commit `9508b4db6ed2e5f109df62ef1f47cd4fbecf11c6`. The immutable [v0.3.4 prerelease](https://github.com/tomqwu/wow_forever_weakaura/releases/tag/v0.3.4) targets that commit. ZIP SHA-256: `b82d838fbdf36febd28c5bcbcfbef03f20c610446ebca9de15f2f8e7a4dabf65`. All 13 downloaded assets match the local build, and the 38 runtime files in the ZIP match the source. Not installed: the game still runs the v0.3.3 companion.
+
 ## Automated evidence
 
 `python scripts/build.py`, `python scripts/check.py` and `git diff --check` are the required build/package checks. Twelve Python test groups and the check script validate Lua syntax, focused behavior regressions, class/module loading, own media, import decoding/hierarchy, synchronized versions and ZIP source/media/hash bytes.
