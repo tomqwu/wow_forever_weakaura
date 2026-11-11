@@ -12,7 +12,9 @@ Automated only; nothing here is game-client evidence.
 
 ## Published v0.3.4
 
-[PR #5](https://github.com/tomqwu/wow_forever_weakaura/pull/5) (structure, import safety, tooling) and [PR #7](https://github.com/tomqwu/wow_forever_weakaura/pull/7) (changelog date) merged; [main CI](https://github.com/tomqwu/wow_forever_weakaura/actions/runs/43076439748) passed on the release commit `9508b4db6ed2e5f109df62ef1f47cd4fbecf11c6`. The immutable [v0.3.4 prerelease](https://github.com/tomqwu/wow_forever_weakaura/releases/tag/v0.3.4) targets that commit. ZIP SHA-256: `b82d838fbdf36febd28c5bcbcfbef03f20c610446ebca9de15f2f8e7a4dabf65`. All 13 downloaded assets match the local build, and the 38 runtime files in the ZIP match the source. Not installed: the game still runs the v0.3.3 companion.
+[PR #5](https://github.com/tomqwu/wow_forever_weakaura/pull/5) (structure, import safety, tooling) and [PR #7](https://github.com/tomqwu/wow_forever_weakaura/pull/7) (changelog date) merged; [main CI](https://github.com/tomqwu/wow_forever_weakaura/actions/runs/43076439748) passed on the release commit `9508b4db6ed2e5f109df62ef1f47cd4fbecf11c6`. The immutable [v0.3.4 prerelease](https://github.com/tomqwu/wow_forever_weakaura/releases/tag/v0.3.4) targets that commit. ZIP SHA-256: `b82d838fbdf36febd28c5bcbcfbef03f20c610446ebca9de15f2f8e7a4dabf65`. All 13 downloaded assets match the local build, and the 38 runtime files in the ZIP match the source.
+
+Installed on 2026-11-11 at the user's request into `F:\World of Warcraft\_forever_\Interface\AddOns\EclipseHUD`. All 38 file hashes match the package, with 6 changed. The v0.3.3 backup is verified at `F:\WoW-addon-backups\EclipseHUD\20261111-132331\before\EclipseHUD`, and the receipt is stored beside it. SavedVariables were not changed. The running client still needs `/reload` and a fresh Warlock import, because the earlier interrupted update left parentless displays. Installing files is not live-client evidence.
 
 ## Automated evidence
 
