@@ -20,7 +20,7 @@ Click the seal to open the full HUD; combat or a hostile target opens it too. Tu
 
 <img src="docs/images/game-0.7.0-warlock-hud.png" width="795" alt="ForeverHUD in game: Warlock HUD with a DoT centred on the Health rim">
 
-*In game, Warlock, 0.7.0 (cropped to the HUD). Immolate sits centred on the Health rim. Health, Mana, pet health and Soul Shards are on the frame, and Demon Armor is past the Mana bar. Later versions changed this layout; the gallery further down is illustrative only.*
+*In game, Warlock, 0.7.0 (cropped to the HUD). Immolate sits centred on the Health rim. Health, Mana, pet health and Soul Shards are on the frame, and Demon Armor is past the Mana bar. Later versions moved the buff row onto the Mana rim and added the tray and suggestions; the gallery further down shows the current layout as illustrative browser previews.*
 
 **One Core plus your class.** ForeverHUD ships its auras inside the addon:
 - `ForeverHUD | Core`: health, resource, cast bar, native cooldown rows and tracked buffs, shared by every class.
@@ -171,7 +171,7 @@ Illustrative mode previews, using sample values rather than the game client:
 
 | Game bar only | ForeverHUD bar only | Both (explicit) |
 | :---: | :---: | :---: |
-| [<img src="preview/casting/warlock-default.png" width="260" alt="Game bar sample">](preview/casting/warlock-default.png) | [<img src="preview/casting/warlock-hud.png" width="260" alt="ForeverHUD bar sample">](preview/casting/warlock-hud.png) | [<img src="preview/casting/warlock-both.png" width="260" alt="Both bars sample">](preview/casting/warlock-both.png) |
+| [<img src="preview/casting/warlock-default.png" width="260" alt="Game bar sample">](preview/casting/warlock-default.png) | [<img src="preview/casting/warlock-foreverhud.png" width="260" alt="ForeverHUD bar sample">](preview/casting/warlock-foreverhud.png) | [<img src="preview/casting/warlock-both.png" width="260" alt="Both bars sample">](preview/casting/warlock-both.png) |
 
 ### Expand, fold and move
 
@@ -189,7 +189,7 @@ Illustrative interaction/animation previews:
 
 ### Nine-class gallery and evidence
 
-These are labelled browser fixtures with sample learned spells, active cooldowns/auras and values. They are not game-client screenshots or proof of full parity. They were captured before the 0.6–0.9 layout (sides, centred rows, retracted tray, suggestions); see *Features* above for an in-game capture. The interactive [preview](https://github.com/tomqwu/wow_forever_weakaura/blob/main/preview/index.html) includes a leveling fixture with no invented real cooldowns, category/class-plan modes, bar choices, click toggling and resource-form colors.
+These are labelled browser fixtures with sample learned spells, active cooldowns/auras and values. They are not game-client screenshots or proof of full parity. They were re-captured for 0.9.0 and show the current layout: damage left, everything else right, rows centred on each bar. The preview does not model the retracted tray or spell suggestions; see *Features* above for an in-game capture. The interactive [preview](https://github.com/tomqwu/wow_forever_weakaura/blob/main/preview/index.html) includes a leveling fixture with no invented real cooldowns, category/class-plan modes, bar choices, click toggling and resource-form colors.
 
 | Warlock | Warrior | Mage |
 | :---: | :---: | :---: |
@@ -243,7 +243,7 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 <img src="docs/images/game-0.7.0-warlock-hud.png" width="795" alt="游戏内的 ForeverHUD：术士界面，DoT 居中贴在生命条上方">
 
-*游戏内截图，术士，0.7.0（已裁剪为界面区域）。献祭居中贴在生命条上方，生命、法力、宠物生命与灵魂碎片位于框架上，恶魔护甲在法力条外侧。之后的版本调整了此布局；下方的预览图仅为示意。*
+*游戏内截图，术士，0.7.0（已裁剪为界面区域）。献祭居中贴在生命条上方，生命、法力、宠物生命与灵魂碎片位于框架上，恶魔护甲在法力条外侧。之后的版本把增益行移到法力条上方，并加入托盘与技能建议；下方的浏览器预览图以示意方式展示当前布局。*
 
 **一个核心加你的职业。** ForeverHUD 的光环随插件附带：
 - `ForeverHUD | Core`：生命、资源、施法条、原生冷却行与追踪增益，所有职业共用。
@@ -394,7 +394,7 @@ Corruption、Immolate 在目标身上持续生效时，技能本身可以已经�
 
 | 仅系统条 | 仅 ForeverHUD 条 | 明确同时显示 |
 | :---: | :---: | :---: |
-| [<img src="preview/casting/warlock-default.png" width="260" alt="系统施法条样例">](preview/casting/warlock-default.png) | [<img src="preview/casting/warlock-hud.png" width="260" alt="ForeverHUD 施法条样例">](preview/casting/warlock-hud.png) | [<img src="preview/casting/warlock-both.png" width="260" alt="同时显示样例">](preview/casting/warlock-both.png) |
+| [<img src="preview/casting/warlock-default.png" width="260" alt="系统施法条样例">](preview/casting/warlock-default.png) | [<img src="preview/casting/warlock-foreverhud.png" width="260" alt="ForeverHUD 施法条样例">](preview/casting/warlock-foreverhud.png) | [<img src="preview/casting/warlock-both.png" width="260" alt="同时显示样例">](preview/casting/warlock-both.png) |
 
 ### 展开、收起与移动
 
@@ -412,7 +412,7 @@ Corruption、Immolate 在目标身上持续生效时，技能本身可以已经�
 
 ### 九职业预览与验证范围
 
-以下均为明确标注的浏览器样例，使用模拟已学技能、当前冷却、光环与数值，不是游戏截图，也不是完整功能对齐的证明。它们早于 0.6–0.9 的布局（左右分侧、居中行、收起托盘、技能建议）；游戏内截图见上方“功能”。[交互预览](https://github.com/tomqwu/wow_forever_weakaura/blob/main/preview/index.html)包含无伪造真实冷却的升级样例、分组/职业方案、施法条选择、重复点击开合与形态资源颜色。
+以下均为明确标注的浏览器样例，使用模拟已学技能、当前冷却、光环与数值，不是游戏截图，也不是完整功能对齐的证明。它们已为 0.9.0 重新截取，展示当前布局：伤害在左、其余在右、每行以各自的条为中心。预览不包含收起托盘与技能建议；游戏内截图见上方“功能”。[交互预览](https://github.com/tomqwu/wow_forever_weakaura/blob/main/preview/index.html)包含无伪造真实冷却的升级样例、分组/职业方案、施法条选择、重复点击开合与形态资源颜色。
 
 | 术士 | 战士 | 法师 |
 | :---: | :---: | :---: |
