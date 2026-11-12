@@ -1,6 +1,17 @@
-# Validation for 0.7.2
+# Validation for 0.7.3
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.7.3 (prerelease) — Demon Armor reminder
+
+- Requested by the user ("missing demon armor alert?").
+- `tests/test_pack.py` asserts that both Warlock reminders:
+  - sit in Maintenance;
+  - use `secretAura` with Show On Missing, and Active with remaining time;
+  - cover the three armor spell IDs;
+  - carry a maintenance load flag.
+- The ForeverAuras native schema validator accepts them.
+- Not verified in game.
 
 ## 0.7.2 (prerelease) — larger rim icons
 

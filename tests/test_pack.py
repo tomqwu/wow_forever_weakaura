@@ -263,6 +263,14 @@ class PackTests(unittest.TestCase):
         effects=[e for id,e in self.eligibility.items() if ' | Player effects | ' in id and not id.endswith('Demon armor')]
         self.assertTrue(effects and all(e.get('effect') for e in effects),'Curated class buffs give way to the native row in Forever mode')
         self.assertEqual(by_id[CORE_ID+' | Native items | Entries']['triggers'][1]['trigger']['event'],'Blizzard CDM Item')
+        # 0.7.3: Demon armor warns natively when missing or in its last 15 s.
+        for state,show,rem in (('missing','showOnMissing',False),('expiring','showOnActive',True)):
+            reminder=by_id['ForeverHUD | Warlock | Upkeep reminder | Demon armor '+state]
+            t=reminder['triggers'][1]['trigger']
+            self.assertEqual(reminder['parent'],'ForeverHUD | Warlock | Maintenance')
+            self.assertEqual((t['type'],t['secretShowOn'],t['secretUseRem']),('secretAura',show,rem))
+            self.assertEqual(t['auraRankSpellIDs'],[687,706,28176])
+            self.assertIn('_maintenance_',reminder['load']['loadFlag'])
         armor=by_id['ForeverHUD | Warlock | Player effects | Demon armor']
         self.assertEqual(armor['parent'],'ForeverHUD | Warlock | Maintenance')
         self.assertIn('_maintenance_',armor['load']['loadFlag'])
