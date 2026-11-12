@@ -25,6 +25,7 @@ Automated only; nothing here is game-client evidence.
   - DoT row spacing against the left wing;
   - Maintenance beside the resource bar;
   - the update in `/fa`.
+- **Published 2026-11-12:** all 14 downloaded release assets match the build, and the 38 runtime files match the source. Installed over 0.5.1, with all 38 files verified (4 changed). The 0.5.1 folder was backed up and verified first, and SavedVariables were not touched. This is file evidence, not game-client evidence.
 
 ## 0.5.1 (prerelease) — DoTs stay in the HUD's target row
 
