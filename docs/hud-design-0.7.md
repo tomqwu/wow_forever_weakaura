@@ -1,6 +1,6 @@
 # ForeverHUD 0.7 design: icons seated in the frame
 
-Status: proposed design, approved in direction by the user on 2026-11-12. The layout can be built now. The art is waiting on an image-generation session. Nothing in this document is game evidence.
+Status: approved by the user on 2026-11-12. The layout (build order step 1) is implemented in 0.7.0. The art (step 2) is waiting on an image-generation session. Nothing in this document is game evidence.
 
 ## What the user asked for
 

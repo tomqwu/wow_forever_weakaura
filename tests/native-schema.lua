@@ -40,6 +40,9 @@ load("SecretAuraAppearance")
 load("SecretAuraSingle")
 load("SecretAuraConditions")
 load("SecretAuraFlow")
+-- Modern Aura Group validation (FlowProblem) consults the grid module, which
+-- older ForeverAuras checkouts do not have.
+if io.open(source.."/SecretAuraGrid.lua") then load("SecretAuraGrid") end
 local D=P.BlizzardAuraDisplay
 local data=dofile(arg[2] or "dist/ForeverHUD-All-Classes.lua")
 local saved={[data.d.id]=data.d}
@@ -52,7 +55,10 @@ for _,d in ipairs(data.c)do
         assert(problem==nil,d.id..": "..tostring(problem));count=count+1
         assert(D.FallbackChoice(d)=='none',d.id..': modern aura may not follow the always-true gate')
         assert(D.FoundFollow(d)==nil,d.id..': inactive aura may not become a fallback icon')
-        if d.triggers[1].trigger.unit=='player' and d.triggers[1].trigger.secretShowOn=='showOnActive' and not d.triggers[1].trigger.secretUseRem then
+        -- Modern Aura Group members never fall back (FallbackPossible in
+        -- SecretAuraSingle.lua), so the v0.2.0 bug only applies outside one.
+        local inFlow=D.FlowGroup and D.FlowGroup(d)
+        if not inFlow and d.triggers[1].trigger.unit=='player' and d.triggers[1].trigger.secretShowOn=='showOnActive' and not d.triggers[1].trigger.secretUseRem then
             local broken=CopyTable(d)
             broken.triggers.secretFallback=nil;broken.secretFallback='none'
             -- Reproduce v0.2.0's actual semantic bug using FA's own selector.

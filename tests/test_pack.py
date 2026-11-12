@@ -238,16 +238,17 @@ class PackTests(unittest.TestCase):
                 # Upkeep is not damage: right of the resource bar, growing outward.
                 self.assertGreater(by_id[prefix+' | Maintenance']['xOffset'],250)
                 self.assertEqual(by_id[prefix+' | Maintenance']['grow'],'RIGHT')
-            # Damage side: the DoT row is seated on the frame over the Health
-            # bar (180 wide at x=-138), below the left wing.
+            # 0.7: the DoT and buff rails are ForeverAuras Modern Aura Groups,
+            # centred on their bars; the client chains and centres the icons.
+            for name,x in (('Target effects',-138),('Player effects',138)):
+                rail=by_id[f'{prefix} | {name}']
+                self.assertEqual((rail['xOffset'],rail['yOffset']),(x,40),rail['id'])
+                self.assertEqual((rail['regionType'],rail['blizzardFlow'],rail['blizzardFlowGrowth']),('group',True,'CENTER_HORIZONTAL'))
+                for child in rail['controlledChildren']:
+                    d=by_id[child]
+                    self.assertEqual((d['xOffset'],d['yOffset']),(0,0),'Members take their place from the chain')
+                    self.assertEqual(d['triggers'][1]['trigger']['type'],'secretAura','Only Aura (Modern) displays join the centred row')
             dots=by_id[prefix+' | Target effects']
-            self.assertEqual(dots['yOffset'],40)
-            children=[by_id[child] for child in dots['controlledChildren']]
-            for d in children:
-                half=d['width']/2
-                self.assertTrue(-228<=d['xOffset']-half and d['xOffset']+half<=-48,(d['id'],d['xOffset']))
-            xs=[d['xOffset'] for d in children]
-            self.assertEqual(len(set(xs)),len(xs),'Fixed slots, one per DoT')
             primary=by_id[prefix+' | Primary']
             self.assertGreaterEqual(primary['yOffset']-20,dots['yOffset']+12,'Wing icons clear the DoT row')
         tracked=by_id[CORE_ID+' | Native tracked bars | Entries']
@@ -305,9 +306,13 @@ class PackTests(unittest.TestCase):
             elif right(id):
                 self.assertGreater(screen(d)[0],0,id);seen['right']+=1
             # Rows seated on the frame stay within their bar (Health -228..-48, resource 48..228).
-            if (' | Player effects | ' in id and not id.endswith('Demon armor')) or ' | Battle Shout ' in id or ' | Weapon coating | ' in id:
+            if (' | Player effects | ' in id and not id.endswith('Demon armor')) or ' | Battle Shout ' in id:
                 x,y=screen(d);half=d['width']/2
                 self.assertEqual(y,40,id);self.assertTrue(48<=x-half and x+half<=228,(id,x))
+            if ' | Weapon coating | ' in id:
+                # Not Modern auras, so fixed slots on the rim past the bar's end.
+                x,y=screen(d);half=d['width']/2
+                self.assertEqual(y,40,id);self.assertTrue(228<x-half and x+half<=300,(id,x))
             if id.endswith(' | Rend missing'):
                 x,y=screen(d);half=d['width']/2
                 self.assertEqual(y,40,id);self.assertTrue(-228<=x-half and x+half<=-48,(id,x))
