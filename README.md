@@ -2,7 +2,7 @@
 
 ## English
 
-**Version 0.5.1 — your DoTs show only in the HUD's target row (prerelease).** The Cooldown Manager's tracked list includes your DoTs, so 0.5.0 could also show them in the native row above the HUD. **0.5.0 — one shared Core plus a small group per class.** The health and resource bars, cast bar and the native Cooldown Manager rows now live in one **`ForeverHUD | Core`** group that every class uses. Each class group keeps only its own spells, effects and art, so class updates are smaller. Coming from 0.4: delete your `ForeverHUD | <Class>` group in `/fa`, then install the Core and your class (see below). One companion supports all nine classes, with independent preferences and automatic class loading. The addon carries every import: install it, and ForeverAuras offers the Core and your class in `/fa`. No string to paste. Manual files remain available: [Core](dist/classes/ForeverHUD-Core.txt) plus [Warlock only](dist/classes/ForeverHUD-Warlock.txt) is roughly 75% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
+**Version 0.6.0 — damage left, everything else right (prerelease).** Essential cooldowns and your DoTs sit on the left over Health, and Utility cooldowns and upkeep buffs such as Demon Armor on the right (see *Configure cooldowns*). After updating the addon, `/reload` and update the Core and your class in `/fa`. **0.5.1** showed DoTs only in the HUD's target row. **0.5.0 — one shared Core plus a small group per class.** The health and resource bars, cast bar and the native Cooldown Manager rows now live in one **`ForeverHUD | Core`** group that every class uses. Each class group keeps only its own spells, effects and art, so class updates are smaller. Coming from 0.4: delete your `ForeverHUD | <Class>` group in `/fa`, then install the Core and your class (see below). One companion supports all nine classes, with independent preferences and automatic class loading. The addon carries every import: install it, and ForeverAuras offers the Core and your class in `/fa`. No string to paste. Manual files remain available: [Core](dist/classes/ForeverHUD-Core.txt) plus [Warlock only](dist/classes/ForeverHUD-Warlock.txt) is roughly 75% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
 
 ### Install or update
 
@@ -43,9 +43,9 @@ Each class is one group whose direct children are organising sections, with noth
 | --- | --- |
 | Frame | Chassis, living runes, combat effects, seal, caption (drawn in a lower layer, behind the Core bars) |
 | Resources | Pet health, shards/combo points/swing timers/totems (only classes that have them) |
-| Primary | Main ability wings (native left/right) and Warrior usable-proc cues |
+| Primary | Ability wings: Essential (damage) left, Utility right; Warrior usable-proc cues |
 | Utility | Small on-cooldown Defense/Offense/Control rows |
-| Auras | Target effects, player effects, maintenance, reminders, weapon coatings |
+| Auras | Target effects (DoT row above the left wing), player effects, maintenance (right of the resource bar), reminders, weapon coatings |
 | Nameplates | Optional nameplate debuff icons |
 | Alerts | Invisible ready-alert triggers |
 
@@ -71,6 +71,14 @@ Both groups attach to the same ForeverHUD anchor, so dragging, scale and opacity
 Open **`/fhud` → Behavior → Cooldown layout → Forever**. ForeverHUD follows your learned native Essential/Utility/item categories and order, but shows cooldown icons **only while a real cooldown is running**, with GCD-only feedback excluded. The cooldown row is empty when no real cooldown is active. Ready, no-cooldown fillers such as Life Tap/Corruption do not occupy persistent cooldown slots. Instant-cast spells can still have genuine cooldowns. Native dynamic wings compact the shown icons. **Class plan** is an optional ability-row layout with its own priorities.
 
 In the game's **Cooldown Settings**, arrange Essential, Utility, Items and Not Displayed as desired. ForeverHUD follows learned entries, not every gray entry shown by the configuration window. Changes made during combat apply after combat.
+
+**Damage left, everything else right.** That split decides the side:
+- **Left, over Health:** the first four **Essential** entries (your damage cooldowns), with your **DoTs on the target** in a row just above them. Optional tracked bars (DoT and proc durations) also sit on the left.
+- **Right, over the resource bar:** the first four **Utility** entries (defensives, control, support), with upkeep buffs such as **Demon Armor** beside the bar.
+- To move a spell to the other side, drag it between Essential and Utility in Cooldown Settings.
+- Further entries fall into the rows below the HUD.
+- With **Utility abilities** off in `/fhud`, the right wing stays empty.
+- **Class plan** follows the same rule: attacks left, cooldowns and support right.
 
 **CDM guide correction:** the v0.3.3 ZIP README's recommendation to set native Essential/Utility to Hidden is superseded by this guide. Keep them Always so their native event updates continue. The release assets remain unchanged.
 
@@ -165,7 +173,7 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 ## 简体中文
 
-**版本 0.5.1：你的 DoT 只显示在界面的目标效果行（预发布）。** 冷却管理器的追踪列表包含你的 DoT，因此 0.5.0 可能也会在界面上方的原生行中显示它们。**0.5.0：一个通用核心加每职业一个小组。** 生命条、资源条、施法条以及原生冷却管理器行，现在都放在所有职业共用的 **`ForeverHUD | Core`** 组中。各职业组只保留自己的技能、特效和美术，因此职业更新更小。从 0.4 升级：请在 `/fa` 中删除 `ForeverHUD | <职业>` 组，然后安装核心和当前职业（见下文）。一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。插件附带全部导入：安装后，ForeverAuras 会在 `/fa` 中提供核心和当前职业，无需粘贴字符串。手动文件仍可使用：[核心](dist/classes/ForeverHUD-Core.txt)加[术士独立导入](dist/classes/ForeverHUD-Warlock.txt)比合并文件约小 75%；[精确大小](dist/classes/README.md)由构建自动生成。
+**版本 0.6.0：伤害在左，其余在右（预发布）。** Essential 冷却与你的 DoT 位于左侧生命条上方，Utility 冷却与恶魔护甲等维持类增益位于右侧（见“配置冷却管理器”）。更新插件后输入 `/reload`，并在 `/fa` 中更新核心和当前职业。**0.5.1** 让 DoT 只显示在界面的目标效果行。**0.5.0：一个通用核心加每职业一个小组。** 生命条、资源条、施法条以及原生冷却管理器行，现在都放在所有职业共用的 **`ForeverHUD | Core`** 组中。各职业组只保留自己的技能、特效和美术，因此职业更新更小。从 0.4 升级：请在 `/fa` 中删除 `ForeverHUD | <职业>` 组，然后安装核心和当前职业（见下文）。一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。插件附带全部导入：安装后，ForeverAuras 会在 `/fa` 中提供核心和当前职业，无需粘贴字符串。手动文件仍可使用：[核心](dist/classes/ForeverHUD-Core.txt)加[术士独立导入](dist/classes/ForeverHUD-Warlock.txt)比合并文件约小 75%；[精确大小](dist/classes/README.md)由构建自动生成。
 
 ### 安装与更新
 
@@ -206,9 +214,9 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 | --- | --- |
 | Frame（框架） | 底座、流动符文、战斗特效、徽记、标题（绘制在较低层，位于核心条形之下） |
 | Resources（资源） | 宠物生命、灵魂碎片/连击点/挥击计时/图腾（仅限拥有这些的职业） |
-| Primary（主技能） | 主技能左右两翼（原生）与战士可用触发提示 |
+| Primary（主技能） | 技能两翼：左侧 Essential（伤害），右侧 Utility；战士可用触发提示 |
 | Utility（辅助） | 仅冷却中显示的防御/进攻/控制小图标行 |
-| Auras（光环） | 目标效果、自身效果、维持类光环、提醒、武器涂层 |
+| Auras（光环） | 目标效果（左翼上方的 DoT 行）、自身效果、维持类光环（资源条右侧）、提醒、武器涂层 |
 | Nameplates（姓名板） | 可选的姓名板减益图标 |
 | Alerts（提示） | 不可见的就绪提示触发器 |
 
@@ -234,6 +242,14 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 打开 **`/fhud` → 战斗行为 → 冷却排列 → 系统冷却管理器（Forever）**。ForeverHUD 沿用系统中已学技能的主要、辅助、装备分组与顺序，但默认**只在真实冷却运行时显示冷却图标，排除仅有公共冷却的情况**；没有真实冷却在运行时，该行为空。Life Tap、Corruption 等没有独立冷却的填充技能不会常驻占位；瞬发技能也可能有真实冷却，不能仅凭“瞬发”判断。原生动态组会紧凑排列当前显示的图标。可选的 **职业方案（Class plan）** 是另一种有固定优先级的技能展示布局。
 
 在游戏的 **Cooldown Settings（冷却设置）** 中调整 Essential、Utility、Items 与 Not Displayed。配置窗口中的灰色条目不代表角色已学会；战斗中提出的修改在脱战后应用。
+
+**伤害在左，其余在右。** 由上述分组决定左右：
+- **左侧（生命条上方）：** 前四个 **Essential** 条目（伤害冷却），其上方一行是你在目标身上的 **DoT**。可选的持续时间条（DoT 与触发剩余时间）也在左侧。
+- **右侧（资源条上方）：** 前四个 **Utility** 条目（防御、控制、辅助），**恶魔护甲**等维持类增益位于资源条旁。
+- 要把技能移到另一侧，请在冷却设置中把它在 Essential 与 Utility 之间拖动。
+- 更多条目进入界面下方的行。
+- 在 `/fhud` 中关闭 **辅助技能** 时，右翼为空。
+- **职业方案** 遵循同样规则：攻击在左，冷却与辅助在右。
 
 **CDM 指南更正：** v0.3.3 ZIP 内 README 中把系统 Essential/Utility 设为 Hidden 的建议已被本页取代。请保持 Always，保证原生更新事件继续工作。已发布的文件保持不变。
 

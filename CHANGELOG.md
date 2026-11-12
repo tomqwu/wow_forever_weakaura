@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 — unreleased (prerelease)
+
+- **Damage left, everything else right.** The left wing over Health shows up to four **Essential** Cooldown Manager entries (damage cooldowns); the right wing over the resource bar shows up to four **Utility** entries (defensives, control, support). The game's own Essential/Utility split decides the side: drag a spell between them in Cooldown Settings to move it. Further entries stay in the rows below. With Utility abilities off, the right wing stays empty. Before, the wings held Essential entries 1–4 and 5–8.
+- Your **DoTs on the target** move from below the seal to a fixed row above the left wing.
+- **Maintenance** upkeep buffs such as Demon Armor move to the right, beyond the resource bar. Optional **tracked bars** (DoT and proc durations) move to the left.
+- **Class plan** mode follows the same rule: attacks left, cooldowns and support right.
+- Display positions changed: after updating the addon, `/reload`, then update the Core and your class in `/fa` (or `/fhud install` twice).
+
 ## 0.5.1 — 2026-11-12 (prerelease)
 
 - Your DoTs on the target show only in the HUD's **Target effects** row under the seal. The Cooldown Manager's tracked list includes them, so 0.5.0 also put them in the native player-effects row 151 px above the HUD, near the target (reported in game). DoTs the HUD tracks are now left out of that row, the same way tracked player buffs already were. With the target-effects module off, the native row keeps them.

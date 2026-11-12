@@ -235,12 +235,20 @@ class PackTests(unittest.TestCase):
                 self.assertEqual(by_id[icon['parent']]['regionType'],'dynamicgroup')
             if prefix+' | Maintenance' in by_id:
                 self.assertIn('_maintenance',by_id[prefix+' | Maintenance']['load']['loadFlag'])
-                self.assertLess(by_id[prefix+' | Maintenance']['xOffset'],-250)
+                # Upkeep is not damage: right of the resource bar, growing outward.
+                self.assertGreater(by_id[prefix+' | Maintenance']['xOffset'],250)
+                self.assertEqual(by_id[prefix+' | Maintenance']['grow'],'RIGHT')
+            # Damage side: the DoT row sits above the left wing, inside the chassis.
+            dots=by_id[prefix+' | Target effects']
+            self.assertEqual(dots['yOffset'],92)
+            xs=[by_id[child]['xOffset'] for child in dots['controlledChildren']]
+            self.assertTrue(all(-256<x<-60 for x in xs),(c['name'],xs))
+            self.assertEqual(len(set(xs)),len(xs),'Fixed slots, one per DoT')
         tracked=by_id[CORE_ID+' | Native tracked bars | Entries']
         self.assertEqual(tracked['regionType'],'aurabar')
         self.assertEqual(tracked['triggers'][1]['trigger']['event'],'Blizzard CDM Buff')
         self.assertEqual(tracked['load']['loadFlag'],'FOREVERHUD_CORE_trackedBars')
-        self.assertGreater(by_id[CORE_ID+' | Native tracked bars']['xOffset'],250)
+        self.assertLess(by_id[CORE_ID+' | Native tracked bars']['xOffset'],-250,'Duration bars sit on the damage side')
         self.assertEqual(by_id[CORE_ID+' | Native items | Entries']['triggers'][1]['trigger']['event'],'Blizzard CDM Item')
         armor=by_id['ForeverHUD | Warlock | Player effects | Demon armor']
         self.assertEqual(armor['parent'],'ForeverHUD | Warlock | Maintenance')

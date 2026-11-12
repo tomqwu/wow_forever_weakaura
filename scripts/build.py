@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.5.1"
+VERSION = "0.6.0"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -42,6 +42,12 @@ def owner_of(display):
     load=display['load']
     return CORE if load.get('loadFlag','').startswith('FOREVERHUD_CORE_') else load['class']['single']
 PRIMARY_Y = 52
+# Target-effects (DoT) row above the left wing: the first slot ends near the
+# seal and later slots run left, inside the chassis.
+DOT_ROW_Y = 92
+DOT_SIZE = 26
+DOT_STEP = 30
+DOT_ROW_END = -73
 # Neutral Core paint until the helper applies the class colour.
 CORE_ACCENT = "#B9A3E8"
 SORT_CDM = 'function(a,b) return ForeverHUD and ForeverHUD.SortCDM(a,b) or false end'
@@ -252,7 +258,8 @@ def generate():
         cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
         use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),26)
     tracked=CORE_ID+' | Native tracked bars'
-    p.group(tracked,native_auras,CORE,'trackedBars',x=410,y=13,dynamic=True).update(grow='DOWN',space=5,
+    # Tracked bars carry DoT and proc durations: the damage side, left.
+    p.group(tracked,native_auras,CORE,'trackedBars',x=-410,y=13,dynamic=True).update(grow='DOWN',space=5,
         sort='custom',sortOn='index',customSort=SORT_CDM)
     bar(p,tracked+' | Entries',tracked,CORE,'trackedBars',dict(type='cdm',event='Blizzard CDM Buff',
         cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
@@ -350,18 +357,22 @@ def generate():
         # inferred timers, refresh windows, or combat-dependent group reflow.
         auras=prefix+' | Auras'; p.group(auras,prefix,cls,'base')
         nameplates=prefix+' | Nameplates'; p.group(nameplates,prefix,cls,'base')
-        dots=prefix+" | Target effects"; p.group(dots,auras,cls,"dots",y=-130)
+        # Damage sits on the left, over Health: the player's DoTs form a fixed
+        # row above the left (Essential) wing, ending near the seal. Fixed
+        # slots, never a combat reflow of modern aura buttons.
+        dots=prefix+" | Target effects"; p.group(dots,auras,cls,"dots",y=DOT_ROW_Y)
         count=len(c['dots'])
         for i,(seed,name) in enumerate(c['dots']):
-            icon(p,dots+" | "+name,dots,cls,"dots",aura_trigger([seed],"target",True),32,x=(i-(count-1)/2)*40,modern=True)
+            icon(p,dots+" | "+name,dots,cls,"dots",aura_trigger([seed],"target",True),DOT_SIZE,x=DOT_ROW_END-i*DOT_STEP,modern=True)
             # Native nameplate displays are opt-in and tied to live plates.
             d=icon(p,nameplates+" | "+name,nameplates,cls,"nameplates",aura_trigger([seed],"nameplate",True),22,
                 x=(i-(count-1)/2)*26,y=26,modern=True)
             d.update(anchorFrameType="NAMEPLATE",anchorFrameParent=False)
         maintenance=prefix+' | Maintenance'
         # Only classes with an upkeep aura get this row; no empty groups.
+        # Upkeep buffs are not damage: they sit right, beyond the resource bar.
         if cls=='WARLOCK' or UPKEEP.get(cls):
-            p.group(maintenance,auras,cls,'maintenance',x=-286,y=13,dynamic=True).update(grow='LEFT',space=6)
+            p.group(maintenance,auras,cls,'maintenance',x=286,y=13,dynamic=True).update(grow='RIGHT',space=6)
         effects=prefix+" | Player effects";p.group(effects,auras,cls,"buffs",y=116)
         buffs=list(c['buffs'])
         if cls=="WARLOCK": buffs.append(([687,706,28176],"Demon armor"))
