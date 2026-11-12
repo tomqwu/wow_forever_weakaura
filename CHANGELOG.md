@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.1 — unreleased (prerelease)
+
+- **Minimal retracted tray** (user: "I don't need 100% on both sides, make it minimlism"; chose the tray, not the bar text). The health % and resource % readouts beside the seal are removed. The tray keeps the Warlock Soul Shards count, missing-upkeep reminders, and Food, Drink and Well Fed. Classes without a counter get the icon row right under the seal.
+- Update your class in `/fa`, choosing **Update Auras**; the removed displays are deleted.
+
 ## 0.9.0 — 2026-11-12 (prerelease)
 
 - **Spell suggestions** (user: "add spell recommendation? based on certain condition? e.g. low mana 30% then life tap"). Warlock gets a fixed row of 32 px icons above the seal (y=112), in priority order. Every rule is native:

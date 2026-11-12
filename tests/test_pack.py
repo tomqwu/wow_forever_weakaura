@@ -357,9 +357,11 @@ class PackTests(unittest.TestCase):
             self.assertEqual((row['blizzardFlow'],row['blizzardFlowGrowth']),(True,'CENTER_HORIZONTAL'))
             names=[by_id[id]['triggers'][1]['trigger']['auraRankSpellIDs'] for id in row['controlledChildren'] if id.split(' | ')[-1] in ('Food','Drink','Well Fed')]
             self.assertEqual(names,[['Food'],['Drink'],['Well Fed']],'Matched by aura name, not an ID list')
+            # 0.9.1 minimal tray: no health/resource percentages.
             for side in ('Health','Resource'):
-                text=by_id[f'{prefix} | Tray | {side}']
-                self.assertIn('%percent',text['displayText'])
+                self.assertNotIn(f'{prefix} | Tray | {side}',by_id)
+            # Without a counter the row sits right under the seal.
+            self.assertEqual(row['yOffset'],-116 if c.get('extra')=='shards' else -74)
         self.assertIn(prefix_warlock:='ForeverHUD | Warlock | Tray | Soul Shards',by_id)
         self.assertIn('ForeverHUD | Warlock | Tray | Row | Upkeep reminder | Demon armor missing',by_id)
         self.assertNotIn('ForeverHUD | Warlock | Tray | Row | Food',self.eligibility,'Name-matched icons skip spell discovery')

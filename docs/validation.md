@@ -1,6 +1,13 @@
-# Validation for 0.9.0
+# Validation for 0.9.1
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.9.1 (prerelease) — minimal tray
+
+- `tests/test_pack.py` now asserts, for all nine classes:
+  - there are no tray Health or Resource text displays;
+  - the icon row is at y = −116 under the Warlock Soul Shards counter, and y = −74 for classes without a counter.
+- Not verified in game.
 
 ## 0.9.0 (prerelease) — spell suggestions
 
