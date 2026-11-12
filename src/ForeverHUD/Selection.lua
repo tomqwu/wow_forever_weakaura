@@ -117,7 +117,9 @@ function S.SyncCDM()
         -- The CDM's tracked list also holds the player's DoTs on the target.
         -- A DoT the HUD's own target-effects row shows stays out of the
         -- native row above the HUD (unless that row is switched off).
-        local shown=entry.module=='buffs' or entry.module=='maintenance' or (entry.module=='dots' and p.dots~=false)
+        -- Curated class buffs are off in Forever mode, so the native row
+        -- carries them instead of skipping them.
+        local shown=(entry.module=='buffs' and not (entry.effect and S.nativeMode)) or entry.module=='maintenance' or (entry.module=='dots' and p.dots~=false)
         if entry.cls==E.class and shown and entry.kind=='aura' and E.discovery.eligible[id] then
             local record=E.discovery.eligible[id]
             representedBuffs[record.name]=true;representedBuffIDs[record.id]=true
@@ -135,7 +137,9 @@ function S.SyncCDM()
         if (entry.category=='TrackedBuff' or (entry.category=='TrackedBar' and not p.trackedBars) or entry.category=='SpecAgnosticTracked')
             and not duplicate and not preparation(entry) then buffs[id]=true end
     end
-    syncEntries(api,ID('Native player effects | Entries'),buffs)
+    -- Class plan mode uses the curated class buffs on the right rim, so the
+    -- native buff row at the same spot stays empty.
+    syncEntries(api,ID('Native player effects | Entries'),S.nativeMode and buffs or {})
     syncEntries(api,ID('Native tracked bars | Entries'),bars)
     -- Native multi-entry pickers sort IDs internally. Re-sort ordinary clone
     -- containers by the public manager order, only outside combat. FA's
@@ -253,6 +257,9 @@ function S.Refresh()
 end
 function S.Allowed(id,entry)
     if entry.prep then return false end
+    -- The right rim shows one buff row: the Cooldown Manager's tracked buffs
+    -- in Forever mode, the curated class buffs in Class plan mode.
+    if entry.effect then return not S.nativeMode end
     if entry.proc then
         local record=E.discovery.eligible[id]
         return record~=nil and (S.nativeMode or not S.used[record.name])
