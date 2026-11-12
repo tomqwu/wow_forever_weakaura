@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.8.0 — unreleased (prerelease)
+## 0.8.0 — 2026-11-12 (prerelease)
 
 - **Retracted seal and tray** ([design](docs/hud-design-0.8.md)): the user asked for a compact retracted state like Forever Classmate's; ForeverHUD's own version uses no code or art from it. Out of combat with no hostile target (the existing fold), the HUD shows a larger seal (132 px instead of 104) with a tray under it.
   - **Tray, row 1:** health % and resource % flanking the Warlock Soul Shards count (native Item Count).
