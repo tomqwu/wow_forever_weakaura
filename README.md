@@ -2,7 +2,7 @@
 
 ## English
 
-**Version 0.8.0 — retracted seal and tray (prerelease).** Out of combat with no hostile target, the HUD folds to a larger seal with a tray under it:
+**Version 0.8.1 — no icon for a buff that's up (prerelease).** Demon Armor, Arcane Intellect, Fortitude and Mark of the Wild now show only when missing or about to expire, never while active. Upkeep buffs without a reminder (Mage Armor, Inner Fire, Aspect, Blessing) keep their active icon. Update the Core and your class in `/fa`, choosing **Update Auras**. **0.8.0 — retracted seal and tray.** Out of combat with no hostile target, the HUD folds to a larger seal with a tray under it:
 - health and resource percentages;
 - your Soul Shards (Warlock);
 - missing upkeep buffs such as Demon Armor;
@@ -180,7 +180,7 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 ## 简体中文
 
-**版本 0.8.0：收起时的印记与托盘（预发布）。** 脱离战斗且没有敌对目标时，界面收起为更大的印记，下方挂着托盘：
+**版本 0.8.1：增益生效时不再显示图标（预发布）。** 恶魔护甲、奥术智慧、真言术：韧与野性印记现在只在缺失或即将结束时显示，生效期间不显示。没有提醒的维持类增益（法师护甲、心灵之火、守护、祝福）仍显示生效图标。请在 `/fa` 中更新核心和当前职业，并选择 **Update Auras（更新光环）**。**0.8.0：收起时的印记与托盘。** 脱离战斗且没有敌对目标时，界面收起为更大的印记，下方挂着托盘：
 - 生命与资源百分比；
 - 灵魂碎片（术士）；
 - 缺失的维持类增益（如恶魔护甲）；
