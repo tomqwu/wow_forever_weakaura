@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1 — 2026-11-12 (prerelease)
+
+- Fix the import error `AuraEnvironment.lua:524: attempt to index field '?' (a nil value)` with ForeverAuras 1.3.9. ForeverAuras prepares custom actions only for non-group displays, but 0.4.0 put Init actions on the root and on the native cooldown wings; the wings' custom sort activated them during import.
+- Move the companion bind and the "companion update required" guard to each class's `Class name` display, and each wing's layout bind to its entry icons. Groups no longer carry custom actions, and the build refuses them.
+- The native-schema test now fails, as ForeverAuras does, on a group Init action and sorts every custom-sorted dynamic group.
+- If a 0.4.0 import stopped partway, delete the half-imported ForeverHUD group in `/fa`, `/reload`, then install from `/fa` or `/fhud install`.
+
 ## 0.4.0 — 2026-11-12 (prerelease)
 
 - Rename the project from Eclipse to **ForeverHUD**. Addon folder and TOC `ForeverHUD`, global `ForeverHUD`, settings `ForeverHUDDB`, anchor `ForeverHUDAnchor`, slash commands `/fhud` and `/foreverhud`, load flags `FOREVERHUD_<CLASS>_<module>`, event `FOREVERHUD_UPDATE`, cast-bar choice "ForeverHUD bar".

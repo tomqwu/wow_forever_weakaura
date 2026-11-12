@@ -43,7 +43,9 @@ class PackTests(unittest.TestCase):
             self.assertEqual(pack['d']['id'],'ForeverHUD | '+c['name'])
             self.assertNotIn('parent',pack['d'])
             self.assertNotIn(TITLE,by_id,'Do not update a partial shared root')
-            self.assertEqual(pack['d']['actions']['init'],self.pack['d']['actions']['init'])
+            self.assertFalse(any(a.get('do_custom') for a in pack['d']['actions'].values()))
+            guard=by_id['ForeverHUD | '+c['name']+' | Class name']['actions']['init']['custom']
+            self.assertIn('importAPI',guard);self.assertIn('ForeverHUD.Bind()',guard)
             # Independent of class_import's load-class predicate: the class
             # file must be exactly the class root's reachable subtree.
             expected=set(subtree(full,'ForeverHUD | '+c['name']))

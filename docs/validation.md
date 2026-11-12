@@ -1,6 +1,15 @@
-# Validation for 0.4.0
+# Validation for 0.4.1
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.4.1 (prerelease) — import fix for group Init actions
+
+Automated only; nothing here is game-client evidence.
+
+- Reported in game with ForeverAuras 1.3.9: importing 0.4.0 stopped at `AuraEnvironment.lua:524: attempt to index field '?'`. Source review of the installed ForeverAuras: `LoadCustomActionFunctions` runs only for non-group displays, while `ActivateAuraEnvironment` runs a group's custom Init action through that missing table. The native wing's dynamic-group custom sort activated the wing during import.
+- The generator now refuses custom actions on any group. The root and wing Init actions moved to the `Class name` text display and the wing entry icons.
+- `tests/native-schema.lua` no longer stubs `ActivateAuraEnvironment` as a no-op: the mock fails like ForeverAuras on a group Init action, every group's actions are checked, and every custom-sorted dynamic group runs its sort. Against the 0.4.0 generator it fails on `Native left`.
+- Not verified in game: the import completing, or the companion binding from the new location.
 
 ## 0.4.0 (prerelease) — renamed to ForeverHUD
 
