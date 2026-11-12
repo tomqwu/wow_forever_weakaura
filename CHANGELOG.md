@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.1 — unreleased (prerelease)
+## 0.6.1 — 2026-11-12 (prerelease)
 
 - The DoT row now sits on the frame directly over the Health bar, within its width. In 0.6.0 it floated about 80 px above, away from the frame (reported in game). The icons are 24 px, 26 px apart, starting at the seal end of the bar.
 - The ability wings (Essential left, Utility right) move up to y=80 so they clear the DoT row. Shaman and Rogue weapon-coating icons move up to y=130 to stay clear of the right wing.
