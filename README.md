@@ -2,7 +2,13 @@
 
 ## English
 
-**Version 0.8.1 — no icon for a buff that's up (prerelease).** Demon Armor, Arcane Intellect, Fortitude and Mark of the Wild now show only when missing or about to expire, never while active. Upkeep buffs without a reminder (Mage Armor, Inner Fire, Aspect, Blessing) keep their active icon. Update the Core and your class in `/fa`, choosing **Update Auras**. **0.8.0 — retracted seal and tray.** Out of combat with no hostile target, the HUD folds to a larger seal with a tray under it:
+**Version 0.9.0 — spell suggestions (prerelease).** Warlocks get a row of suggestions above the seal, in priority order from left to right:
+- **Life Tap** at 30% mana or less;
+- **Corruption** or **Immolate** when missing from your hostile target in combat;
+- **Shadow Trance** when the proc is up (cast Shadow Bolt);
+- **Health Funnel** when your pet is at 35% health or less.
+
+Each rule is a native ForeverAuras check, so it works in combat. Protected values can't be combined, so Life Tap checks mana only, not your health. Turn suggestions off with **Spell suggestions** in `/fhud`. ForeverHUD now also warns at login, and in red at the bottom of `/fhud`, when your Core or class auras are missing or older than the addon, with an **Install / update auras** button. Update the Core and your class in `/fa`, choosing **Update Auras**. **0.8.1 — no icon for a buff that's up.** Demon Armor, Arcane Intellect, Fortitude and Mark of the Wild now show only when missing or about to expire, never while active. Upkeep buffs without a reminder (Mage Armor, Inner Fire, Aspect, Blessing) keep their active icon. Update the Core and your class in `/fa`, choosing **Update Auras**. **0.8.0 — retracted seal and tray.** Out of combat with no hostile target, the HUD folds to a larger seal with a tray under it:
 - health and resource percentages;
 - your Soul Shards (Warlock);
 - missing upkeep buffs such as Demon Armor;
@@ -180,7 +186,13 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 ## 简体中文
 
-**版本 0.8.1：增益生效时不再显示图标（预发布）。** 恶魔护甲、奥术智慧、真言术：韧与野性印记现在只在缺失或即将结束时显示，生效期间不显示。没有提醒的维持类增益（法师护甲、心灵之火、守护、祝福）仍显示生效图标。请在 `/fa` 中更新核心和当前职业，并选择 **Update Auras（更新光环）**。**0.8.0：收起时的印记与托盘。** 脱离战斗且没有敌对目标时，界面收起为更大的印记，下方挂着托盘：
+**版本 0.9.0：技能建议（预发布）。** 术士在印记上方获得一行建议，从左到右按优先级排列：
+- 法力不高于 30% 时建议**生命分流**；
+- 战斗中敌对目标身上缺少你的**腐蚀术**或**献祭**时提示；
+- **暗影冥思**触发时提示（施放暗影箭）；
+- 宠物生命不高于 35% 时建议**生命通道**。
+
+每条规则都是 ForeverAuras 的原生判断，战斗中也能生效。受保护的数值无法组合判断，因此生命分流只检查法力，不检查你的生命。可在 `/fhud` 中用 **技能建议** 关闭。当核心或职业光环缺失、或比插件旧时，ForeverHUD 会在登录时提示，并在 `/fhud` 底部以红字显示，附 **安装/更新光环** 按钮。请在 `/fa` 中更新核心和当前职业，并选择 **Update Auras（更新光环）**。**0.8.1：增益生效时不再显示图标。** 恶魔护甲、奥术智慧、真言术：韧与野性印记现在只在缺失或即将结束时显示，生效期间不显示。没有提醒的维持类增益（法师护甲、心灵之火、守护、祝福）仍显示生效图标。请在 `/fa` 中更新核心和当前职业，并选择 **Update Auras（更新光环）**。**0.8.0：收起时的印记与托盘。** 脱离战斗且没有敌对目标时，界面收起为更大的印记，下方挂着托盘：
 - 生命与资源百分比；
 - 灵魂碎片（术士）；
 - 缺失的维持类增益（如恶魔护甲）；

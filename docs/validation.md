@@ -1,6 +1,32 @@
-# Validation for 0.8.1
+# Validation for 0.9.0
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.9.0 (prerelease) — spell suggestions
+
+Automated only; nothing here is game-client evidence.
+
+- **Source review** (`Conditions.lua`):
+  - The power curve supports `<=`.
+  - It can AND only with readable (non-curve) checks, and one curve trigger is chosen per display.
+  - So mana and health can't be combined. The user's example (Life Tap at 30% mana) is implemented on mana alone.
+- **`tests/test_pack.py` (`test_warlock_spell_suggestions`):**
+  - The order and centring of the row, and its clearance from the seal.
+  - Life Tap: Power trigger, alpha 0, and a `percentpower <= 30` condition setting alpha 1.
+  - Health Funnel: the pet Health curve.
+  - DoT rules: Show On Missing with the `SuggestTarget` gate.
+  - Shadow Trance: eligible once Nightfall (18094, 18095) is learned.
+  - Every suggestion has a suggest load flag.
+- **`tests/bundle.lua`:** suggestions hide while folded, and DoT rules need combat and a hostile target.
+- **`tests/options.lua`** (aura status in the real panel code):
+  - Missing Core and class: red text naming both, with the install button.
+  - Older class and current Core: only the class is reported.
+  - Both current: localized all-clear, no button.
+  - The new modules have controls.
+- **Not verified in game:**
+  - curve-driven alpha on the icons;
+  - the Nightfall talent IDs on Forever;
+  - the row's spacing against the cradles and the class name.
 
 ## 0.8.1 (prerelease) — no icon for an active upkeep buff
 

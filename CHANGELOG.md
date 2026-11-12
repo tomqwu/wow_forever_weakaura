@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.9.0 — unreleased (prerelease)
+
+- **Spell suggestions** (user: "add spell recommendation? based on certain condition? e.g. low mana 30% then life tap"). Warlock gets a fixed row of 32 px icons above the seal (y=112), in priority order. Every rule is native:
+  - **Life Tap:** the Power curve ≤ 30% sets alpha (`Conditions.lua` PowerCurve).
+  - **Corruption, Immolate:** Show On Missing on the target, gated to combat with a living hostile target (`E.SuggestTarget`).
+  - **Shadow Trance:** the proc aura is active; shown once Nightfall is learned.
+  - **Health Funnel:** the pet Health curve ≤ 35%.
+- ForeverAuras evaluates one protected curve per display (`Conditions.lua` 1285–1297), so "mana low and health high" can't be combined; Life Tap checks mana only.
+- New `/fhud` module **Spell suggestions** (on by default). Suggestions give way to the tray while retracted. Other classes have no rules yet.
+- **Aura install status** (user: "if people installed the addon, but not WA aura or imported/updated, we should alert it"):
+  - A one-time chat reminder at login when the Core or class auras are missing or older than the addon.
+  - A status line at the bottom of `/fhud`: red with an **Install / update auras** button, or "Auras up to date".
+  - Both read the update tags and saved data only (`E.AuraProblems`), and also report an old 0.4 class group or a half-finished import.
+- Settings panel fixes: the title still read "E C L I P S E" (a rename leftover), now "F O R E V E R H U D". Module checkboxes are tighter, so the 16 modules no longer overlap the note under them.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.8.1 — 2026-11-12 (prerelease)
 
 - No icon for an upkeep buff that's up (user: "If armor is up, you don't have to show it here"). These buffs now show only through their native missing and expiring reminders:

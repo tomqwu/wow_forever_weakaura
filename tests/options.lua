@@ -24,4 +24,20 @@ E.panel.cooldown.scripts.OnClick();check(E.Profile().cooldownLayout=='Class plan
 E.Set('castBarMode','Default');E.panel.castChoice.scripts.OnClick()
 check(E.Profile().castBarMode=='ForeverHUD' and E.Profile().hideDefaultCast and E.panel.castChoice.text:find('ForeverHUD',1,true),'Localized cast selector chooses ForeverHUD exclusively')
 E.panel.castChoice.scripts.OnClick();check(E.Profile().castBarMode=='Both' and not E.Profile().hideDefaultCast,'Cast selector explicitly supports both bars')
+-- 0.9: the panel shows whether the auras the addon ships are installed.
+local installed={}
+ForeverAuras.GetData=function(id)return installed[id]end
+ForeverAurasSaved={displays={}}
+E.RefreshOptions()
+check(E.panel.install.shown and E.panel.auraStatus.text:find('ForeverHUD | Core',1,true) and E.panel.auraStatus.text:find('ForeverHUD | Warlock',1,true),
+    'Missing Core and class auras show in red with an install button')
+local core,warlock=E.bundledImports.CORE,E.bundledImports.WARLOCK
+installed['ForeverHUD | Core']={id='ForeverHUD | Core',url='https://wago.io/forever-hud-core/'..core.build}
+installed['ForeverHUD | Warlock']={id='ForeverHUD | Warlock',url='https://wago.io/forever-hud-warlock/'..(warlock.build-1)}
+E.RefreshOptions()
+check(E.panel.install.shown and E.panel.auraStatus.text:find('0.9',1,true) and not E.panel.auraStatus.text:find('Core',1,true),'An older class group is reported; a current Core is not')
+installed['ForeverHUD | Warlock'].url='https://wago.io/forever-hud-warlock/'..warlock.build
+E.RefreshOptions()
+check(not E.panel.install.shown and E.panel.auraStatus.text=='光环已是最新','Current auras: no button, localized all-clear')
+check(E.panel.checks.suggest and E.panel.checks.tray,'New modules have controls')
 print('Settings/locale checks passed: '..checks)
