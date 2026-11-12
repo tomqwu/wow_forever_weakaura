@@ -153,7 +153,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.7.0','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.7.1','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return ForeverHUD and ForeverHUD.version=="0.3.2" and ForeverHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true

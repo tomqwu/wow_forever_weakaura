@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.1 — unreleased (prerelease)
+
+- The Cooldown Manager's tracked buffs mirror the DoT row: centred on the rim over the resource bar (138, 40), 24 px like the DoTs, with the same frame. In 0.7.0 they sat above the Utility cradle and floated whenever no Utility cooldown was running (reported in game; the user asked for the "similar position of the dps cdm but on the right side, art works should be unified").
+- One buff row per mode, so the two never overlap at that spot:
+  - **Forever** (Cooldown Manager) layout: the curated class buff icons unload, and the native row shows every tracked buff, procs such as Backlash included.
+  - **Class plan** layout: the curated class buff rail shows, and the native buff row stays empty.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.7.0 — 2026-11-12 (prerelease)
 
 - **Rows centred on each bar.** Every row starts at the middle of its bar (x=±138) and grows evenly both ways, as the user chose ("balance in the middle, then expand to both sides"). This is the layout half of [the 0.7 design](docs/hud-design-0.7.md).

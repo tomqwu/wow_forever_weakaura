@@ -256,6 +256,12 @@ class PackTests(unittest.TestCase):
         self.assertEqual(tracked['triggers'][1]['trigger']['event'],'Blizzard CDM Buff')
         self.assertEqual(tracked['load']['loadFlag'],'FOREVERHUD_CORE_trackedBars')
         self.assertLess(by_id[CORE_ID+' | Native tracked bars']['xOffset'],-250,'Duration bars sit on the damage side')
+        # 0.7.1: the native buff row mirrors the DoT row on the right rim.
+        native=by_id[CORE_ID+' | Native player effects']
+        self.assertEqual((native['xOffset'],native['yOffset'],native['grow'],native['align']),(138,40,'HORIZONTAL','CENTER'))
+        self.assertEqual(by_id[CORE_ID+' | Native player effects | Entries']['width'],by_id['ForeverHUD | Warlock | Target effects | Immolate']['width'],'Same icon size as the DoT row')
+        effects=[e for id,e in self.eligibility.items() if ' | Player effects | ' in id and not id.endswith('Demon armor')]
+        self.assertTrue(effects and all(e.get('effect') for e in effects),'Curated class buffs give way to the native row in Forever mode')
         self.assertEqual(by_id[CORE_ID+' | Native items | Entries']['triggers'][1]['trigger']['event'],'Blizzard CDM Item')
         armor=by_id['ForeverHUD | Warlock | Player effects | Demon armor']
         self.assertEqual(armor['parent'],'ForeverHUD | Warlock | Maintenance')

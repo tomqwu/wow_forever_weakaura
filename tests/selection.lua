@@ -73,6 +73,8 @@ ForeverAuras.GetData=function(id)
 end
 ForeverAuras.Add=function(new)writes=writes+1;if new.triggers[1].trigger.cdmSpells.multi[102] then buffData=new else data=new end end
 D.cdm={[100]={name='Native extra',category='Essential',identities={}},[101]={name='Summon',category='Utility',identities={[698]=true}},[102]={name='Buff',category='TrackedBuff',identities={}},[103]={name='Breathing',category='TrackedBuff',identities={[5697]=true}}}
+-- The native buff row is Cooldown Manager (Forever) mode's.
+S.nativeMode,S.nativeUsed=true,{}
 S.SyncCDM()
 check(data.triggers[1].trigger.cdmSpells.multi[100] and not data.triggers[1].trigger.cdmSpells.multi[101],'Native learned combat overflow excludes preparation')
 check(buffData.triggers[1].trigger.cdmSpells.multi[102] and not buffData.triggers[1].trigger.cdmSpells.multi[103],'Additional learned tracked buffs/counters exclude preparation')
@@ -177,6 +179,16 @@ check(not trigger(' | Native player effects | Entries').cdmSpells.multi[41],'A D
 E.Profile().dots=false;S.SyncCDM()
 check(trigger(' | Native player effects | Entries').cdmSpells.multi[41],'With the target row off, the native row keeps the DoT')
 E.Profile().dots=true;D.eligible[immolate]=nil;D.cdm[41]=nil;S.SyncCDM()
+-- 0.7.1: one buff row on the right rim. Forever mode shows the tracked buffs
+-- (curated class buffs off, and not skipped from the native row).
+local backlash=prefix..' | Player effects | Backlash'
+check(E.catalog[backlash] and E.catalog[backlash].effect,'Curated class buffs are marked as rim effects')
+D.eligible[backlash]={id=34936,name='Backlash'}
+D.cdm[42]={cdmID=42,name='Backlash',category='TrackedBuff',identities={[34936]=true}}
+S.SyncCDM()
+check(S.nativeMode and not S.Allowed(backlash,E.catalog[backlash]),'Forever mode unloads the curated buff icons')
+check(trigger(' | Native player effects | Entries').cdmSpells.multi[42],'Forever mode shows the tracked buff natively on the rim')
+D.eligible[backlash]=nil;D.cdm[42]=nil;S.SyncCDM()
 template(prefix..' | Primary | Native left').regionType='dynamicgroup'
 S.Refresh()
 check(S.nativeWings and S.positions[prefix..' | Primary | Native left'] and not S.positions[prefix..' | Primary | Native 1'],'New native cooldown wings compact shown clones while legacy slot roots remain compatible')
@@ -191,7 +203,11 @@ D.cdmOrder.Utility={};S.Refresh()
 check(not next(S.positions) and S.nativeMode,'Empty native lists invent no fallback icons')
 E.Profile().cooldownLayout='Class plan';S.Refresh()
 check(selected('Shadow Bolt') and not next(trigger(' | Primary | Native 1 | Entry').cdmSpells.multi),'Class plans are explicit and clear old native selections')
+check(S.Allowed(prefix..' | Player effects | Backlash',E.catalog[prefix..' | Player effects | Backlash'])
+    and not next(trigger(' | Native player effects | Entries').cdmSpells.multi),'Class plan mode uses the curated buffs and leaves the native rim row empty')
 D.cdm[50]={cdmID=50,name='Corruption',category='TrackedBar',identities={[172]=true}}
+-- Tracked bars and the native buff row are Cooldown Manager (Forever) mode.
+E.Profile().cooldownLayout='Forever';D.cdmOrder.Essential={13,11}
 E.Profile().trackedBars=true;S.Refresh()
 check(trigger(' | Native tracked bars | Entries').cdmSpells.multi[50],'Tracked-bar identities have a separate native duration-bar renderer')
 check(not trigger(' | Native player effects | Entries').cdmSpells.multi[50],'Enabled tracked bars do not duplicate the same native entry as an overflow icon')

@@ -17,14 +17,17 @@ Every row is centred on its bar: x = −138 for Health, +138 for the resource ba
 | --- | --- | --- |
 | Rim rail (40) | DoTs on the target, and the Warrior Rend reminder | Your own buffs, Battle Shout reminders, weapon coatings |
 | Cradle (80) | Essential cooldowns, up to 4 | Utility cooldowns, up to 4 |
-| Upper rail (116) | Tracked bars stay at the far left (x −410) | Native tracked buffs from the Cooldown Manager |
+| Upper rail (116) | Tracked bars stay at the far left (x −410) | Empty since 0.7.1: native tracked buffs moved to the rim rail, which they share by mode with your own buffs (see below) |
 | Below the bars | Essential overflow, Warrior procs | Utility and item overflow, totems |
 
 ## How centring works without reading combat state
 
 - **Rim rails** (protected Modern auras) become ForeverAuras **Modern Aura Groups**: a normal group with `blizzardFlow = true`, `blizzardFlowGrowth = "CENTER_HORIZONTAL"` and `blizzardFlowSpacing`. ForeverAuras chains each child to the end of the previous child's Blizzard aura container and keeps the row centred with half-size shadow frames (`SecretAuraFlow.lua`, lines 2–21 and 139–147). This is native: no Lua reads which aura is present, so it works in combat. The children's own offsets become 0. Displays with ordinary (not Modern) triggers, such as weapon coatings, keep fixed slots at the outer end of the right rail.
 - **Cradles** (native Cooldown Manager clones) are already dynamic groups. They change from grow LEFT/RIGHT at x = ±83 to grow HORIZONTAL, align CENTER at x = ±138. `Selection.lua` sets the wing offsets to match, and the unfold motion slides each wing from the seal to its bar centre.
-- **Upper rail on the right** (Core native buffs) is a dynamic group, grow HORIZONTAL, align CENTER at (138, 116).
+- **Native buffs** (Core) were a centred dynamic group at (138, 116) in 0.7.0. That row floated whenever no Utility cooldown filled the cradle under it. Since 0.7.1 they sit on the right rim at (138, 40), at the DoT row's 24 px size.
+  - The curated class buff rail uses the same spot, so the cooldown layout chooses one row.
+  - **Forever:** the class buff displays carry `effect` in the catalog and `Selection.Allowed` unloads them; the native row shows every tracked buff.
+  - **Class plan:** the native row is synced empty and the class buffs show.
 
 ## Art: one shared set, tinted per class
 

@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.7.0"
+VERSION = "0.7.1"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -268,12 +268,14 @@ def generate():
             cdmTrack='auto',cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
     native_auras=CORE_ID+' | Native auras'; p.group(native_auras,CORE_ID,CORE,'base')
     native_effects=CORE_ID+' | Native player effects'
-    # Native buffs are not damage: the upper rail on the right, centred on
-    # the resource bar above the Utility cradle.
-    p.group(native_effects,native_auras,CORE,'buffs',x=BAR_X,y=116,dynamic=True).update(grow='HORIZONTAL',align='CENTER',space=4)
+    # Native buffs mirror the DoT row: seated on the rim over the resource
+    # bar, centred, same size and spacing. In Cooldown Manager mode they
+    # replace the class buff rail at the same spot (Selection.Allowed), so the
+    # two rows never share it.
+    p.group(native_effects,native_auras,CORE,'buffs',x=BAR_X,y=DOT_ROW_Y,dynamic=True).update(grow='HORIZONTAL',align='CENTER',space=2)
     icon(p,native_effects+' | Entries',native_effects,CORE,'buffs',dict(type='cdm',event='Blizzard CDM Buff',
         cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
-        use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),26)
+        use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),DOT_SIZE)
     tracked=CORE_ID+' | Native tracked bars'
     # Tracked bars carry DoT and proc durations: the damage side, left.
     p.group(tracked,native_auras,CORE,'trackedBars',x=-410,y=13,dynamic=True).update(grow='DOWN',space=5,
@@ -401,6 +403,9 @@ def generate():
             upkeep=name=='Demon armor'
             d=icon(p,effects+" | "+name,maintenance if upkeep else effects,cls,'maintenance' if upkeep else 'buffs',
                 aura_trigger(seed if isinstance(seed,list) else [seed]),20 if upkeep else DOT_SIZE,modern=True)
+            # Curated class buffs show only in Class plan mode; Cooldown
+            # Manager mode shows the player's tracked buffs at the same spot.
+            if not upkeep: p.eligibility[d['id']].update(effect=True)
             if upkeep: d['subRegions'][2]['text_visible']=False
 
         for i,(seeds,name,missing) in enumerate(UPKEEP.get(cls,[])):

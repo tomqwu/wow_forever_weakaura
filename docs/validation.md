@@ -1,6 +1,21 @@
-# Validation for 0.7.0
+# Validation for 0.7.1
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.7.1 (prerelease) — buff row mirrors the DoT row
+
+- **Game evidence (user screenshot, Warlock, 0.7.0):**
+  - The Immolate DoT is centred on the Health-side rim.
+  - Demon Armor shows past the Mana bar.
+  - The native tracked buff (1:57) hangs above the empty Utility cradle, about 116 px up.
+- **Change:**
+  - Native buffs move to (138, 40) at 24 px.
+  - In Forever mode the curated class buffs unload (`effect` catalog flag, `Selection.Allowed`) and the native row includes them.
+  - In Class plan mode the native row is synced empty.
+- **Tests:**
+  - `tests/selection.lua`: Backlash unloads in Forever mode and appears in the native row. Class plan mode allows the curated buff and leaves the native row empty. Earlier native-row checks now run explicitly in Forever mode.
+  - `tests/test_pack.py`: the native row's position, growth and size match the DoT row, and every curated class buff carries `effect`.
+- **Not verified in game.**
 
 ## 0.7.0 (prerelease) — rows centred on each bar
 
