@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.0 — 2026-11-11 (prerelease)
+## 0.4.0 — 2026-11-12 (prerelease)
 
 - Rename the project from Eclipse to **ForeverHUD**. Addon folder and TOC `ForeverHUD`, global `ForeverHUD`, settings `ForeverHUDDB`, anchor `ForeverHUDAnchor`, slash commands `/fhud` and `/foreverhud`, load flags `FOREVERHUD_<CLASS>_<module>`, event `FOREVERHUD_UPDATE`, cast-bar choice "ForeverHUD bar".
 - Aura names become `ForeverHUD` (combined root) and `ForeverHUD | <Class> | …`; update tags become `wago.io/forever-hud-<class>/<build>` (0.4.0 = build 400). UIDs derive from names, so these are new auras: old `Eclipse | …` auras are not updated or deleted.
