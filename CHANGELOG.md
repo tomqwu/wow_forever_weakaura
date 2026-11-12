@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.1 — unreleased (prerelease)
+## 0.7.1 — 2026-11-12 (prerelease)
 
 - The Cooldown Manager's tracked buffs mirror the DoT row: centred on the rim over the resource bar (138, 40), 24 px like the DoTs, with the same frame. In 0.7.0 they sat above the Utility cradle and floated whenever no Utility cooldown was running (reported in game; the user asked for the "similar position of the dps cdm but on the right side, art works should be unified").
 - One buff row per mode, so the two never overlap at that spot:
