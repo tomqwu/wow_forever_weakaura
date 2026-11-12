@@ -360,9 +360,15 @@ class PackTests(unittest.TestCase):
             # 0.9.1 minimal tray: no health/resource percentages.
             for side in ('Health','Resource'):
                 self.assertNotIn(f'{prefix} | Tray | {side}',by_id)
-            # Without a counter the row sits right under the seal.
-            self.assertEqual(row['yOffset'],-116 if c.get('extra')=='shards' else -74)
-        self.assertIn(prefix_warlock:='ForeverHUD | Warlock | Tray | Soul Shards',by_id)
+            # 0.9.2: one horizontal row right under the seal for every class.
+            self.assertEqual(row['yOffset'],-74)
+            self.assertEqual(by_id[prefix+' | Tray']['controlledChildren'],[row['id']],'Everything in the tray sits in the one row')
+            sizes={by_id[id]['width'] for id in row['controlledChildren']}
+            self.assertEqual(len(sizes),1,'Same icon size across the row')
+        shards=by_id['ForeverHUD | Warlock | Tray | Row | Soul Shards']
+        self.assertEqual(by_id['ForeverHUD | Warlock | Tray | Row']['controlledChildren'][0],shards['id'],'The counter leads the row')
+        self.assertFalse(shards['subRegions'][2]['text_visible'],'One count, in the corner')
+        self.assertTrue(shards['subRegions'][3]['text_visible'])
         self.assertIn('ForeverHUD | Warlock | Tray | Row | Upkeep reminder | Demon armor missing',by_id)
         self.assertNotIn('ForeverHUD | Warlock | Tray | Row | Food',self.eligibility,'Name-matched icons skip spell discovery')
 
