@@ -12,6 +12,7 @@ Sections below 0.4.0 describe releases made under the Eclipse name and keep the 
 - **Fix:** `S.SyncCDM` now treats catalogued `dots` auras like tracked buffs. A native entry that matches one by name or spell ID is left out of the native player-effects row while the target-effects module is on.
 - **Tests:** two new `tests/selection.lua` checks, 79 in total. Immolate is left out of the row while the target-effects module is on, and kept when it is off.
 - **Not verified in game:** the DoT gone from the row above the HUD.
+- **Published 2026-11-12:** all 14 downloaded release assets match the build, and the 38 runtime files match the source. Installed over 0.5.0, with all 38 files verified (4 changed). The 0.5.0 folder was backed up and verified first, and SavedVariables were not touched. This is file evidence, not game-client evidence.
 
 ## 0.5.0 (prerelease) — shared Core plus class groups
 
