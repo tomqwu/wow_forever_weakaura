@@ -27,7 +27,7 @@ jobs:
       - name: Build import and companion
         run: python scripts/build.py
       - name: Committed imports match the generator
-        run: git diff --exit-code -- dist/Eclipse-Class-Combat-HUD.txt dist/classes src/EclipseHUD/Catalog.lua
+        run: git diff --exit-code -- dist/ForeverHUD-All-Classes.txt dist/classes src/ForeverHUD/Catalog.lua
       - name: Check logic, import and package
         run: python scripts/check.py
       - name: Check with ForeverAuras native validators
@@ -49,7 +49,7 @@ jobs:
           python scripts/check_preview.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: Eclipse-Class-Combat-HUD-v0.3.5
+          name: ForeverHUD-v0.4.0
           path: |
             dist/*.zip
             dist/*.sha256

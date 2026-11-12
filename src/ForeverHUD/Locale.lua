@@ -1,17 +1,19 @@
 local _, E = ...
 local zh = GetLocale() == "zhCN"
 local strings = {
-    ['Tracked bars (Eclipse)']='持续时间条（Eclipse）',
+    ['Tracked bars (ForeverHUD)']='持续时间条（ForeverHUD）',
 
-    ['Default game bar']='系统施法条', ['Eclipse bar']='Eclipse 施法条', ['Both bars']='同时显示',
+    ['Default game bar']='系统施法条', ['ForeverHUD bar']='ForeverHUD 施法条', ['Both bars']='同时显示',
     ['Left-click to expand or fold. Right-click for settings.']='左键展开或收起，右键打开设置。',
 
-    ['Cast bar display']='施法条显示', ['Default']='系统施法条', ['Eclipse']='Eclipse 施法条', ['Both']='同时显示', ['Eclipse cast bar']='Eclipse 施法条',
+    ['Cast bar display']='施法条显示', ['Default']='系统施法条', ['ForeverHUD']='ForeverHUD 施法条', ['Both']='同时显示', ['ForeverHUD cast bar']='ForeverHUD 施法条',
 
-    ['Companion update required: install EclipseHUD and /reload before importing.']='需要更新配套插件：安装 EclipseHUD 后先输入 /reload，再导入。',
-    ['Bundled with EclipseHUD. ForeverAuras shows its import window before changing anything.']='随 EclipseHUD 插件附带。ForeverAuras 会先显示导入窗口，确认后才会更改。',
-    ['%d displays of "%s" are outside their group because an earlier import stopped part way. In /fa, delete every top-level "%s" entry, then run /eclipse install.']='有 %d 个“%s”显示不在其组内，原因是之前的导入中途停止。请在 /fa 中删除所有顶层的“%s”条目，然后输入 /eclipse install。',
+    ['Companion update required: install ForeverHUD and /reload before importing.']='需要更新配套插件：安装 ForeverHUD 后先输入 /reload，再导入。',
+    ['Bundled with ForeverHUD. ForeverAuras shows its import window before changing anything.']='随 ForeverHUD 插件附带。ForeverAuras 会先显示导入窗口，确认后才会更改。',
+    ['%d displays of "%s" are outside their group because an earlier import stopped part way. In /fa, delete every top-level "%s" entry, then run /fhud install.']='有 %d 个“%s”显示不在其组内，原因是之前的导入中途停止。请在 /fa 中删除所有顶层的“%s”条目，然后输入 /fhud install。',
     ['No bundled import is available for this class.']='该职业没有随插件附带的导入。',
+    ['The old EclipseHUD addon is still installed. Exit the game and delete Interface/AddOns/EclipseHUD.']='旧版 EclipseHUD 插件仍已安装。请退出游戏并删除 Interface/AddOns/EclipseHUD。',
+    ['%d old "Eclipse | ..." displays are still in /fa. ForeverHUD does not use them; delete every "Eclipse | ..." group.']='/fa 中仍有 %d 个旧的“Eclipse | ...”显示。ForeverHUD 不再使用它们，请删除所有“Eclipse | ...”组。',
 
     ['Forever cooldown layout']='系统冷却分组与顺序', ['Essential']='主要冷却', ['Utility']='辅助冷却', ['EquipSlotEssential']='装备冷却', ['HiddenActive']='未显示',
     ['Maintenance buffs']='常驻增益',
@@ -64,7 +66,7 @@ local strings = {
     ["Changes apply after combat."] = "设置将在脱离战斗后生效。",
     ["Drag the center seal to move. Right-click it for settings."] = "拖动中央印记移动，右键打开设置。",
     ["Each class keeps its own settings."] = "每个职业独立保存设置。",
-    ["Import Eclipse-Class-Combat-HUD.txt through /fa first."] = "请先通过 /fa 导入 Eclipse-Class-Combat-HUD.txt。",
+    ["Import ForeverHUD-All-Classes.txt through /fa first."] = "请先通过 /fa 导入 ForeverHUD-All-Classes.txt。",
     ["Preview in /fa; only learned abilities appear in play."] = "在 /fa 中预览；实战仅显示已学技能。",
     ["Warlock"] = "术士", ["Warrior"] = "战士", ["Mage"] = "法师",
     ["Priest"] = "牧师", ["Rogue"] = "盗贼", ["Druid"] = "德鲁伊",
@@ -74,8 +76,8 @@ function E.L(text) return zh and strings[text] or text end
 E.modules = {
     {"resources", "Resources"}, {"primary", "Primary abilities"},
     {"utility", "Utility abilities"}, {"dots", "Target effects"},
-    {"buffs", "Player effects"}, {"cast", "Eclipse cast bar"},
-    {"maintenance", "Maintenance buffs"}, {"trackedBars", "Tracked bars (Eclipse)"},
+    {"buffs", "Player effects"}, {"cast", "ForeverHUD cast bar"},
+    {"maintenance", "Maintenance buffs"}, {"trackedBars", "Tracked bars (ForeverHUD)"},
     {"pet", "Pet and class resource"}, {"art", "Artwork"},
     {"motion", "Rune animation"},
     {"nameplates", "Nameplate effects"},

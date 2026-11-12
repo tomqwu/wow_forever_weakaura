@@ -9,7 +9,7 @@ local function animated(parent,width,height,asset,loop)
     local frame=CreateFrame('Frame',nil,parent)
     frame:SetSize(width,height);frame:SetPoint('CENTER')
     local texture=frame:CreateTexture(nil,'OVERLAY')
-    texture:SetAllPoints();texture:SetTexture('Interface\\AddOns\\EclipseHUD\\Media\\'..asset..'.tga')
+    texture:SetAllPoints();texture:SetTexture('Interface\\AddOns\\ForeverHUD\\Media\\'..asset..'.tga')
     texture:SetBlendMode('ADD');texture:SetAlpha(0)
     local group=texture:CreateAnimationGroup()
     if loop then group:SetLooping('REPEAT') end
@@ -50,7 +50,7 @@ local function attach(spec,p)
         return true -- a disabled widget is not a missing dependency
     end
     local api=E.API()
-    local parent=api and api.GetRegion and api.GetRegion('Eclipse | '..E.classNames[E.class]..' | '..target)
+    local parent=api and api.GetRegion and api.GetRegion('ForeverHUD | '..E.classNames[E.class]..' | '..target)
     if not parent then if binding then pause(binding) end;return false end
     if not binding or binding.parent~=parent then
         if binding then pause(binding) end

@@ -1,5 +1,5 @@
 local _, E = ...
-local castLabels={Default="Default game bar",Eclipse="Eclipse bar",Both="Both bars"}
+local castLabels={Default="Default game bar",ForeverHUD="ForeverHUD bar",Both="Both bars"}
 local function label(parent, text, size, x, y, color)
     local f = parent:CreateFontString(nil, "OVERLAY")
     f:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", size, "")
@@ -34,7 +34,7 @@ function E.RefreshOptions()
     panel.refreshing = false
 end
 local function build()
-    local p = CreateFrame("Frame", "EclipseHUDOptions", UIParent, "BackdropTemplate")
+    local p = CreateFrame("Frame", "ForeverHUDOptions", UIParent, "BackdropTemplate")
     p:SetSize(560, 570); p:SetPoint("CENTER"); p:SetFrameStrata("DIALOG")
     p:SetClampedToScreen(true); p:SetMovable(true); p:EnableMouse(true)
     p:RegisterForDrag("LeftButton")
@@ -46,7 +46,7 @@ local function build()
     p.classLabel = label(p, "", 11, 25, -80)
     local close = CreateFrame("Button", nil, p, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", -4, -4); close:SetScript("OnClick", function() p:Hide() end)
-    table.insert(UISpecialFrames, "EclipseHUDOptions")
+    table.insert(UISpecialFrames, "ForeverHUDOptions")
     p.checks, p.sliders, p.sections = {}, {}, {}
     local function check(parent,key,text,x,y)
         local box = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
@@ -87,7 +87,7 @@ local function build()
         end)
         b.title=title;return b
     end
-    p.castChoice=cycle('castBarMode',function()return {'Default','Eclipse','Both'}end,'Cast bar display',-303)
+    p.castChoice=cycle('castBarMode',function()return {'Default','ForeverHUD','Both'}end,'Cast bar display',-303)
     p.castChoice:SetSize(241,29);p.castChoice:ClearAllPoints();p.castChoice:SetPoint('TOPLEFT',292,-303)
     p.school=cycle('school',function()
         local values={'Auto'};for _,school in ipairs(E.schools and E.schools[E.class] or {})do values[#values+1]=school end
@@ -138,9 +138,9 @@ function E.ToggleOptions()
     local p = E.panel or build()
     p:SetShown(not p:IsShown())
 end
-SLASH_ECLIPSEHUD1 = "/eclipse"
-SLASH_ECLIPSEHUD2 = "/ehud"
-SlashCmdList.ECLIPSEHUD = function(message)
+SLASH_FOREVERHUD1 = "/fhud"
+SLASH_FOREVERHUD2 = "/foreverhud"
+SlashCmdList.FOREVERHUD = function(message)
     local install=message and message:match("^%s*install%s*(%a*)%s*$")
     if install and E.InstallBundled then E.InstallBundled(install=="force")
     elseif message and message:match("^%s*spells%s*$") and E.ReportSpells then E.ReportSpells()

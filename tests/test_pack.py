@@ -31,7 +31,7 @@ class PackTests(unittest.TestCase):
             self.assertTrue(load['use_class'],d['id'])
             classes.add(load['class']['single'])
             self.assertTrue(load['use_loadFlag'],d['id'])
-            self.assertTrue(load['loadFlag'].startswith('ECLIPSE_'+load['class']['single']+'_'))
+            self.assertTrue(load['loadFlag'].startswith('FOREVERHUD_'+load['class']['single']+'_'))
         self.assertEqual(classes,set(CLASSES))
         self.assertEqual(len(self.pack['d']['controlledChildren']),9)
     def test_class_import_scopes_preserve_ids_and_leave_other_classes_out(self):
@@ -40,13 +40,13 @@ class PackTests(unittest.TestCase):
         for cls,c in CLASSES.items():
             pack=class_import(self.pack,cls)
             rows=[pack['d']]+pack['c'];by_id={d['id']:d for d in rows}
-            self.assertEqual(pack['d']['id'],'Eclipse | '+c['name'])
+            self.assertEqual(pack['d']['id'],'ForeverHUD | '+c['name'])
             self.assertNotIn('parent',pack['d'])
             self.assertNotIn(TITLE,by_id,'Do not update a partial shared root')
             self.assertEqual(pack['d']['actions']['init'],self.pack['d']['actions']['init'])
             # Independent of class_import's load-class predicate: the class
             # file must be exactly the class root's reachable subtree.
-            expected=set(subtree(full,'Eclipse | '+c['name']))
+            expected=set(subtree(full,'ForeverHUD | '+c['name']))
             self.assertEqual(set(by_id),expected)
             self.assertEqual(expected,{key for key,d in full.items() if d['load']['class']['single']==cls})
             self.assertFalse(seen & expected,'Each class update must have a disjoint native UID scope')
@@ -107,13 +107,13 @@ class PackTests(unittest.TestCase):
             self.assertNotIn('Guos',json.dumps(d,ensure_ascii=False))
             for key in ('texture','groupIcon'):
                 value=d.get(key,'')
-                if value.startswith('Interface\\AddOns\\EclipseHUD\\'):
-                    self.assertTrue((ROOT/'src/EclipseHUD'/value.split('EclipseHUD\\',1)[1].replace('\\','/')).is_file(),value)
-        code=(ROOT/'src/EclipseHUD/Core.lua').read_text(**UTF8)
+                if value.startswith('Interface\\AddOns\\ForeverHUD\\'):
+                    self.assertTrue((ROOT/'src/ForeverHUD'/value.split('ForeverHUD\\',1)[1].replace('\\','/')).is_file(),value)
+        code=(ROOT/'src/ForeverHUD/Core.lua').read_text(**UTF8)
         for forbidden in ('COMBAT_LOG_EVENT_UNFILTERED','UnitAura(', 'GetAuraDataByIndex','GetSpellCooldown','SetScript("OnUpdate"'):
             self.assertNotIn(forbidden,code)
     def test_wow_texture_format(self):
-        files=list((ROOT/'src/EclipseHUD/Media').glob('*.tga'))
+        files=list((ROOT/'src/ForeverHUD/Media').glob('*.tga'))
         self.assertEqual(len(files),23)
         for path in files:
             header=path.read_bytes()[:18]
@@ -127,7 +127,7 @@ class PackTests(unittest.TestCase):
         by_id={d['id']:d for d in self.regions}
         self.assertEqual(len(by_id),len(self.regions))
         self.assertEqual(len({d['uid'] for d in self.regions}),len(self.regions))
-        self.assertEqual(by_id[TITLE]['anchorFrameFrame'],'EclipseHUDAnchor')
+        self.assertEqual(by_id[TITLE]['anchorFrameFrame'],'ForeverHUDAnchor')
         listed=[]
         for d in self.regions:
             for child in d.get('controlledChildren',[]):
@@ -142,18 +142,18 @@ class PackTests(unittest.TestCase):
         self.assertNotIn('url',self.pack['d'],'The combined root is not a companion update target')
         for d in self.pack['c']:
             cls=d['load']['class']['single']
-            self.assertEqual(d['url'],f'https://wago.io/eclipse-hud-{cls.lower()}/{build}',d['id'])
+            self.assertEqual(d['url'],f'https://wago.io/forever-hud-{cls.lower()}/{build}',d['id'])
             # FA's own parser: wago.io/<slug>/<number>
             self.assertRegex(d['url'],r'wago\.io/[^/]+/[0-9]+$')
         manifest=json.loads((ROOT/'dist/classes/manifest.json').read_text(**UTF8))
         for record in manifest['imports']:
             self.assertEqual(record['updateBuild'],build)
-            self.assertEqual(record['updateSlug'],'eclipse-hud-'+record['classToken'].lower())
+            self.assertEqual(record['updateSlug'],'forever-hud-'+record['classToken'].lower())
 
     def test_class_root_holds_only_sections(self):
         by_id={d['id']:d for d in self.regions}
         for c in CLASSES.values():
-            prefix='Eclipse | '+c['name']
+            prefix='ForeverHUD | '+c['name']
             children=by_id[prefix]['controlledChildren']
             self.assertEqual(children,[f'{prefix} | {name}' for name in SECTIONS]+[prefix+' | Cast'])
             for name in SECTIONS:
@@ -170,7 +170,7 @@ class PackTests(unittest.TestCase):
         procs=[d for d in self.regions if ' | Usable proc | ' in d['id']]
         self.assertEqual(len(procs),4)
         for d in procs:
-            self.assertEqual(d['parent'],'Eclipse | Warrior | Primary')
+            self.assertEqual(d['parent'],'ForeverHUD | Warrior | Primary')
             self.assertEqual(d['yOffset']+PRIMARY_Y,-23,'Screen position unchanged from the class root')
 
     def test_native_effect_animation_and_resource_curve(self):
@@ -182,21 +182,21 @@ class PackTests(unittest.TestCase):
             self.assertEqual(d['blizzardAuraDisplay']['auraMain']['type'],'pulse')
         for cls,c in CLASSES.items():
             by_tier={d['id'].rsplit(' | ',1)[1]:d for d in effects if d['load']['class']['single']==cls}
-            prefix=f"Eclipse | {c['name']}"
+            prefix=f"ForeverHUD | {c['name']}"
             frame=next(d for d in self.regions if d['id']==prefix+' | Frame')
             order=frame['controlledChildren']
             self.assertGreater(order.index(by_tier['defense']['id']),order.index(by_tier['major']['id']))
             # FA assigns frame levels depth-first in list order: FX stays behind the seal.
             self.assertLess(order.index(by_tier['defense']['id']),order.index(prefix+' | Seal'))
             self.assertLess(order.index(prefix+' | Living runes'),order.index(by_tier['major']['id']))
-            resource=next(d for d in self.regions if d['id']==f"Eclipse | {c['name']} | FX resource intensity")
+            resource=next(d for d in self.regions if d['id']==f"ForeverHUD | {c['name']} | FX resource intensity")
             self.assertEqual(resource['triggers'][1]['trigger']['event'],'Power')
             self.assertTrue(all(x['check']['variable']=='percentpower' for x in resource['conditions']))
 
     def test_native_cooldown_slots_and_maintenance_are_separate(self):
         by_id={d['id']:d for d in self.regions}
         for c in CLASSES.values():
-            prefix='Eclipse | '+c['name']
+            prefix='ForeverHUD | '+c['name']
             for slot in range(1,9):
                 self.assertNotIn(f'{prefix} | Primary | Native {slot}',by_id,'Empty v0.3.2 slot groups are removed')
                 icon=by_id[f'{prefix} | Primary | Native {slot} | Entry']
@@ -214,8 +214,8 @@ class PackTests(unittest.TestCase):
             if prefix+' | Maintenance' in by_id:
                 self.assertIn('_maintenance',by_id[prefix+' | Maintenance']['load']['loadFlag'])
                 self.assertLess(by_id[prefix+' | Maintenance']['xOffset'],-250)
-        armor=by_id['Eclipse | Warlock | Player effects | Demon armor']
-        self.assertEqual(armor['parent'],'Eclipse | Warlock | Maintenance')
+        armor=by_id['ForeverHUD | Warlock | Player effects | Demon armor']
+        self.assertEqual(armor['parent'],'ForeverHUD | Warlock | Maintenance')
         self.assertIn('_maintenance_',armor['load']['loadFlag'])
         self.assertFalse(armor['subRegions'][2]['text_visible'])
         self.assertEqual(armor['triggers'][1]['trigger']['secretShowOn'],'showOnActive')
@@ -223,7 +223,7 @@ class PackTests(unittest.TestCase):
     def test_resource_colors_follow_native_type_across_classes(self):
         by_id={d['id']:d for d in self.regions}
         for c in CLASSES.values():
-            prefix='Eclipse | '+c['name']
+            prefix='ForeverHUD | '+c['name']
             health=by_id[prefix+' | Health']
             self.assertEqual(health['barColor'],rgba(HEALTH_COLOR))
             power=by_id[prefix+' | Resource']
@@ -232,7 +232,7 @@ class PackTests(unittest.TestCase):
             mapping={rule['check']['value']:rule['changes'][0]['value'] for rule in power['conditions']}
             self.assertEqual(mapping,{kind:rgba(style['color']) for kind,style in RESOURCE_STYLES.items()})
             self.assertTrue(all(rule['check']['variable']=='powertype' for rule in power['conditions']))
-            self.assertIn('EclipseHUD.ResourceLabel()',power['customText'])
+            self.assertIn('ForeverHUD.ResourceLabel()',power['customText'])
             if c.get('pet'):
                 self.assertEqual(by_id[prefix+' | Pet health']['barColor'],rgba(PET_HEALTH_COLOR))
             if c.get('extra')=='combo':
@@ -243,7 +243,7 @@ class PackTests(unittest.TestCase):
     def test_painted_art_preserves_transparency_and_class_identity(self):
         from PIL import Image
         import hashlib
-        media=ROOT/'src/EclipseHUD/Media'
+        media=ROOT/'src/ForeverHUD/Media'
         seals=[]
         for token in CLASSES:
             path=media/('crest-'+token.lower()+'.png')

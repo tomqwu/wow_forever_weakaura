@@ -1,10 +1,10 @@
 -- Execute generated callbacks against the old-helper situation in General.log.
-local pack=dofile('dist/Eclipse-Class-Combat-HUD.lua')
+local pack=dofile('dist/ForeverHUD-All-Classes.lua')
 local checked=0
 for _,helper in ipairs({false,{Gate=function()return true end,L=function(s)return s end}})do
-    local env=setmetatable({EclipseHUD=helper or nil,print=function()end},{__index=_G})
+    local env=setmetatable({ForeverHUD=helper or nil,print=function()end},{__index=_G})
     local function run(code,expression)
-        if type(code)~='string' or not code:find('EclipseHUD',1,true)then return end
+        if type(code)~='string' or not code:find('ForeverHUD',1,true)then return end
         local fn=assert(loadstring(expression and 'return '..code or code));setfenv(fn,env)
         local value=fn()
         if expression then value=value();assert(value~=true,'Old helper must never open a native tracker')end

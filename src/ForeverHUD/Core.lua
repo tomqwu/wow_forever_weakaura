@@ -1,13 +1,13 @@
 local _, E = ...
 -- All combat readings and timers belong to ForeverAuras' native triggers.
 -- This helper owns preferences, the anchor, and cosmetic controls only.
-EclipseHUD = E
+ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.3.5"
+E.releaseVersion = "0.4.0"
 E.importAPI = 1
-E.rootID = "Eclipse | Class Combat HUD"
+E.rootID = "ForeverHUD"
 E.classNames = {
     WARLOCK="Warlock", WARRIOR="Warrior", MAGE="Mage", PRIEST="Priest",
     ROGUE="Rogue", DRUID="Druid", HUNTER="Hunter", SHAMAN="Shaman", PALADIN="Paladin",
@@ -24,7 +24,7 @@ local defaults = {
     resources=true, primary=true, utility=true, dots=true, buffs=true, maintenance=true, trackedBars=false,
     cast=false, pet=true, art=true, motion=true, nameplates=false,
 }
-local anchor = CreateFrame("Frame", "EclipseHUDAnchor", UIParent)
+local anchor = CreateFrame("Frame", "ForeverHUDAnchor", UIParent)
 anchor:SetSize(1, 1)
 E.anchor = anchor
 -- The input surface stays outside the native aura ancestry, so its ordinary
@@ -55,7 +55,7 @@ function E.Importing()
 end
 function E.GetRootID()
     local api=E.API()
-    local classID=E.class and ('Eclipse | '..E.classNames[E.class])
+    local classID=E.class and ('ForeverHUD | '..E.classNames[E.class])
     if classID and api and api.GetData then
         local ok,data=pcall(api.GetData,classID)
         -- Native per-class updates preserve an existing combined parent.
@@ -66,17 +66,17 @@ function E.GetRootID()
 end
 function E.Profile()
     if not E.class then return end
-    return EclipseHUDDB and EclipseHUDDB.profiles and EclipseHUDDB.profiles[E.class]
+    return ForeverHUDDB and ForeverHUDDB.profiles and ForeverHUDDB.profiles[E.class]
 end
 local function fill(profile)
-    if profile.castBarMode~='Default' and profile.castBarMode~='Eclipse' and profile.castBarMode~='Both' then
-        profile.castBarMode=profile.cast~=false and profile.hideDefaultCast==true and 'Eclipse' or 'Default'
+    if profile.castBarMode~='Default' and profile.castBarMode~='ForeverHUD' and profile.castBarMode~='Both' then
+        profile.castBarMode=profile.cast~=false and profile.hideDefaultCast==true and 'ForeverHUD' or 'Default'
     end
     for key, value in pairs(defaults) do
         if type(profile[key]) ~= type(value) then profile[key] = value end
     end
     profile.cast=profile.castBarMode~='Default'
-    profile.hideDefaultCast=profile.castBarMode=='Eclipse'
+    profile.hideDefaultCast=profile.castBarMode=='ForeverHUD'
     local function limit(key, low, high)
         local value = profile[key]
         if value ~= value or value == math.huge or value == -math.huge then value = defaults[key] end
@@ -93,14 +93,14 @@ local function fill(profile)
     if profile.swingMode~='Auto' and profile.swingMode~='Single' and profile.swingMode~='Dual' then profile.swingMode='Auto' end
 end
 function E.InitDB()
-    if type(EclipseHUDDB) ~= "table" then EclipseHUDDB = {} end
-    if type(EclipseHUDDB.profiles) ~= "table" then EclipseHUDDB.profiles = {} end
-    EclipseHUDDB.version = 1
+    if type(ForeverHUDDB) ~= "table" then ForeverHUDDB = {} end
+    if type(ForeverHUDDB.profiles) ~= "table" then ForeverHUDDB.profiles = {} end
+    ForeverHUDDB.version = 1
     local _, class = UnitClass("player")
     if not readable(class) or not E.classNames[class] then E.class = nil; return end
     E.class = class
-    if type(EclipseHUDDB.profiles[class]) ~= "table" then EclipseHUDDB.profiles[class] = {} end
-    fill(EclipseHUDDB.profiles[class])
+    if type(ForeverHUDDB.profiles[class]) ~= "table" then ForeverHUDDB.profiles[class] = {} end
+    fill(ForeverHUDDB.profiles[class])
 end
 function E.InCombat()
     local value = InCombatLockdown()
@@ -133,14 +133,14 @@ function E.Notify()
     if api and api.SetLoadFlag then
         for class in pairs(E.classNames) do
             local enabled = p and p.enabled and class == E.class and E.LiveWorld() or false
-            api.SetLoadFlag("ECLIPSE_"..class.."_base", enabled)
+            api.SetLoadFlag("FOREVERHUD_"..class.."_base", enabled)
             for _, module in ipairs(E.modules) do
                 local on = enabled and p[module[1]] ~= false
                 if module[1] == "motion" then on = on and p.art end
                 if module[1] == "fx" then on = on and p.art end
-                api.SetLoadFlag("ECLIPSE_"..class.."_"..module[1], on)
+                api.SetLoadFlag("FOREVERHUD_"..class.."_"..module[1], on)
             end
-            api.SetLoadFlag('ECLIPSE_'..class..'_fx_power',enabled and p.fx and p.art and p.resources or false)
+            api.SetLoadFlag('FOREVERHUD_'..class..'_fx_power',enabled and p.fx and p.art and p.resources or false)
         end
     end
     if E.discovery then E.discovery.ApplyFlags() end
@@ -150,7 +150,7 @@ function E.Notify()
     if E.RefreshAlerts then E.RefreshAlerts() end
     local region = api and api.GetRegion and api.GetRegion(E.GetRootID())
     handle:SetShown(region ~= nil and E.Gate("base", E.class) and (p.art or not p.locked))
-    if api and api.ScanEvents then api.ScanEvents("ECLIPSE_HUD_UPDATE") end
+    if api and api.ScanEvents then api.ScanEvents("FOREVERHUD_UPDATE") end
 end
 function E.ApplyLayout()
     if E.InCombat() then E.pending = true; return end
@@ -215,10 +215,10 @@ end
 function E.Set(key, value)
     local p = E.Profile()
     if not p or defaults[key] == nil or type(defaults[key]) ~= type(value) then return end
-    if key=='cast' then key,value='castBarMode',value and 'Eclipse' or 'Default'
+    if key=='cast' then key,value='castBarMode',value and 'ForeverHUD' or 'Default'
     elseif key=='hideDefaultCast' then
         local mode=E.queued and E.queued.castBarMode or p.castBarMode
-        key,value='castBarMode',value and 'Eclipse' or (mode~='Default' and 'Both' or 'Default')
+        key,value='castBarMode',value and 'ForeverHUD' or (mode~='Default' and 'Both' or 'Default')
     end
     -- Keep all preference edits out of restricted native widget ancestry.
     if E.InCombat() then
@@ -266,8 +266,8 @@ end
 -- the import and shows its window first; nothing here writes aura data.
 local function bundleFor(class) return class and E.bundledImports and E.bundledImports[class] end
 local function companionEntry(bundle)
-    return {name=bundle.rootID..' '..bundle.version, author='Eclipse HUD', encoded=bundle.encoded, wagoVersion=bundle.build,
-        versionNote=E.L('Bundled with EclipseHUD. ForeverAuras shows its import window before changing anything.')}
+    return {name=bundle.rootID..' '..bundle.version, author='ForeverHUD', encoded=bundle.encoded, wagoVersion=bundle.build,
+        versionNote=E.L('Bundled with ForeverHUD. ForeverAuras shows its import window before changing anything.')}
 end
 function E.InstalledBuild(rootID)
     local api=E.API()
@@ -289,7 +289,7 @@ function E.DetachedDisplays(rootID)
     return count
 end
 local function warnDetached(rootID,count)
-    print('Eclipse: '..E.L('%d displays of "%s" are outside their group because an earlier import stopped part way. In /fa, delete every top-level "%s" entry, then run /eclipse install.'):format(count,rootID,rootID))
+    print('ForeverHUD: '..E.L('%d displays of "%s" are outside their group because an earlier import stopped part way. In /fa, delete every top-level "%s" entry, then run /fhud install.'):format(count,rootID,rootID))
 end
 function E.RegisterBundledImport()
     local bundle,api=bundleFor(E.class),E.API()
@@ -307,9 +307,32 @@ function E.CheckDetached()
     local count=E.DetachedDisplays(bundle.rootID)
     if count>0 then warnDetached(bundle.rootID,count) end
 end
+-- Before 0.4.0 this addon was EclipseHUD with "Eclipse | <Class>" auras. New
+-- names mean new UIDs, so nothing is migrated: warn once so both get removed.
+local LEGACY_PREFIX='Eclipse | '
+function E.LegacyDisplays()
+    local saved=ForeverAurasSaved and ForeverAurasSaved.displays
+    if type(saved)~='table' then return 0 end
+    local count=0
+    for id in pairs(saved) do
+        if type(id)=='string' and id:sub(1,#LEGACY_PREFIX)==LEGACY_PREFIX then count=count+1 end
+    end
+    return count
+end
+function E.CheckLegacy()
+    if E.legacyChecked then return end
+    E.legacyChecked=true
+    if rawget(_G,'EclipseHUD')~=nil then
+        print('ForeverHUD: '..E.L('The old EclipseHUD addon is still installed. Exit the game and delete Interface/AddOns/EclipseHUD.'))
+    end
+    local count=E.LegacyDisplays()
+    if count>0 then
+        print('ForeverHUD: '..E.L('%d old "Eclipse | ..." displays are still in /fa. ForeverHUD does not use them; delete every "Eclipse | ..." group.'):format(count))
+    end
+end
 function E.InstallBundled(force)
     local bundle,api=bundleFor(E.class),E.API()
-    if not bundle or not api or not api.Import then print('Eclipse: '..E.L('No bundled import is available for this class.'));return end
+    if not bundle or not api or not api.Import then print('ForeverHUD: '..E.L('No bundled import is available for this class.'));return end
     local count=E.DetachedDisplays(bundle.rootID)
     -- An import over detached displays meets their old UIDs outside the group.
     if count>0 and not force then warnDetached(bundle.rootID,count);return end
@@ -393,11 +416,11 @@ function E.Shutdown()
     handle:Hide()
     local api = E.API()
     if api and api.SetLoadFlag then
-        api.SetLoadFlag('ECLIPSE_WARRIOR_pet_offhand',false)
+        api.SetLoadFlag('FOREVERHUD_WARRIOR_pet_offhand',false)
         for class in pairs(E.classNames) do
-            api.SetLoadFlag("ECLIPSE_"..class.."_base", false)
-            for _, module in ipairs(E.modules) do api.SetLoadFlag("ECLIPSE_"..class.."_"..module[1], false) end
-            api.SetLoadFlag('ECLIPSE_'..class..'_fx_power',false)
+            api.SetLoadFlag("FOREVERHUD_"..class.."_base", false)
+            for _, module in ipairs(E.modules) do api.SetLoadFlag("FOREVERHUD_"..class.."_"..module[1], false) end
+            api.SetLoadFlag('FOREVERHUD_'..class..'_fx_power',false)
         end
     end
 end
@@ -409,7 +432,7 @@ events:RegisterEvent("PLAYER_REGEN_DISABLED")
 events:RegisterEvent("PLAYER_REGEN_ENABLED")
 events:SetScript("OnEvent", function(_, event, addon)
     if event == "ADDON_LOADED" then
-        if addon ~= "EclipseHUD" then return end
+        if addon ~= "ForeverHUD" then return end
         E.InitDB(); events:UnregisterEvent("ADDON_LOADED")
         -- Before FA's login announcement, so /fa lists the bundled import.
         E.RegisterBundledImport()
@@ -434,7 +457,7 @@ events:SetScript("OnEvent", function(_, event, addon)
         E.InitDB(); E.ApplyLayout()
         if E.discovery then E.discovery.Start() end
         if E.state then E.state.Start() end
-        if event == "PLAYER_ENTERING_WORLD" then E.RegisterBundledImport(); E.CheckDetached() end
+        if event == "PLAYER_ENTERING_WORLD" then E.RegisterBundledImport(); E.CheckDetached(); E.CheckLegacy() end
     end
     E.Notify()
 end)

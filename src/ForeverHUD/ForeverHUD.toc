@@ -1,0 +1,21 @@
+## Interface: 16001
+## Title: ForeverHUD
+## Notes: Controls, original media and bundled ForeverAuras imports for the ForeverHUD class HUD. Install or update from /fa or /fhud install.
+## Notes-zhCN: ForeverHUD 职业战斗界面的控制面板、原创材质与随附的 ForeverAuras 导入。可在 /fa 中或输入 /fhud install 安装与更新。
+## Author: ForeverHUD contributors
+## Version: 0.4.0
+## Dependencies: ForeverAuras
+## SavedVariables: ForeverHUDDB
+## IconTexture: Interface\AddOns\ForeverHUD\Media\crest-warlock.tga
+Locale.lua
+Core.lua
+Catalog.lua
+Discovery.lua
+Selection.lua
+State.lua
+Motion.lua
+Presentation.lua
+Casting.lua
+Effects.lua
+Alerts.lua
+Options.lua

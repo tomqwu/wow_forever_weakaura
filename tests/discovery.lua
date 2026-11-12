@@ -1,6 +1,6 @@
 -- Regressions for reported leveling/localized/placeholder failures. Mock client.
 dofile("tests/core.lua")
-local E=EclipseHUD
+local E=ForeverHUD
 local checks=0
 local function check(v,m) checks=checks+1; assert(v,m) end
 local secret=setmetatable({}, {__tostring=function() error("secret inspected") end})
@@ -57,7 +57,7 @@ for _,row in ipairs({{"rank",100,"ability"},{"override",200,"ability"},{"untrain
     E.catalog[row[1]]={cls="WARLOCK",module="primary",seeds={row[2]},kind=row[3],flag=row[1]}
 end
 E.Set("enabled",true); E.Set("primary",true)
-assert(loadfile("src/EclipseHUD/Discovery.lua"))("EclipseHUD",E)
+assert(loadfile("src/ForeverHUD/Discovery.lua"))("ForeverHUD",E)
 local D=E.discovery
 D.Refresh()
 check(D.eligible.rank.id==102,"Highest learned rank selected, not seed metadata")

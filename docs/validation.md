@@ -1,4 +1,16 @@
-# Validation for 0.3.5
+# Validation for 0.4.0
+
+Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.4.0 (prerelease) — renamed to ForeverHUD
+
+Automated only; nothing here is game-client evidence.
+
+- Mechanical rename of every runtime, generator, test, workflow and documentation identifier. Afterwards, `git grep -i eclipse` outside the history docs finds only the deliberate legacy checks (`EclipseHUD`, `Eclipse | `) and the migration notes.
+- `tests/bundle.lua` now has 21 checks. The new ones: the old addon and old displays each warn once, the warnings name what to delete, and the legacy displays are never modified.
+- `python scripts/build.py`, `python scripts/check.py` and `git diff --check` pass in WSL; CI repeats them with the pinned ForeverAuras checkout and the native-schema test.
+- Not verified in game: the folder swap, the login warnings, or a fresh ForeverHUD install beside deleted Eclipse auras.
+- Preview PNGs were renamed only; their pixels are 0.3.x illustrative captures.
 
 ## 0.3.5 (prerelease) — auras bundled in the addon
 

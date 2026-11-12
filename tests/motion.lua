@@ -1,5 +1,5 @@
 dofile('tests/state.lua')
-local E=EclipseHUD
+local E=ForeverHUD
 local checks=0
 local function check(v,m)checks=checks+1;assert(v,m)end
 local now=0
@@ -23,7 +23,7 @@ ForeverAuras.GetRegion=function(id)
     end
     return frames[id]
 end
-assert(loadfile('src/EclipseHUD/Motion.lua'))('EclipseHUD',E)
+assert(loadfile('src/ForeverHUD/Motion.lua'))('ForeverHUD',E)
 local M=E.motion
 E.state.world=true
 E.Profile().primary=true;E.Profile().resources=true;E.Profile().unfold=true
@@ -45,7 +45,7 @@ do
     assert(pcall(M.Gather),'UI hide before a supported class is known must not error')
     E.class=class
 end
-local resource=M.entries['Eclipse | Warlock | Health']
+local resource=M.entries['ForeverHUD | Warlock | Health']
 M.Change(true,false);check(resource.transition.alpha==1,'Opening resources remain visible while sliding')
 now=1
 for _,item in pairs(M.entries)do item.group.scripts.OnFinished()end

@@ -66,7 +66,7 @@ CLASSES = {
 
 # Functional plans: four cooldown/support slots left and four attacks/heals
 # right. Each slot is an ordered learned fallback, not a rotation instruction.
-# Warrior reproduces the audited source's choices; other classes are Eclipse
+# Warrior reproduces the audited source's choices; other classes are ForeverHUD
 # adaptations. Candidate IDs are checked against the live book before use.
 WARRIOR_EXTRA = [(2687,'Bloodrage'),(20230,'Retaliation'),(18499,'Berserker Rage'),
     (78,'Heroic Strike'),(772,'Rend'),(6343,'Thunder Clap'),(7386,'Sunder Armor'),

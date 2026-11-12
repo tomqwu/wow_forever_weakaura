@@ -1,10 +1,10 @@
 dofile('tests/core.lua')
-local E=EclipseHUD
+local E=ForeverHUD
 local checks=0
 local function check(v,m)checks=checks+1;assert(v,m)end
-assert(loadfile('src/EclipseHUD/Catalog.lua'))('EclipseHUD',E)
+assert(loadfile('src/ForeverHUD/Catalog.lua'))('ForeverHUD',E)
 GetLocale=function()return 'zhCN'end
-assert(loadfile('src/EclipseHUD/Locale.lua'))('EclipseHUD',E)
+assert(loadfile('src/ForeverHUD/Locale.lua'))('ForeverHUD',E)
 E.panel=nil
 UnitClass=function()return 'Warrior','WARRIOR'end
 E.InitDB();E.Reset();E.ToggleOptions()
@@ -22,6 +22,6 @@ E.panel.school.scripts.OnClick();check(E.Profile().school=='Affliction','Warlock
 for _,schools in pairs(E.schools)do for _,name in ipairs(schools)do check(E.L(name)~=name,'Every authored talent-school label is translated')end end
 E.panel.cooldown.scripts.OnClick();check(E.Profile().cooldownLayout=='Class plan' and E.panel.cooldown.text:find('职业方案',1,true),'Cooldown layout has a localized independent control')
 E.Set('castBarMode','Default');E.panel.castChoice.scripts.OnClick()
-check(E.Profile().castBarMode=='Eclipse' and E.Profile().hideDefaultCast and E.panel.castChoice.text:find('Eclipse',1,true),'Localized cast selector chooses Eclipse exclusively')
+check(E.Profile().castBarMode=='ForeverHUD' and E.Profile().hideDefaultCast and E.panel.castChoice.text:find('ForeverHUD',1,true),'Localized cast selector chooses ForeverHUD exclusively')
 E.panel.castChoice.scripts.OnClick();check(E.Profile().castBarMode=='Both' and not E.Profile().hideDefaultCast,'Cast selector explicitly supports both bars')
 print('Settings/locale checks passed: '..checks)

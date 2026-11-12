@@ -1,10 +1,10 @@
 dofile('tests/core.lua')
-local E=EclipseHUD
+local E=ForeverHUD
 local checks=0
 local function check(v,m)checks=checks+1;assert(v,m)end
-assert(loadfile('src/EclipseHUD/Discovery.lua'))('EclipseHUD',E)
-assert(loadfile('src/EclipseHUD/Presentation.lua'))('EclipseHUD',E)
-assert(loadfile('src/EclipseHUD/Catalog.lua'))('EclipseHUD',E)
+assert(loadfile('src/ForeverHUD/Discovery.lua'))('ForeverHUD',E)
+assert(loadfile('src/ForeverHUD/Presentation.lua'))('ForeverHUD',E)
+assert(loadfile('src/ForeverHUD/Catalog.lua'))('ForeverHUD',E)
 local rules
 Enum={NumericRuleFormatRounding={Up=1}}
 C_StringUtil={CreateNumericRuleFormatter=function()return {SetBreakpoints=function(_,value)rules=value end}end}
@@ -30,7 +30,7 @@ check(font.points[1][1]=='TOP' and font.points[1][3]=='BOTTOM','Secondary countd
 E.Set('utility',false)
 check(cd.format=='original' and cd.threshold==2 and font.font=='original' and font.points[1][1]=='CENTER','Disabling restores countdown ownership')
 local flag
-ForeverAuras.SetLoadFlag=function(key,value)if key=='ECLIPSE_WARRIOR_pet_offhand'then flag=value end end
+ForeverAuras.SetLoadFlag=function(key,value)if key=='FOREVERHUD_WARRIOR_pet_offhand'then flag=value end end
 UnitClass=function()return 'Warrior','WARRIOR'end;E.InitDB()
 GetInventoryItemID=function()return 100 end
 local loc,kind='INVTYPE_WEAPONOFFHAND',2
@@ -75,6 +75,6 @@ local secret={};issecretvalue=function(v)return rawequal(v,secret)end
 kind=secret;check(E.ResourceLabel()=='Resource','Restricted identity never becomes a guessed mana label')
 kind=999;check(E.ResourceLabel()=='Resource','Unknown type has a neutral resource label')
 GetLocale=function()return 'zhCN'end
-assert(loadfile('src/EclipseHUD/Locale.lua'))('EclipseHUD',E)
+assert(loadfile('src/ForeverHUD/Locale.lua'))('ForeverHUD',E)
 kind=3;check(E.ResourceLabel()=='能量' and E.L('Health')=='生命' and E.L('Pet')=='宠物','Health/resource/pet labels localize')
 print('Presentation/equipment checks passed: '..checks)

@@ -8,4 +8,4 @@ These files are used offline to read/write the LibSerialize → raw Deflate → 
 
 Copies were taken on 2026-11-09 from the user's installed ForeverAuras 1.3.5 `Libs/` directory. See the upstream [ForeverAuras repository](https://github.com/neroxrw/foreverauras/tree/main/ForeverAuras/Libs) for corresponding source and [LibSerialize](https://github.com/rossnichols/LibSerialize), [LibDeflate](https://github.com/SafeteeWoW/LibDeflate), and [LibStub](https://www.wowace.com/projects/libstub) for the original projects. Their existing notices are preserved.
 
-Packaging changes: line endings were normalized to LF and trailing whitespace removed. No library logic was changed by Eclipse.
+Packaging changes: line endings were normalized to LF and trailing whitespace removed. No library logic was changed by ForeverHUD.
