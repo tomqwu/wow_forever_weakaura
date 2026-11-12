@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.2 — unreleased (prerelease)
+## 0.6.2 — 2026-11-12 (prerelease)
 
 - Apply "damage left, everything else right" to every row, not only the wings, DoTs and Maintenance (the user asked why it was not done all together):
   - **Right:**
