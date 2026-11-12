@@ -22,6 +22,7 @@ Automated only; nothing here is game-client evidence.
   - rows staying centred in and out of combat;
   - the Modern Aura Group chain with the class and module load flags;
   - wing centring and the unfold motion.
+- **Published 2026-11-12:** all 14 downloaded release assets match the build, and the 38 runtime files match the source. Installed over 0.6.2, with all 38 files verified (4 changed). The 0.6.2 folder was backed up and verified first, and SavedVariables were not touched. This is file evidence, not game-client evidence.
 
 ## 0.6.2 (prerelease) — every row on its side
 
