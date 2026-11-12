@@ -16,6 +16,45 @@ Each rule is a native ForeverAuras check, so it works in combat. Protected value
 
 Click the seal to open the full HUD; combat or a hostile target opens it too. Turn the tray off with **Retracted tray** in `/fhud`. Update the Core and your class in `/fa`, choosing **Update Auras**. **0.7.3 — Demon Armor reminder.** Warlocks now get a reminder beside the resource bar when no Demon Skin, Demon Armor or Fel Armor is up, and in its last 15 seconds. Update the Core and your class in `/fa`, choosing **Update Auras**. **0.7.2 — larger rim icons.** The DoT and buff icons on both rims grow from 24 to 28 px. Update the Core and your class in `/fa`, choosing **Update Auras**. **0.7.1 — your buffs mirror your DoTs.** The Cooldown Manager's tracked buffs now sit on the rim over the resource bar, centred, the same size as the DoTs over Health. In the default *Forever* cooldown layout that row is the buff row; *Class plan* layout shows ForeverHUD's own class buffs there instead, so the two never overlap. Update the Core and your class in `/fa`, choosing **Update Auras**. **0.7.0 — rows centred on each bar.** Every row now starts at the middle of its own bar and grows evenly both ways: DoTs and Essential cooldowns over Health, your buffs, Utility cooldowns and the Cooldown Manager's tracked buffs over the resource bar. The tracked-buff row is now attached above the Utility cooldowns. The DoT and buff rows use ForeverAuras' own *Modern Aura Group* centring, so they stay centred in combat. Painted rail art follows in a later release (see [design](docs/hud-design-0.7.md)). Update the Core and your class in `/fa`, choosing **Update Auras**. **0.6.2 — every row follows damage left, everything else right.** Your buffs now sit on the frame over the resource bar, mirroring the DoTs over Health. The native buff row, Utility and item overflow, Battle Shout, weapon coatings and totems are on the right. Rend, Warrior procs and Essential overflow are on the left. Update the Core and your class in `/fa`, choosing **Update Auras**. **0.6.1** seated the DoT row over the Health bar. **0.6.0 — damage left, everything else right.** Essential cooldowns and your DoTs sit on the left over Health, and Utility cooldowns and upkeep buffs such as Demon Armor on the right (see *Configure cooldowns*). After updating the addon, `/reload` and update the Core and your class in `/fa`. **0.5.1** showed DoTs only in the HUD's target row. **0.5.0 — one shared Core plus a small group per class.** The health and resource bars, cast bar and the native Cooldown Manager rows now live in one **`ForeverHUD | Core`** group that every class uses. Each class group keeps only its own spells, effects and art, so class updates are smaller. Coming from 0.4: delete your `ForeverHUD | <Class>` group in `/fa`, then install the Core and your class (see below). One companion supports all nine classes, with independent preferences and automatic class loading. The addon carries every import: install it, and ForeverAuras offers the Core and your class in `/fa`. No string to paste. Manual files remain available: [Core](dist/classes/ForeverHUD-Core.txt) plus [Warlock only](dist/classes/ForeverHUD-Warlock.txt) is roughly 75% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
 
+### Features
+
+<img src="docs/images/game-0.7.0-warlock-hud.png" width="795" alt="ForeverHUD in game: Warlock HUD with a DoT centred on the Health rim">
+
+*In game, Warlock, 0.7.0 (cropped to the HUD). Immolate sits centred on the Health rim. Health, Mana, pet health and Soul Shards are on the frame, and Demon Armor is past the Mana bar. Later versions changed this layout; the gallery further down is illustrative only.*
+
+**One Core plus your class.** ForeverHUD ships its auras inside the addon:
+- `ForeverHUD | Core`: health, resource, cast bar, native cooldown rows and tracked buffs, shared by every class.
+- `ForeverHUD | <Class>`: your class's art, spells and effects.
+
+Install or update both from `/fa`, or with `/fhud install`.
+
+**Damage left, everything else right, centred on each bar.**
+- **Left (over Health):** your DoTs on the target, with the first four **Essential** cooldowns above them.
+- **Right (over Mana):** your buffs, or the Cooldown Manager's tracked buffs, with the first four **Utility** cooldowns above them. Upkeep reminders sit past the bar.
+- **Centring:** each row starts at the middle of its bar and grows both ways. The DoT and buff rows stay centred in combat (ForeverAuras' native Modern Aura Groups).
+
+**Native, combat-safe tracking.** Auras, cooldowns, resources and casts come from ForeverAuras' own triggers. The addon never reads combat values in Lua or guesses timers.
+
+**Upkeep reminders.** Demon Armor, Arcane Intellect, Fortitude and Mark of the Wild show only when missing or in their last 15 seconds.
+
+**Spell suggestions (Warlock).** Shown above the seal, in priority order:
+- Life Tap at 30% mana or less;
+- Corruption or Immolate missing from your target in combat;
+- the Shadow Trance proc;
+- Health Funnel when your pet is at 35% health or less.
+
+**Retracted seal and tray.** Out of combat with no hostile target, the HUD folds to a larger seal with a tray:
+- health and mana percentages;
+- Soul Shards;
+- missing upkeep buffs;
+- Food, Drink and Well Fed.
+
+Click the seal to open the full HUD.
+
+**Install check.** If the addon is newer than your auras, or they're missing, ForeverHUD says so at login. `/fhud` also shows it in red, with an **Install / update auras** button.
+
+**Settings per class (`/fhud`):** modules, cooldown layout (Forever or Class plan), cast bar choice, position, scale and opacity. Everything is in English and Simplified Chinese.
+
 ### Install or update
 
 1. Install **[ForeverAuras](https://github.com/neroxrw/foreverauras)**. The current source checked here is 1.3.7; the Forever interface is `16001`. ForeverHUD declares it as a dependency and does not load without it.
@@ -150,7 +189,7 @@ Illustrative interaction/animation previews:
 
 ### Nine-class gallery and evidence
 
-These are labelled browser fixtures with sample learned spells, active cooldowns/auras and values. They are not game-client screenshots or proof of full parity. The interactive [preview](https://github.com/tomqwu/wow_forever_weakaura/blob/main/preview/index.html) includes a leveling fixture with no invented real cooldowns, category/class-plan modes, bar choices, click toggling and resource-form colors.
+These are labelled browser fixtures with sample learned spells, active cooldowns/auras and values. They are not game-client screenshots or proof of full parity. They were captured before the 0.6–0.9 layout (sides, centred rows, retracted tray, suggestions); see *Features* above for an in-game capture. The interactive [preview](https://github.com/tomqwu/wow_forever_weakaura/blob/main/preview/index.html) includes a leveling fixture with no invented real cooldowns, category/class-plan modes, bar choices, click toggling and resource-form colors.
 
 | Warlock | Warrior | Mage |
 | :---: | :---: | :---: |
@@ -199,6 +238,45 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 - 生效中的进食、饮水与进食充分。
 
 点击印记可展开完整界面，进入战斗或选中敌对目标也会展开。可在 `/fhud` 中用 **收起时的托盘** 关闭。请在 `/fa` 中更新核心和当前职业，并选择 **Update Auras（更新光环）**。**0.7.3：恶魔护甲提醒。** 术士在没有恶魔皮肤、恶魔护甲或邪甲时，以及在其最后 15 秒内，会在资源条旁看到提醒。请在 `/fa` 中更新核心和当前职业，并选择 **Update Auras（更新光环）**。**0.7.2：框架上的图标略微放大。** 两侧框架上的 DoT 与增益图标由 24 像素增大到 28 像素。请在 `/fa` 中更新核心和当前职业，并选择 **Update Auras（更新光环）**。**0.7.1：增益与 DoT 对称。** 冷却管理器的追踪增益现在居中贴在资源条上方的框架上，大小与生命条上方的 DoT 相同。默认的 *Forever* 冷却排列下，这一行就是增益行；*职业方案* 排列则在同一位置显示 ForeverHUD 自带的职业增益，两者不会重叠。请在 `/fa` 中更新核心和当前职业，并选择 **Update Auras（更新光环）**。**0.7.0：每行以各自的条为中心。** 每一行都从所在条的中点开始，向两侧均匀扩展：DoT 与 Essential 冷却在生命条上方，你的增益、Utility 冷却以及冷却管理器的追踪增益在资源条上方。追踪增益行现已贴在 Utility 冷却上方。DoT 与增益行使用 ForeverAuras 自带的 *Modern Aura Group* 居中排列，战斗中也保持居中。手绘的槽位美术将在后续版本加入（见[设计](docs/hud-design-0.7.md)）。请在 `/fa` 中更新核心和当前职业，并选择 **Update Auras（更新光环）**。**0.6.2：所有行都遵循“伤害在左，其余在右”。** 你的增益现在贴在资源条上方的框架上，与生命条上方的 DoT 对称。原生增益行、Utility 与物品溢出行、战斗怒吼、武器涂层和图腾在右侧；撕裂、战士触发提示和 Essential 溢出行在左侧。请在 `/fa` 中更新核心和当前职业，并选择 **Update Auras（更新光环）**。**0.6.1** 把 DoT 行贴在生命条上方。**0.6.0：伤害在左，其余在右。** Essential 冷却与你的 DoT 位于左侧生命条上方，Utility 冷却与恶魔护甲等维持类增益位于右侧（见“配置冷却管理器”）。更新插件后输入 `/reload`，并在 `/fa` 中更新核心和当前职业。**0.5.1** 让 DoT 只显示在界面的目标效果行。**0.5.0：一个通用核心加每职业一个小组。** 生命条、资源条、施法条以及原生冷却管理器行，现在都放在所有职业共用的 **`ForeverHUD | Core`** 组中。各职业组只保留自己的技能、特效和美术，因此职业更新更小。从 0.4 升级：请在 `/fa` 中删除 `ForeverHUD | <职业>` 组，然后安装核心和当前职业（见下文）。一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。插件附带全部导入：安装后，ForeverAuras 会在 `/fa` 中提供核心和当前职业，无需粘贴字符串。手动文件仍可使用：[核心](dist/classes/ForeverHUD-Core.txt)加[术士独立导入](dist/classes/ForeverHUD-Warlock.txt)比合并文件约小 75%；[精确大小](dist/classes/README.md)由构建自动生成。
+
+### 功能
+
+<img src="docs/images/game-0.7.0-warlock-hud.png" width="795" alt="游戏内的 ForeverHUD：术士界面，DoT 居中贴在生命条上方">
+
+*游戏内截图，术士，0.7.0（已裁剪为界面区域）。献祭居中贴在生命条上方，生命、法力、宠物生命与灵魂碎片位于框架上，恶魔护甲在法力条外侧。之后的版本调整了此布局；下方的预览图仅为示意。*
+
+**一个核心加你的职业。** ForeverHUD 的光环随插件附带：
+- `ForeverHUD | Core`：生命、资源、施法条、原生冷却行与追踪增益，所有职业共用。
+- `ForeverHUD | <职业>`：该职业的美术、技能与特效。
+
+可在 `/fa` 中安装或更新两者，或输入 `/fhud install`。
+
+**伤害在左，其余在右，以各自的条为中心。**
+- **左侧（生命条上方）：** 你在目标身上的 DoT，其上方是前四个 **Essential** 冷却。
+- **右侧（法力条上方）：** 你的增益（或冷却管理器的追踪增益），其上方是前四个 **Utility** 冷却。维持类提醒位于条外侧。
+- **居中：** 每行从条的中点开始向两侧扩展。DoT 与增益行在战斗中也保持居中（ForeverAuras 原生 Modern Aura Group）。
+
+**原生、战斗安全的追踪。** 光环、冷却、资源与施法都来自 ForeverAuras 自身的触发器。插件从不在 Lua 中读取战斗数值，也不猜测计时。
+
+**维持类提醒。** 恶魔护甲、奥术智慧、真言术：韧与野性印记只在缺失或最后 15 秒时显示。
+
+**技能建议（术士）。** 显示在印记上方，按优先级排列：
+- 法力不高于 30% 时建议生命分流；
+- 战斗中目标缺少腐蚀术或献祭时提示；
+- 暗影冥思触发时提示；
+- 宠物生命不高于 35% 时建议生命通道。
+
+**收起时的印记与托盘。** 脱离战斗且无敌对目标时，界面收起为更大的印记，下方托盘显示：
+- 生命与法力百分比；
+- 灵魂碎片；
+- 缺失的维持类增益；
+- 进食、饮水与进食充分。
+
+点击印记即可展开。
+
+**安装检查。** 插件比光环新、或光环缺失时，ForeverHUD 会在登录时提示。`/fhud` 中也会以红字显示，并附 **安装/更新光环** 按钮。
+
+**按职业保存的设置（`/fhud`）：** 模块、冷却排列（Forever 或职业方案）、施法条、位置、缩放与透明度。全部支持英文与简体中文。
 
 ### 安装与更新
 
@@ -334,7 +412,7 @@ Corruption、Immolate 在目标身上持续生效时，技能本身可以已经�
 
 ### 九职业预览与验证范围
 
-以下均为明确标注的浏览器样例，使用模拟已学技能、当前冷却、光环与数值，不是游戏截图，也不是完整功能对齐的证明。[交互预览](https://github.com/tomqwu/wow_forever_weakaura/blob/main/preview/index.html)包含无伪造真实冷却的升级样例、分组/职业方案、施法条选择、重复点击开合与形态资源颜色。
+以下均为明确标注的浏览器样例，使用模拟已学技能、当前冷却、光环与数值，不是游戏截图，也不是完整功能对齐的证明。它们早于 0.6–0.9 的布局（左右分侧、居中行、收起托盘、技能建议）；游戏内截图见上方“功能”。[交互预览](https://github.com/tomqwu/wow_forever_weakaura/blob/main/preview/index.html)包含无伪造真实冷却的升级样例、分组/职业方案、施法条选择、重复点击开合与形态资源颜色。
 
 | 术士 | 战士 | 法师 |
 | :---: | :---: | :---: |
