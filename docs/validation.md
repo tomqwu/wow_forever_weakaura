@@ -27,6 +27,7 @@ Automated only; nothing here is game-client evidence.
   - curve-driven alpha on the icons;
   - the Nightfall talent IDs on Forever;
   - the row's spacing against the cradles and the class name.
+- **Published 2026-11-12:** all 14 downloaded release assets match the build, and the 38 runtime files match the source. Installed over 0.8.1, with all 38 files verified (5 changed). The 0.8.1 folder was backed up and verified first, and SavedVariables were not touched. This is file evidence, not game-client evidence.
 
 ## 0.8.1 (prerelease) — no icon for an active upkeep buff
 
