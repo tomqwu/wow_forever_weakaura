@@ -1,6 +1,16 @@
-# Validation for 0.9.1
+# Validation for 0.9.2
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.9.2 (prerelease) — one-row tray
+
+- **Game evidence (user screenshot, Warlock, 0.9.0, folded):** the larger seal shows with the tray under it: health and resource percentages, the Soul Shards icon (18), and the Demon Armor missing reminder on a second row. This is the first in-game confirmation of the retracted mode, the larger seal, the tray gate and the Demon Armor missing reminder. It also showed the Soul Shards count twice (centre and corner).
+- **Change:** the counter joins the centred row as its first member, and its centre number is hidden.
+- **`tests/test_pack.py`:**
+  - The tray holds only the row.
+  - The row is at y = −74 with a single icon size.
+  - Soul Shards lead the row and show only the corner count.
+- **Not verified in game:** the ordinary counter chaining inside the Modern Aura Group.
 
 ## 0.9.1 (prerelease) — minimal tray
 

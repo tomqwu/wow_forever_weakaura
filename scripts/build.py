@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.9.1"
+VERSION = "0.9.2"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -75,7 +75,6 @@ SUGGESTIONS = {
 RETRACTED_SEAL = 132
 TRAY_ICON = 34
 TRAY_ROW1_Y = -74
-TRAY_ROW2_Y = -116
 CENTRED_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='CENTER_HORIZONTAL', blizzardFlowSpacing=2)
 # Class-plan secondary rows by side: damage left, support right.
 ROLE_X = {'Offense':-160,'Control':0,'Defense':160}
@@ -506,13 +505,17 @@ def generate():
         # the class counter under the seal, then a centred Modern Aura Group
         # with missing upkeep and food, drink and Well Fed (matched by name).
         tray=prefix+' | Tray'; p.group(tray,prefix,cls,'tray')
+        # 0.9.2: one centred horizontal row under the seal, every icon in the
+        # same style. The counter is an ordinary display, which ForeverAuras
+        # chains into a screen-mode Modern Aura Group like the aura icons.
+        row=tray+' | Row'; p.group(row,tray,cls,'tray',y=TRAY_ROW1_Y).update(CENTRED_FLOW)
         if c.get('extra')=='shards':
             # The carried reagent count on its own item icon (native Item Count).
-            icon(p,tray+' | Soul Shards',tray,cls,'tray',dict(type='item',event='Item Count',itemName=6265,
+            shards=icon(p,row+' | Soul Shards',row,cls,'tray',dict(type='item',event='Item Count',itemName=6265,
                 use_itemName=True,use_exact_itemName=True,use_includeBank=False,use_includeWarBandBank=False,use_includeCharges=False),
-                TRAY_ICON,y=TRAY_ROW1_Y)
-        # Without a counter the row moves up to sit right under the seal.
-        row=tray+' | Row'; p.group(row,tray,cls,'tray',y=TRAY_ROW2_Y if c.get('extra')=='shards' else TRAY_ROW1_Y).update(CENTRED_FLOW)
+                TRAY_ICON)
+            # One count, in the corner like the other tray icons' stacks.
+            shards['subRegions'][2]['text_visible']=False
         upkeeps=[(seeds,name) for seeds,name,missing in UPKEEP.get(cls,[]) if missing]
         if cls=='WARLOCK': upkeeps.append(([687,706,28176],'Demon armor'))
         for seeds,name in upkeeps:

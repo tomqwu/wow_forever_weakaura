@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.2 — unreleased (prerelease)
+
+- **One-row tray, one style** (user, with a 0.9.0 in-game screenshot: "bottom spells should be horizontal", "style should be the same too"). The Soul Shards counter now leads the centred tray row instead of sitting in its own row above it. ForeverAuras chains ordinary displays into a screen-mode Modern Aura Group. Every tray icon is 34 px, and Soul Shards show a single count in the corner instead of a large centre number plus a corner number.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.9.1 — unreleased (prerelease)
 
 - **Minimal retracted tray** (user: "I don't need 100% on both sides, make it minimlism"; chose the tray, not the bar text). The health % and resource % readouts beside the seal are removed. The tray keeps the Warlock Soul Shards count, missing-upkeep reminders, and Food, Drink and Well Fed. Classes without a counter get the icon row right under the seal.
