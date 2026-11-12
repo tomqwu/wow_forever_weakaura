@@ -151,6 +151,17 @@ D.eligible[armor]={id=687,name='Demon Skin'}
 D.cdm[40]={cdmID=40,name='Demon Armor',category='TrackedBuff',identities={[706]=true}}
 S.SyncCDM()
 check(not trigger(' | Native player effects | Entries').cdmSpells.multi[40],'Maintenance families cannot reappear as duplicate native proc/buff icons')
+-- The CDM's tracked list includes the player's DoTs; the HUD's own target row
+-- shows them, so the native row above the HUD must not repeat them.
+local immolate=prefix..' | Target effects | Immolate'
+check(E.catalog[immolate] and E.catalog[immolate].module=='dots','Immolate is a catalogued HUD DoT')
+D.eligible[immolate]={id=348,name='Immolate'}
+D.cdm[41]={cdmID=41,name='Immolate',category='TrackedBuff',identities={[348]=true}}
+S.SyncCDM()
+check(not trigger(' | Native player effects | Entries').cdmSpells.multi[41],'A DoT shown in the HUD target row stays out of the native row above the HUD')
+E.Profile().dots=false;S.SyncCDM()
+check(trigger(' | Native player effects | Entries').cdmSpells.multi[41],'With the target row off, the native row keeps the DoT')
+E.Profile().dots=true;D.eligible[immolate]=nil;D.cdm[41]=nil;S.SyncCDM()
 template(prefix..' | Primary | Native left').regionType='dynamicgroup'
 S.Refresh()
 check(S.nativeWings and S.positions[prefix..' | Primary | Native left'] and not S.positions[prefix..' | Primary | Native 1'],'New native cooldown wings compact shown clones while legacy slot roots remain compatible')

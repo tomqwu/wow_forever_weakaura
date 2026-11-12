@@ -2,7 +2,7 @@
 
 ## English
 
-**Version 0.5.0 — one shared Core plus a small group per class (prerelease).** The health and resource bars, cast bar and the native Cooldown Manager rows now live in one **`ForeverHUD | Core`** group that every class uses. Each class group keeps only its own spells, effects and art, so class updates are smaller. Coming from 0.4: delete your `ForeverHUD | <Class>` group in `/fa`, then install the Core and your class (see below). One companion supports all nine classes, with independent preferences and automatic class loading. The addon carries every import: install it, and ForeverAuras offers the Core and your class in `/fa`. No string to paste. Manual files remain available: [Core](dist/classes/ForeverHUD-Core.txt) plus [Warlock only](dist/classes/ForeverHUD-Warlock.txt) is roughly 75% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
+**Version 0.5.1 — your DoTs show only in the HUD's target row (prerelease).** The Cooldown Manager's tracked list includes your DoTs, so 0.5.0 could also show them in the native row above the HUD. **0.5.0 — one shared Core plus a small group per class.** The health and resource bars, cast bar and the native Cooldown Manager rows now live in one **`ForeverHUD | Core`** group that every class uses. Each class group keeps only its own spells, effects and art, so class updates are smaller. Coming from 0.4: delete your `ForeverHUD | <Class>` group in `/fa`, then install the Core and your class (see below). One companion supports all nine classes, with independent preferences and automatic class loading. The addon carries every import: install it, and ForeverAuras offers the Core and your class in `/fa`. No string to paste. Manual files remain available: [Core](dist/classes/ForeverHUD-Core.txt) plus [Warlock only](dist/classes/ForeverHUD-Warlock.txt) is roughly 75% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
 
 ### Install or update
 
@@ -165,7 +165,7 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 ## 简体中文
 
-**版本 0.5.0：一个通用核心加每职业一个小组（预发布）。** 生命条、资源条、施法条以及原生冷却管理器行，现在都放在所有职业共用的 **`ForeverHUD | Core`** 组中。各职业组只保留自己的技能、特效和美术，因此职业更新更小。从 0.4 升级：请在 `/fa` 中删除 `ForeverHUD | <职业>` 组，然后安装核心和当前职业（见下文）。一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。插件附带全部导入：安装后，ForeverAuras 会在 `/fa` 中提供核心和当前职业，无需粘贴字符串。手动文件仍可使用：[核心](dist/classes/ForeverHUD-Core.txt)加[术士独立导入](dist/classes/ForeverHUD-Warlock.txt)比合并文件约小 75%；[精确大小](dist/classes/README.md)由构建自动生成。
+**版本 0.5.1：你的 DoT 只显示在界面的目标效果行（预发布）。** 冷却管理器的追踪列表包含你的 DoT，因此 0.5.0 可能也会在界面上方的原生行中显示它们。**0.5.0：一个通用核心加每职业一个小组。** 生命条、资源条、施法条以及原生冷却管理器行，现在都放在所有职业共用的 **`ForeverHUD | Core`** 组中。各职业组只保留自己的技能、特效和美术，因此职业更新更小。从 0.4 升级：请在 `/fa` 中删除 `ForeverHUD | <职业>` 组，然后安装核心和当前职业（见下文）。一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。插件附带全部导入：安装后，ForeverAuras 会在 `/fa` 中提供核心和当前职业，无需粘贴字符串。手动文件仍可使用：[核心](dist/classes/ForeverHUD-Core.txt)加[术士独立导入](dist/classes/ForeverHUD-Warlock.txt)比合并文件约小 75%；[精确大小](dist/classes/README.md)由构建自动生成。
 
 ### 安装与更新
 
