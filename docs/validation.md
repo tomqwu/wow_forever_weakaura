@@ -1,6 +1,15 @@
-# Validation for 0.8.0
+# Validation for 0.8.1
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.8.1 (prerelease) — no icon for an active upkeep buff
+
+- **Game evidence (user screenshot):** the folded seal at normal size with the active Demon Armor icon to its right. That looks like the 0.7.3 companion: 0.8.0 was installed while the game ran, and needs a `/reload` and Update Auras. The user asked not to show the armor while it's up.
+- **`tests/test_pack.py`:**
+  - The Warlock active armor display and the Mage, Priest and Druid active upkeep icons are gone, and their missing reminders exist.
+  - Mage Armor, Inner Fire, Aspect and Blessing keep their active icons.
+- **`tests/selection.lua`:** the armor family is still kept out of the native buff row, through its reminder's catalog entry.
+- **Not verified in game.**
 
 ## 0.8.0 (prerelease) — retracted seal and tray
 

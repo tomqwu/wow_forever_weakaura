@@ -271,11 +271,14 @@ class PackTests(unittest.TestCase):
             self.assertEqual((t['type'],t['secretShowOn'],t['secretUseRem']),('secretAura',show,rem))
             self.assertEqual(t['auraRankSpellIDs'],[687,706,28176])
             self.assertIn('_maintenance_',reminder['load']['loadFlag'])
-        armor=by_id['ForeverHUD | Warlock | Player effects | Demon armor']
-        self.assertEqual(armor['parent'],'ForeverHUD | Warlock | Maintenance')
-        self.assertIn('_maintenance_',armor['load']['loadFlag'])
-        self.assertFalse(armor['subRegions'][2]['text_visible'])
-        self.assertEqual(armor['triggers'][1]['trigger']['secretShowOn'],'showOnActive')
+        # 0.8.1: an upkeep buff covered by reminders has no "it's up" icon;
+        # one without reminders keeps its active icon as the only cue.
+        self.assertNotIn('ForeverHUD | Warlock | Player effects | Demon armor',by_id)
+        for cls,name in (('Mage','Arcane Intellect'),('Priest','Fortitude'),('Druid','Mark of the Wild')):
+            self.assertNotIn(f'ForeverHUD | {cls} | Upkeep | {name}',by_id)
+            self.assertIn(f'ForeverHUD | {cls} | Upkeep reminder | {name} missing',by_id)
+        for cls,name in (('Mage','Mage armor'),('Priest','Inner Fire'),('Hunter','Aspect'),('Paladin','Blessing')):
+            self.assertIn(f'ForeverHUD | {cls} | Upkeep | {name}',by_id)
 
     def test_resource_colors_follow_native_type_across_classes(self):
         by_id={d['id']:d for d in self.regions}

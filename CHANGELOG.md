@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.1 — unreleased (prerelease)
+
+- No icon for an upkeep buff that's up (user: "If armor is up, you don't have to show it here"). These buffs now show only through their native missing and expiring reminders:
+  - Warlock Demon Skin, Demon Armor and Fel Armor;
+  - Mage Arcane Intellect;
+  - Priest Fortitude;
+  - Druid Mark of the Wild.
+- Their always-on displays are removed, so **Update Auras** deletes them in `/fa`. Upkeep buffs with no reminder (Mage Armor, Inner Fire, Aspect, Blessing) keep their active icon as their only cue.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.8.0 — 2026-11-12 (prerelease)
 
 - **Retracted seal and tray** ([design](docs/hud-design-0.8.md)): the user asked for a compact retracted state like Forever Classmate's; ForeverHUD's own version uses no code or art from it. Out of combat with no hostile target (the existing fold), the HUD shows a larger seal (132 px instead of 104) with a tray under it.

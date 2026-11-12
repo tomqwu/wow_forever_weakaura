@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.8.0"
+VERSION = "0.8.1"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -408,16 +408,15 @@ def generate():
         # The player's own buffs are not damage: a fixed row seated over the
         # resource bar, mirroring the DoT row over Health.
         effects=prefix+" | Player effects";p.group(effects,auras,cls,"buffs",x=BAR_X,y=DOT_ROW_Y).update(CENTRED_FLOW)
-        buffs=list(c['buffs'])
-        if cls=="WARLOCK": buffs.append(([687,706,28176],"Demon armor"))
-        for i,(seed,name) in enumerate(buffs):
-            upkeep=name=='Demon armor'
-            d=icon(p,effects+" | "+name,maintenance if upkeep else effects,cls,'maintenance' if upkeep else 'buffs',
-                aura_trigger(seed if isinstance(seed,list) else [seed]),20 if upkeep else DOT_SIZE,modern=True)
+        # 0.8.1: an upkeep buff that is up needs no icon; its missing and
+        # expiring reminders (below) are the signal. Demon armor has no
+        # always-on display any more.
+        for i,(seed,name) in enumerate(c['buffs']):
+            d=icon(p,effects+" | "+name,effects,cls,'buffs',
+                aura_trigger(seed if isinstance(seed,list) else [seed]),DOT_SIZE,modern=True)
             # Curated class buffs show only in Class plan mode; Cooldown
             # Manager mode shows the player's tracked buffs at the same spot.
-            if not upkeep: p.eligibility[d['id']].update(effect=True)
-            if upkeep: d['subRegions'][2]['text_visible']=False
+            p.eligibility[d['id']].update(effect=True)
 
         def upkeep_reminders(seeds,name):
             # Native Show On: Aura(s) Missing / Remaining Time; nothing inferred.
@@ -429,12 +428,16 @@ def generate():
                 icon(p,prefix+' | Upkeep reminder | '+name+(' expiring' if expiring else ' missing'),maintenance,cls,'maintenance',
                     reminder,24,modern=True)
         for i,(seeds,name,missing) in enumerate(UPKEEP.get(cls,[])):
-            upkeep=aura_trigger(seeds);upkeep['nativeFilters']={}
-            icon(p,prefix+' | Upkeep | '+name,maintenance,cls,'maintenance',upkeep,20,modern=True)
-            if missing: upkeep_reminders(seeds,name)
+            if missing:
+                # Reminders cover it: no "it's up" icon (0.8.1).
+                upkeep_reminders(seeds,name)
+            else:
+                # No reminder for this buff, so its active icon is the only cue.
+                upkeep=aura_trigger(seeds);upkeep['nativeFilters']={}
+                icon(p,prefix+' | Upkeep | '+name,maintenance,cls,'maintenance',upkeep,20,modern=True)
         if cls=='WARLOCK':
-            # Demon Skin / Demon Armor / Fel Armor: the active icon above stays;
-            # these warn when none is up, or in its last 15 seconds.
+            # Demon Skin / Demon Armor / Fel Armor: shown only when none is up,
+            # or in its last 15 seconds.
             upkeep_reminders([687,706,28176],'Demon armor')
         if cls=='WARRIOR':
             # Rend (damage) joins the centred DoT row over Health; Battle Shout

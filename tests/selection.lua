@@ -163,7 +163,8 @@ check(not trigger(' | Native cooldowns | Entries').cdmSpells.multi[31],'Hidden e
 local fear=prefix..' | Utility | Fear'
 check(not S.Allowed(fear,E.catalog[fear]) and not selected('Life Tap'),'Native mode unloads curated duplicates and unrelated filler')
 check(trigger(' | Primary | Native 1 | Entry').cdmSpells.multi[13],'Native primary uses CDM identity selections rather than guessed spell IDs')
-local armor=prefix..' | Player effects | Demon armor'
+-- 0.8.1: the armor family is represented by its reminder, not an active icon.
+local armor=prefix..' | Upkeep reminder | Demon armor missing'
 D.eligible[armor]={id=687,name='Demon Skin'}
 D.cdm[40]={cdmID=40,name='Demon Armor',category='TrackedBuff',identities={[706]=true}}
 S.SyncCDM()
