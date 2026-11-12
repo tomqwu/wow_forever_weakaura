@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.2 — unreleased (prerelease)
+
+- Rim icons on both sides are a bit larger: 24 → 28 px, spacing 26 → 30 px (user: "can both side icon a bit larger? a bit is fine"). This covers the DoT row and Rend reminder over Health, and the buff row, Battle Shout reminders, native tracked buffs and weapon coatings over the resource bar. They still clear the cooldown cradles above.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.7.1 — 2026-11-12 (prerelease)
 
 - The Cooldown Manager's tracked buffs mirror the DoT row: centred on the rim over the resource bar (138, 40), 24 px like the DoTs, with the same frame. In 0.7.0 they sat above the Utility cradle and floated whenever no Utility cooldown was running (reported in game; the user asked for the "similar position of the dps cdm but on the right side, art works should be unified").

@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.7.1"
+VERSION = "0.7.2"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -47,8 +47,8 @@ PRIMARY_Y = 80
 # (x -228..-48): the first slot sits at the bar's seal end, later slots run
 # left along the bar.
 DOT_ROW_Y = 40
-DOT_SIZE = 24
-DOT_STEP = 26
+DOT_SIZE = 28
+DOT_STEP = 30
 DOT_ROW_END = -60
 # Mirror row seated over the resource bar (x 48..228) for the player's own
 # buffs, Battle Shout reminders and weapon coatings: non-damage sits right.

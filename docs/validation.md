@@ -1,6 +1,15 @@
-# Validation for 0.7.1
+# Validation for 0.7.2
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.7.2 (prerelease) — larger rim icons
+
+- Requested by the user after 0.7.1. Rim icons are now 28 px with a 30 px step.
+- The pack tests still pass:
+  - centred rail members stay within their bar span;
+  - weapon coatings stay past the resource bar and inside the frame;
+  - the cradle above clears the rail.
+- Not verified in game.
 
 ## 0.7.1 (prerelease) — buff row mirrors the DoT row
 
