@@ -16,6 +16,7 @@ Sections below 0.4.0 describe releases made under the Eclipse name and keep the 
   - `tests/selection.lua`: Backlash unloads in Forever mode and appears in the native row. Class plan mode allows the curated buff and leaves the native row empty. Earlier native-row checks now run explicitly in Forever mode.
   - `tests/test_pack.py`: the native row's position, growth and size match the DoT row, and every curated class buff carries `effect`.
 - **Not verified in game.**
+- **Published 2026-11-12:** all 14 downloaded release assets match the build, and the 38 runtime files match the source. Installed over 0.7.0, with all 38 files verified (4 changed). The 0.7.0 folder was backed up and verified first, and SavedVariables were not touched. This is file evidence, not game-client evidence.
 
 ## 0.7.0 (prerelease) — rows centred on each bar
 
