@@ -2,7 +2,7 @@
 
 ## English
 
-**Version 0.9.0 — spell suggestions (prerelease).** Warlocks get a row of suggestions above the seal, in priority order from left to right:
+**Version 0.9.1 — minimal tray (prerelease).** The retracted tray no longer shows health % and mana %. It keeps only Soul Shards, missing upkeep buffs and food, drink or Well Fed. For classes without a counter, the row sits right under the seal. Update your class in `/fa`, choosing **Update Auras**. **0.9.0 — spell suggestions.** Warlocks get a row of suggestions above the seal, in priority order from left to right:
 - **Life Tap** at 30% mana or less;
 - **Corruption** or **Immolate** when missing from your hostile target in combat;
 - **Shadow Trance** when the proc is up (cast Shadow Bolt);
@@ -43,8 +43,7 @@ Install or update both from `/fa`, or with `/fhud install`.
 - the Shadow Trance proc;
 - Health Funnel when your pet is at 35% health or less.
 
-**Retracted seal and tray.** Out of combat with no hostile target, the HUD folds to a larger seal with a tray:
-- health and mana percentages;
+**Retracted seal and tray.** Out of combat with no hostile target, the HUD folds to a larger seal with a minimal tray:
 - Soul Shards;
 - missing upkeep buffs;
 - Food, Drink and Well Fed.
@@ -225,7 +224,7 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 ## 简体中文
 
-**版本 0.9.0：技能建议（预发布）。** 术士在印记上方获得一行建议，从左到右按优先级排列：
+**版本 0.9.1：精简托盘（预发布）。** 收起时的托盘不再显示生命与法力百分比，只保留灵魂碎片、缺失的维持类增益以及进食、饮水或进食充分。没有计数的职业，这一行紧贴在印记下方。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.0：技能建议。** 术士在印记上方获得一行建议，从左到右按优先级排列：
 - 法力不高于 30% 时建议**生命分流**；
 - 战斗中敌对目标身上缺少你的**腐蚀术**或**献祭**时提示；
 - **暗影冥思**触发时提示（施放暗影箭）；
@@ -266,8 +265,7 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 - 暗影冥思触发时提示；
 - 宠物生命不高于 35% 时建议生命通道。
 
-**收起时的印记与托盘。** 脱离战斗且无敌对目标时，界面收起为更大的印记，下方托盘显示：
-- 生命与法力百分比；
+**收起时的印记与托盘。** 脱离战斗且无敌对目标时，界面收起为更大的印记，下方的精简托盘显示：
 - 灵魂碎片；
 - 缺失的维持类增益；
 - 进食、饮水与进食充分。

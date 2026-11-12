@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.9.0"
+VERSION = "0.9.1"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -74,7 +74,6 @@ SUGGESTIONS = {
 # 0.8 retracted mode: larger seal and the tray under it.
 RETRACTED_SEAL = 132
 TRAY_ICON = 34
-TRAY_TEXT_X = 62
 TRAY_ROW1_Y = -74
 TRAY_ROW2_Y = -116
 CENTRED_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='CENTER_HORIZONTAL', blizzardFlowSpacing=2)
@@ -503,23 +502,17 @@ def generate():
         powerfx['conditions']=[dict(check=dict(trigger=1,variable='percentpower',op='>=',value=threshold),
             changes=[dict(property='alpha',value=alpha)]) for threshold,alpha in ((65,.1),(80,.3),(95,.48))]
         # 0.8 retracted tray, shown only while folded (module "tray", gate
-        # Retracted). Row 1 flanks the seal's foot: health %, the class
-        # counter, resource %. Row 2 is a centred Modern Aura Group: missing
-        # upkeep, then food, drink and Well Fed (matched by aura name).
+        # Retracted). Kept minimal (0.9.1: no health/resource percentages):
+        # the class counter under the seal, then a centred Modern Aura Group
+        # with missing upkeep and food, drink and Well Fed (matched by name).
         tray=prefix+' | Tray'; p.group(tray,prefix,cls,'tray')
-        for side,label,trigger,color,fmt in ((-1,'Health',dict(type='unit',event='Health',unit='player',use_unit=True),rgba(HEALTH_COLOR),'percenthealth'),
-                (1,'Resource',dict(type='unit',event='Power',unit='player',use_unit=True),[.94,.91,1,1],'percentpower')):
-            text=p.add(f'{tray} | {label}','text',tray,cls,'tray',x=side*TRAY_TEXT_X,y=TRAY_ROW1_Y,displayText=f'%{fmt}%%',
-                font="Friz Quadrata TT",fontSize=14,outline="OUTLINE",color=color,justify="CENTER",
-                automaticWidth="Auto",fixedWidth=80,wordWrap="WordWrap",shadowColor=[0,0,0,1],shadowXOffset=0,shadowYOffset=0,
-                **{f'displayText_format_{fmt}_format':'Number',f'displayText_format_{fmt}_decimal_precision':0})
-            p.triggers(text,[trigger],cls,'tray')
         if c.get('extra')=='shards':
             # The carried reagent count on its own item icon (native Item Count).
             icon(p,tray+' | Soul Shards',tray,cls,'tray',dict(type='item',event='Item Count',itemName=6265,
                 use_itemName=True,use_exact_itemName=True,use_includeBank=False,use_includeWarBandBank=False,use_includeCharges=False),
                 TRAY_ICON,y=TRAY_ROW1_Y)
-        row=tray+' | Row'; p.group(row,tray,cls,'tray',y=TRAY_ROW2_Y).update(CENTRED_FLOW)
+        # Without a counter the row moves up to sit right under the seal.
+        row=tray+' | Row'; p.group(row,tray,cls,'tray',y=TRAY_ROW2_Y if c.get('extra')=='shards' else TRAY_ROW1_Y).update(CENTRED_FLOW)
         upkeeps=[(seeds,name) for seeds,name,missing in UPKEEP.get(cls,[]) if missing]
         if cls=='WARLOCK': upkeeps.append(([687,706,28176],'Demon armor'))
         for seeds,name in upkeeps:
