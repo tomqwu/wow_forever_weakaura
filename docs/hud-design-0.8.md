@@ -1,6 +1,6 @@
 # ForeverHUD 0.8 design: retracted seal and tray
 
-Status: proposed on 2026-11-12, not implemented. Nothing here is game evidence.
+Status: build steps 1–3 are implemented in 0.8.0. The painted tray plate (step 4) is pending image generation. The seal grows by swapping to a larger seal display rather than a Motion animation, and combo points were left out (usually 0 out of combat). Food, drink and Well Fed match by aura name natively (`BlizzardAuraDisplay.lua` GetSpellIDs: names in Name(s) expand through `SpellIDsByName`). Nothing here is game evidence.
 
 ## Request
 

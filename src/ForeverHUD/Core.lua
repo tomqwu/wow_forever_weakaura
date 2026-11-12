@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.7.3"
+E.releaseVersion = "0.8.0"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -31,6 +31,7 @@ local defaults = {
     alerts=true,
     resources=true, primary=true, utility=true, dots=true, buffs=true, maintenance=true, trackedBars=false,
     cast=false, pet=true, art=true, motion=true, nameplates=false,
+    tray=true,
 }
 local anchor = CreateFrame("Frame", "ForeverHUDAnchor", UIParent)
 anchor:SetSize(1, 1)
@@ -160,6 +161,12 @@ end
 function E.LiveWorld()
     return not E.state or (E.state.world and not E.state.loading and not E.state.hidden)
 end
+-- Folded (out of combat, no hostile target, not inspected) with the tray on.
+-- The options preview counts as open, so it always shows the full HUD.
+function E.Retracted()
+    local p = E.Profile()
+    return p ~= nil and p.tray ~= false and E.state ~= nil and E.state.world == true and not E.state.Visible()
+end
 function E.Gate(module, class)
     class = E.Owner(class)
     local p = E.Profile()
@@ -170,6 +177,9 @@ function E.Gate(module, class)
     if not preview and p.combatOnly and not E.InCombat() then return false end
     if module == "base" then return true end
     if p[module] == false then return false end
+    -- 0.8 retracted mode: while folded only the seal and its tray remain.
+    if module == "tray" then return E.Retracted() end
+    if E.Retracted() and (module == "buffs" or module == "maintenance" or module == "trackedBars") then return false end
     if module == "motion" and not p.art then return false end
     if module == "fx" and (not p.art or (E.state and (not E.state.world or E.state.loading or E.state.hidden or preview
         or E.Call(UnitIsDeadOrGhost,"player")~=false))) then return false end

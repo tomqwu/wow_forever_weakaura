@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.0 — unreleased (prerelease)
+
+- **Retracted seal and tray** ([design](docs/hud-design-0.8.md)): the user asked for a compact retracted state like Forever Classmate's; ForeverHUD's own version uses no code or art from it. Out of combat with no hostile target (the existing fold), the HUD shows a larger seal (132 px instead of 104) with a tray under it.
+  - **Tray, row 1:** health % and resource % flanking the Warlock Soul Shards count (native Item Count).
+  - **Tray, row 2:** a centred Modern Aura Group with missing-upkeep reminders (Demon Armor, Arcane Intellect, Fortitude, Mark of the Wild), plus Food, Drink and Well Fed. These three are matched by aura name: ForeverAuras expands a name to every spell ID with that name.
+  - **Folded:** the buff, upkeep and tracked-buff rows give way to the tray.
+- New `/fhud` module **Retracted tray** (on by default). With it off, folding behaves as before.
+- Not included yet: the painted tray plate (needs image generation), and combo points for Rogue and Druid (usually 0 out of combat).
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.7.3 — 2026-11-12 (prerelease)
 
 - Warlock Demon Armor reminders, asked for by the user ("missing demon armor alert?"). Two native displays sit in the Maintenance row to the right of the resource bar:
