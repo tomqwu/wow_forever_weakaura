@@ -12,11 +12,13 @@ project's folder names, SavedVariables, installation script or release tags here
 - Read `README.md`, `docs/design.md` and `docs/validation.md` before runtime edits.
 - Edit `src/catalog.py`, `scripts/build.py`, or `src/ForeverHUD/`; regenerate
   `dist/` instead of hand-editing an encoded import.
-- Keep the combined nine-class import available and also generate per-class
-  imports as requested. Scope each class import to its stable class-group root;
-  do not export a partial shared root that could delete other installed classes.
-  Every descendant needs a class load
-  condition and a module load flag. Disabled modules must unload their trackers.
+- Keep the combined import (Core plus nine classes) available and also generate
+  the shared Core import and per-class imports, as the user requested in 0.5.0.
+  Scope each import to its stable Core or class-group root; do not export a
+  partial shared root that could delete other installed classes. Core holds only
+  displays every class shares; class art and class spells stay in class groups.
+  Every descendant needs a class load condition (Core: all nine classes) and a
+  module load flag. Disabled modules must unload their trackers.
 - Delegate aura/resource/cooldown data and restricted rendering to native
   ForeverAuras triggers. Do not add combat-log inference or guessed timers.
 - Use the companion's locale boundary for authored runtime labels; retain native

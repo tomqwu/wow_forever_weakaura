@@ -50,7 +50,8 @@ local function attach(spec,p)
         return true -- a disabled widget is not a missing dependency
     end
     local api=E.API()
-    local parent=api and api.GetRegion and api.GetRegion('ForeverHUD | '..E.classNames[E.class]..' | '..target)
+    local id=E.DisplayID(target)
+    local parent=id and api and api.GetRegion and api.GetRegion(id)
     if not parent then if binding then pause(binding) end;return false end
     if not binding or binding.parent~=parent then
         if binding then pause(binding) end

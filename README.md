@@ -2,16 +2,18 @@
 
 ## English
 
-**Version 0.4.1 — fixes the ForeverAuras import error (prerelease).** 0.4.0 imports could stop with `AuraEnvironment.lua:524: attempt to index field '?'`; delete any half-imported ForeverHUD group in `/fa` and install again. 0.4.0 renamed the project from Eclipse to ForeverHUD. One companion supports all nine classes, with independent preferences and automatic class loading. The addon carries the auras for every class: install it, and ForeverAuras offers your class's group in `/fa`. No string to paste. Manual class files remain available: [Warlock only](dist/classes/ForeverHUD-Warlock.txt) is roughly 83% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
+**Version 0.5.0 — one shared Core plus a small group per class (prerelease).** The health and resource bars, cast bar and the native Cooldown Manager rows now live in one **`ForeverHUD | Core`** group that every class uses. Each class group keeps only its own spells, effects and art, so class updates are smaller. Coming from 0.4: delete your `ForeverHUD | <Class>` group in `/fa`, then install the Core and your class (see below). One companion supports all nine classes, with independent preferences and automatic class loading. The addon carries every import: install it, and ForeverAuras offers the Core and your class in `/fa`. No string to paste. Manual files remain available: [Core](dist/classes/ForeverHUD-Core.txt) plus [Warlock only](dist/classes/ForeverHUD-Warlock.txt) is roughly 75% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
 
 ### Install or update
 
 1. Install **[ForeverAuras](https://github.com/neroxrw/foreverauras)**. The current source checked here is 1.3.7; the Forever interface is `16001`. ForeverHUD declares it as a dependency and does not load without it.
 2. Download the [release ZIP](https://github.com/tomqwu/wow_forever_weakaura/releases) and copy **`ForeverHUD/`** into your current client's `Interface/AddOns/`. The TOC belongs directly inside that folder.
 3. Enable ForeverHUD and ForeverAuras, then **`/reload`**.
-4. Out of combat, open **`/fa`**. Your class appears under **ready to be installed** (first install) or under **updates** (an older ForeverHUD group). Click it: ForeverAuras opens its own import window, and you confirm **Import** or **Update** there. **`/fhud install`** opens the same window directly.
-5. Choose **Update** for an existing class group; it preserves the combined parent and other classes. Avoid **Import as Copy** for updates.
+4. Out of combat, open **`/fa`**. **ForeverHUD | Core** and your class appear under **ready to be installed** (first install) or under **updates** (an older ForeverHUD group). Click each one: ForeverAuras opens its own import window, and you confirm **Import** or **Update** there. Install the Core first. **`/fhud install`** opens the next one that is missing or older (Core, then your class); after it finishes, run **`/fhud install`** again for the second.
+5. Choose **Update** for an existing group; it preserves the combined parent and other classes. Avoid **Import as Copy** for updates.
 6. Use **`/fhud`** or **`/foreverhud`** for controls. Positions/preferences survive ForeverHUD updates; **Position → Reset position** changes only X/Y.
+
+**Moving from 0.4 to 0.5.** The bars and native rows moved from each class group into the Core, so an old class group would draw them twice. ForeverHUD warns at login while a 0.4 class group is installed, and `/fhud install` waits until it is gone. In **`/fa`**, delete **`ForeverHUD | <Class>`**, then install the Core and your class as in step 4. Your `/fhud` settings are kept.
 
 **Moving from Eclipse (0.3.5 and earlier).** The addon folder, settings and aura names all changed, so nothing carries over and the old pieces must be removed once:
 
@@ -20,32 +22,40 @@
 3. In **`/fa`**, delete every **`Eclipse | …`** group (the combined `Eclipse | Class Combat HUD` and any loose `Eclipse | <Class> | …` entries). ForeverHUD never uses them.
 4. Install your class as in step 4 above. Settings start from defaults: set position, scale and modules again in `/fhud`.
 
-The bundled import always matches the installed companion. Only the class you are playing is offered; log in on another class to install or update it. ForeverAuras recognises updates through a `wago.io/forever-hud-<class>/<build>` tag on each display. It reads only the build number and never connects to wago.io, so ignore that link if `/fa` shows it.
+The bundled imports always match the installed companion. Only the Core and the class you are playing are offered; log in on another class to install or update it (the Core is shared, so install it once). ForeverAuras recognises updates through a `wago.io/forever-hud-<core|class>/<build>` tag on each display. It reads only the build number and never connects to wago.io, so ignore that link if `/fa` shows it.
 
-**Manual import** still works: paste a class file from **`imports/`** in the ZIP into **`/fa` → Import**. The optional **`ForeverHUD-All-Classes.txt`** installs or updates a combined nine-class group. Class imports need the v0.4.0 companion or a compatible import API; old Eclipse strings do not work with ForeverHUD. The ZIP includes nine class files, the combined file, and a size/SHA-256 manifest.
+**Manual import** still works: paste **`ForeverHUD-Core.txt`**, then a class file, from **`imports/`** in the ZIP into **`/fa` → Import**. The optional **`ForeverHUD-All-Classes.txt`** installs or updates a combined group holding the Core and all nine classes. 0.5 imports need the 0.5.0 companion (import API 2); older strings and old Eclipse strings do not work with it. The ZIP includes the Core file, nine class files, the combined file, and a size/SHA-256 manifest.
 
 ### Aura structure
 
-Each class is one group whose direct children are organising sections, with nothing loose beside them except the cast bar:
+**`ForeverHUD | Core`** holds what every class shares. It loads for all nine classes and follows the current class's `/fhud` settings:
 
-| Section | Contents |
+| Core section | Contents |
 | --- | --- |
-| Frame | Chassis, living runes, combat effects, seal, caption (drawn first, behind everything) |
-| Resources | Health, class resource, pet health, shards/combo points/swing timers/totems |
+| Resources | Health and the current resource (mana, rage, energy; colour follows the resource type) |
+| Native rows | Overflow cooldowns, utility and equipped items from the Cooldown Manager |
+| Native auras | Native player-effect icons and the optional tracked bars |
+| Cast | Optional ForeverHUD cast bar, painted in the class accent |
+
+Each class is one group whose direct children are organising sections, with nothing loose beside them:
+
+| Class section | Contents |
+| --- | --- |
+| Frame | Chassis, living runes, combat effects, seal, caption (drawn in a lower layer, behind the Core bars) |
+| Resources | Pet health, shards/combo points/swing timers/totems (only classes that have them) |
 | Primary | Main ability wings (native left/right) and Warrior usable-proc cues |
 | Utility | Small on-cooldown Defense/Offense/Control rows |
-| Native rows | Overflow cooldowns, utility and equipped items from the Cooldown Manager |
-| Auras | Target effects, player effects, maintenance, tracked bars, reminders, weapon coatings |
+| Auras | Target effects, player effects, maintenance, reminders, weapon coatings |
 | Nameplates | Optional nameplate debuff icons |
 | Alerts | Invisible ready-alert triggers |
-| Cast | Optional ForeverHUD cast bar |
 
-Sections sit at `(0,0)`, so every display keeps its position. Display names and IDs are stable across ForeverHUD updates.
+Both groups attach to the same ForeverHUD anchor, so dragging, scale and opacity move them together. Sections sit at `(0,0)`, so every display keeps its position. Display names and IDs are stable across ForeverHUD updates; 0.5.0 gave the moved Core displays new names.
 
-**If an import or update stops part way** (loose `ForeverHUD | <Class> | …` entries at the top of the `/fa` list, bars at screen centre that ignore dragging): ForeverAuras stopped its import before it restored those parents, so updating again cannot reattach them. ForeverHUD detects this at login and prints a warning, and `/fhud install` refuses to import over it (`/fhud install force` overrides). Delete every top-level `ForeverHUD | <Class>` entry for that class, run `/fhud install` (or import the class file again), and wait for the import window to finish before any `/reload`. Your `/fhud` settings live separately and are kept. If it stops again, turn on Lua errors with `/console scriptErrors 1` and report the error text.
+**If an import or update stops part way** (loose `ForeverHUD | <Class> | …` entries at the top of the `/fa` list, bars at screen centre that ignore dragging): ForeverAuras stopped its import before it restored those parents, so updating again cannot reattach them. ForeverHUD detects this at login (for the Core and your class) and prints a warning, and `/fhud install` refuses to import over it (`/fhud install force` overrides). Delete every top-level `ForeverHUD | <Class>` (or `ForeverHUD | Core`) entry it names, run `/fhud install` (or import the file again), and wait for the import window to finish before any `/reload`. Your `/fhud` settings live separately and are kept. If it stops again, turn on Lua errors with `/console scriptErrors 1` and report the error text.
 
-| Class | Smaller import |
+| Group | Smaller import |
 | --- | --- |
+| Core (every class) | [Core import](dist/classes/ForeverHUD-Core.txt) |
 | Warlock | [Warlock import](dist/classes/ForeverHUD-Warlock.txt) |
 | Warrior | [Warrior import](dist/classes/ForeverHUD-Warrior.txt) |
 | Mage | [Mage import](dist/classes/ForeverHUD-Mage.txt) |
@@ -155,16 +165,18 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 ## 简体中文
 
-**版本 0.4.1：修复 ForeverAuras 导入错误（预发布）。** 0.4.0 导入可能因 `AuraEnvironment.lua:524: attempt to index field '?'` 中断；请在 `/fa` 中删除导入一半的 ForeverHUD 组后重新安装。0.4.0 已由 Eclipse 更名为 ForeverHUD。 一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。插件附带所有职业的光环：安装后，ForeverAuras 会在 `/fa` 中提供当前职业的光环组，无需粘贴字符串。手动职业文件仍可使用：[术士独立导入](dist/classes/ForeverHUD-Warlock.txt)比合并文件约小 83%；[精确大小](dist/classes/README.md)由构建自动生成。
+**版本 0.5.0：一个通用核心加每职业一个小组（预发布）。** 生命条、资源条、施法条以及原生冷却管理器行，现在都放在所有职业共用的 **`ForeverHUD | Core`** 组中。各职业组只保留自己的技能、特效和美术，因此职业更新更小。从 0.4 升级：请在 `/fa` 中删除 `ForeverHUD | <职业>` 组，然后安装核心和当前职业（见下文）。一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。插件附带全部导入：安装后，ForeverAuras 会在 `/fa` 中提供核心和当前职业，无需粘贴字符串。手动文件仍可使用：[核心](dist/classes/ForeverHUD-Core.txt)加[术士独立导入](dist/classes/ForeverHUD-Warlock.txt)比合并文件约小 75%；[精确大小](dist/classes/README.md)由构建自动生成。
 
 ### 安装与更新
 
 1. 先安装 **[ForeverAuras](https://github.com/neroxrw/foreverauras)**。当前校验的安装源码版本为 1.3.7，无限服接口版本为 `16001`。ForeverHUD 将其声明为依赖，未安装时不会加载。
 2. 下载[发布 ZIP](https://github.com/tomqwu/wow_forever_weakaura/releases)，把 **`ForeverHUD/`** 放入当前客户端的 `Interface/AddOns/`，TOC 文件应直接位于该文件夹中。
 3. 启用 ForeverHUD 与 ForeverAuras，然后输入 **`/reload`**。
-4. 脱离战斗后打开 **`/fa`**。当前职业会出现在 **待安装（ready to be installed）**（首次安装）或 **更新** 列表中（旧版 ForeverHUD 组）。点击后，ForeverAuras 会打开自己的导入窗口，由你确认 **导入** 或 **更新**。也可输入 **`/fhud install`** 直接打开同一窗口。
-5. 已有职业组请选择 **更新（Update）**，不要导入为副本。更新仅涉及该职业，保留其原有合并父组及其他职业。
+4. 脱离战斗后打开 **`/fa`**。**ForeverHUD | Core** 和当前职业会出现在 **待安装（ready to be installed）**（首次安装）或 **更新** 列表中（旧版 ForeverHUD 组）。逐个点击后，ForeverAuras 会打开自己的导入窗口，由你确认 **导入** 或 **更新**。请先安装核心。**`/fhud install`** 会打开下一个缺失或较旧的导入（先核心，后职业）；完成后再输入一次 **`/fhud install`** 安装第二个。
+5. 已有分组请选择 **更新（Update）**，不要导入为副本。更新仅涉及该分组，保留其原有合并父组及其他职业。
 6. 输入 **`/fhud`** 或 **`/foreverhud`** 配置。ForeverHUD 版本之间升级保留位置和偏好；**位置与缩放 → 重置位置** 只重置 X/Y。
+
+**从 0.4 升级到 0.5。** 条形和原生行已从各职业组移入核心，旧职业组会让它们显示两次。安装了 0.4 职业组时，ForeverHUD 会在登录时提示，`/fhud install` 也会等待其删除。请在 **`/fa`** 中删除 **`ForeverHUD | <职业>`**，然后按第 4 步安装核心和当前职业。`/fhud` 设置保持不变。
 
 **从 Eclipse（0.3.5 及更早）迁移。** 插件文件夹、设置和光环名称都已更改，旧内容不会自动迁移，需要清理一次：
 
@@ -173,32 +185,40 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 3. 在 **`/fa`** 中删除所有 **`Eclipse | …`** 组（合并组 `Eclipse | Class Combat HUD` 以及散放的 `Eclipse | <职业> | …` 条目）。ForeverHUD 不会使用它们。
 4. 按上面第 4 步安装当前职业。设置恢复为默认值：请在 `/fhud` 中重新设置位置、缩放与模块。
 
-随附的导入始终与已安装的配套插件一致。只提供当前所玩的职业；如需安装或更新其他职业，请登录该职业的角色。ForeverAuras 通过每个显示上的 `wago.io/forever-hud-<职业>/<构建号>` 标记识别更新：它只读取构建号，不会连接 wago.io；若 `/fa` 中显示该链接，可忽略。
+随附的导入始终与已安装的配套插件一致。只提供核心和当前所玩的职业；如需安装或更新其他职业，请登录该职业的角色（核心为共用，只需安装一次）。ForeverAuras 通过每个显示上的 `wago.io/forever-hud-<core|职业>/<构建号>` 标记识别更新：它只读取构建号，不会连接 wago.io；若 `/fa` 中显示该链接，可忽略。
 
-**手动导入**仍然可用：把 ZIP 内 **`imports/`** 中的职业文件粘贴到 **`/fa` → 导入**。可选的 **`ForeverHUD-All-Classes.txt`** 用于安装或更新九职业合并组。职业文件需要 0.4.0 配套插件或兼容的导入接口；旧的 Eclipse 字符串不适用于 ForeverHUD。ZIP 同时包含九份独立文件、合并文件，以及大小和 SHA-256 清单。
+**手动导入**仍然可用：把 ZIP 内 **`imports/`** 中的 **`ForeverHUD-Core.txt`**、再把职业文件粘贴到 **`/fa` → 导入**。可选的 **`ForeverHUD-All-Classes.txt`** 用于安装或更新包含核心与九职业的合并组。0.5 导入需要 0.5.0 配套插件（导入接口 2）；旧字符串和 Eclipse 字符串都不适用。ZIP 同时包含核心文件、九份职业文件、合并文件，以及大小和 SHA-256 清单。
 
 ### 光环结构
 
-每个职业是一个组，其直接子项只有分区组；除施法条外，没有散放的显示：
+**`ForeverHUD | Core`** 存放所有职业共用的内容，对九职业都加载，并遵循当前职业的 `/fhud` 设置：
 
-| 分区 | 内容 |
+| 核心分区 | 内容 |
 | --- | --- |
-| Frame（框架） | 底座、流动符文、战斗特效、徽记、标题（最先绘制，位于最底层） |
-| Resources（资源） | 生命值、职业资源、宠物生命、灵魂碎片/连击点/挥击计时/图腾 |
+| Resources（资源） | 生命值与当前资源（法力、怒气、能量；颜色随资源类型变化） |
+| Native rows（原生行） | 冷却管理器中的溢出冷却、辅助技能与装备物品 |
+| Native auras（原生光环） | 原生自身效果图标与可选的持续时间条 |
+| Cast（施法条） | 可选的 ForeverHUD 施法条，使用职业强调色 |
+
+每个职业是一个组，其直接子项只有分区组，没有散放的显示：
+
+| 职业分区 | 内容 |
+| --- | --- |
+| Frame（框架） | 底座、流动符文、战斗特效、徽记、标题（绘制在较低层，位于核心条形之下） |
+| Resources（资源） | 宠物生命、灵魂碎片/连击点/挥击计时/图腾（仅限拥有这些的职业） |
 | Primary（主技能） | 主技能左右两翼（原生）与战士可用触发提示 |
 | Utility（辅助） | 仅冷却中显示的防御/进攻/控制小图标行 |
-| Native rows（原生行） | 冷却管理器中的溢出冷却、辅助技能与装备物品 |
-| Auras（光环） | 目标效果、自身效果、维持类光环、持续时间条、提醒、武器涂层 |
+| Auras（光环） | 目标效果、自身效果、维持类光环、提醒、武器涂层 |
 | Nameplates（姓名板） | 可选的姓名板减益图标 |
 | Alerts（提示） | 不可见的就绪提示触发器 |
-| Cast（施法条） | 可选的 ForeverHUD 施法条 |
 
-分区位于 `(0,0)`，因此每个显示的位置不变；ForeverHUD 版本之间显示名称与 ID 保持稳定。
+两个组都挂在同一个 ForeverHUD 锚点上，拖动、缩放和透明度会一起生效。分区位于 `(0,0)`，因此每个显示的位置不变；ForeverHUD 版本之间显示名称与 ID 保持稳定，0.5.0 为移入核心的显示使用了新名称。
 
-**如果导入或更新中途停止**（`/fa` 列表顶层出现散放的 `ForeverHUD | <职业> | …` 条目，条形停在屏幕中央且无法拖动）：说明 ForeverAuras 在恢复这些父组之前停止了导入，再次更新也无法重新挂回。ForeverHUD 会在登录时检测到这种情况并提示，`/fhud install` 也会拒绝在此状态下导入（`/fhud install force` 可强制）。请删除该职业所有顶层 `ForeverHUD | <职业>` 条目，输入 `/fhud install`（或重新导入职业文件），并等导入窗口完成后再 `/reload`。`/fhud` 设置单独保存，不受影响。如果再次停止，请用 `/console scriptErrors 1` 打开 Lua 错误提示，并报告错误内容。
+**如果导入或更新中途停止**（`/fa` 列表顶层出现散放的 `ForeverHUD | <职业> | …` 条目，条形停在屏幕中央且无法拖动）：说明 ForeverAuras 在恢复这些父组之前停止了导入，再次更新也无法重新挂回。ForeverHUD 会在登录时检测到这种情况（核心和当前职业）并提示，`/fhud install` 也会拒绝在此状态下导入（`/fhud install force` 可强制）。请删除提示中列出的所有顶层 `ForeverHUD | <职业>`（或 `ForeverHUD | Core`）条目，输入 `/fhud install`（或重新导入文件），并等导入窗口完成后再 `/reload`。`/fhud` 设置单独保存，不受影响。如果再次停止，请用 `/console scriptErrors 1` 打开 Lua 错误提示，并报告错误内容。
 
-| 职业 | 独立导入 |
+| 分组 | 独立导入 |
 | --- | --- |
+| 核心（所有职业） | [核心导入](dist/classes/ForeverHUD-Core.txt) |
 | 术士 | [术士独立导入](dist/classes/ForeverHUD-Warlock.txt) |
 | 战士 | [战士独立导入](dist/classes/ForeverHUD-Warrior.txt) |
 | 法师 | [法师独立导入](dist/classes/ForeverHUD-Mage.txt) |

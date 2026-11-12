@@ -8,11 +8,14 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 sys.path.insert(0,str(ROOT/'src'))
-from build import generate, class_import, TITLE, UTF8, PRIMARY_Y, VERSION
+from build import generate, class_import, TITLE, UTF8, PRIMARY_Y, VERSION, CORE, CORE_ID, ART_STRATA, owner_of, root_id
 from catalog import CLASSES, HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES
 from build import rgba
 
-SECTIONS=['Frame','Resources','Primary','Utility','Native rows','Auras','Nameplates','Alerts']
+def sections(c):
+    """Class sections in draw order; Resources only for a pet or class extra."""
+    return ['Frame']+(['Resources'] if c.get('pet') or c.get('extra') else [])+['Primary','Utility','Auras','Nameplates','Alerts']
+CORE_SECTIONS=['Resources','Native rows','Native auras']
 
 def subtree(by_id,root):
     """IDs reachable from root through controlledChildren, independent of load data."""
@@ -28,29 +31,43 @@ class PackTests(unittest.TestCase):
         classes=set()
         for d in self.pack['c']:
             load=d['load']
+            self.assertTrue(load['use_loadFlag'],d['id'])
+            if d['id']==CORE_ID or d['id'].startswith(CORE_ID+' | '):
+                # FA multi-select: loads for every supported class, gated at runtime.
+                self.assertIs(load['use_class'],False,d['id'])
+                self.assertEqual(load['class']['multi'],{cls:True for cls in CLASSES})
+                self.assertTrue(load['loadFlag'].startswith('FOREVERHUD_CORE_'),d['id'])
+                self.assertEqual(owner_of(d),CORE)
+                continue
             self.assertTrue(load['use_class'],d['id'])
             classes.add(load['class']['single'])
-            self.assertTrue(load['use_loadFlag'],d['id'])
             self.assertTrue(load['loadFlag'].startswith('FOREVERHUD_'+load['class']['single']+'_'))
         self.assertEqual(classes,set(CLASSES))
-        self.assertEqual(len(self.pack['d']['controlledChildren']),9)
+        self.assertEqual(self.pack['d']['controlledChildren'],[CORE_ID]+['ForeverHUD | '+c['name'] for c in CLASSES.values()])
     def test_class_import_scopes_preserve_ids_and_leave_other_classes_out(self):
         full={d['id']:d for d in self.pack['c']}
         seen=set()
-        for cls,c in CLASSES.items():
+        for cls in [CORE]+list(CLASSES):
             pack=class_import(self.pack,cls)
             rows=[pack['d']]+pack['c'];by_id={d['id']:d for d in rows}
-            self.assertEqual(pack['d']['id'],'ForeverHUD | '+c['name'])
+            self.assertEqual(pack['d']['id'],root_id(cls))
             self.assertNotIn('parent',pack['d'])
             self.assertNotIn(TITLE,by_id,'Do not update a partial shared root')
+            self.assertEqual(pack['d']['anchorFrameFrame'],'ForeverHUDAnchor','A standalone root follows the companion anchor')
             self.assertFalse(any(a.get('do_custom') for a in pack['d']['actions'].values()))
-            guard=by_id['ForeverHUD | '+c['name']+' | Class name']['actions']['init']['custom']
-            self.assertIn('importAPI',guard);self.assertIn('ForeverHUD.Bind()',guard)
-            # Independent of class_import's load-class predicate: the class
-            # file must be exactly the class root's reachable subtree.
-            expected=set(subtree(full,'ForeverHUD | '+c['name']))
+            if cls==CORE:
+                for leaf in ('Health','Resource','Cast'):
+                    init=by_id[CORE_ID+' | '+leaf]['actions']['init']['custom']
+                    self.assertIn('importAPI == 2',init);self.assertIn('ForeverHUD.Bind()',init)
+                self.assertFalse(any(d['regionType']=='texture' for d in rows),'Class art stays in class imports')
+            else:
+                guard=by_id[root_id(cls)+' | Class name']['actions']['init']['custom']
+                self.assertIn('importAPI',guard);self.assertIn('ForeverHUD.Bind()',guard)
+            # Independent of class_import's owner predicate: the file must be
+            # exactly the root's reachable subtree.
+            expected=set(subtree(full,root_id(cls)))
             self.assertEqual(set(by_id),expected)
-            self.assertEqual(expected,{key for key,d in full.items() if d['load']['class']['single']==cls})
+            self.assertEqual(expected,{key for key,d in full.items() if owner_of(d)==cls})
             self.assertFalse(seen & expected,'Each class update must have a disjoint native UID scope')
             seen.update(expected)
             for d in rows:
@@ -143,7 +160,7 @@ class PackTests(unittest.TestCase):
         build=sum(int(part)*scale for part,scale in zip(VERSION.split('.'),(10000,100,1)))
         self.assertNotIn('url',self.pack['d'],'The combined root is not a companion update target')
         for d in self.pack['c']:
-            cls=d['load']['class']['single']
+            cls=owner_of(d)
             self.assertEqual(d['url'],f'https://wago.io/forever-hud-{cls.lower()}/{build}',d['id'])
             # FA's own parser: wago.io/<slug>/<number>
             self.assertRegex(d['url'],r'wago\.io/[^/]+/[0-9]+$')
@@ -154,15 +171,24 @@ class PackTests(unittest.TestCase):
 
     def test_class_root_holds_only_sections(self):
         by_id={d['id']:d for d in self.regions}
+        core=by_id[CORE_ID]['controlledChildren']
+        self.assertEqual(core,[f'{CORE_ID} | {name}' for name in CORE_SECTIONS]+[CORE_ID+' | Cast'])
+        for name in CORE_SECTIONS:
+            section=by_id[f'{CORE_ID} | {name}']
+            self.assertEqual((section['xOffset'],section['yOffset']),(0,0),'Sections must not move their displays')
+            self.assertTrue(section['controlledChildren'],section['id'])
         for c in CLASSES.values():
             prefix='ForeverHUD | '+c['name']
             children=by_id[prefix]['controlledChildren']
-            self.assertEqual(children,[f'{prefix} | {name}' for name in SECTIONS]+[prefix+' | Cast'])
-            for name in SECTIONS:
+            self.assertEqual(children,[f'{prefix} | {name}' for name in sections(c)])
+            for name in ('Health','Resource','Cast','Native rows','Native cooldowns','Native tracked bars'):
+                self.assertNotIn(f'{prefix} | {name}',by_id,'Shared displays live only in Core')
+            for name in sections(c):
                 section=by_id[f'{prefix} | {name}']
                 self.assertIn(section['regionType'],('group','dynamicgroup'))
                 self.assertTrue(section['controlledChildren'],section['id'])
-            for name in ('Frame','Resources','Native rows','Auras','Nameplates','Alerts'):
+            for name in ('Frame','Resources','Auras','Nameplates','Alerts'):
+                if name not in sections(c): continue
                 section=by_id[f'{prefix} | {name}']
                 self.assertEqual((section['xOffset'],section['yOffset']),(0,0),'Sections must not move their displays')
             self.assertFalse(any(d['regionType'] in ('group','dynamicgroup') and not d['controlledChildren']
@@ -207,15 +233,15 @@ class PackTests(unittest.TestCase):
                 self.assertFalse(icon['triggers'][1]['trigger']['use_cdmShowGCD'])
                 self.assertEqual(icon['parent'],prefix+' | Primary | Native '+('left' if slot<=4 else 'right'))
                 self.assertEqual(by_id[icon['parent']]['regionType'],'dynamicgroup')
-            tracked=by_id[prefix+' | Native tracked bars | Entries']
-            self.assertEqual(tracked['regionType'],'aurabar')
-            self.assertEqual(tracked['triggers'][1]['trigger']['event'],'Blizzard CDM Buff')
-            self.assertIn('_trackedBars',tracked['load']['loadFlag'])
-            self.assertGreater(by_id[prefix+' | Native tracked bars']['xOffset'],250)
-            self.assertEqual(by_id[prefix+' | Native items | Entries']['triggers'][1]['trigger']['event'],'Blizzard CDM Item')
             if prefix+' | Maintenance' in by_id:
                 self.assertIn('_maintenance',by_id[prefix+' | Maintenance']['load']['loadFlag'])
                 self.assertLess(by_id[prefix+' | Maintenance']['xOffset'],-250)
+        tracked=by_id[CORE_ID+' | Native tracked bars | Entries']
+        self.assertEqual(tracked['regionType'],'aurabar')
+        self.assertEqual(tracked['triggers'][1]['trigger']['event'],'Blizzard CDM Buff')
+        self.assertEqual(tracked['load']['loadFlag'],'FOREVERHUD_CORE_trackedBars')
+        self.assertGreater(by_id[CORE_ID+' | Native tracked bars']['xOffset'],250)
+        self.assertEqual(by_id[CORE_ID+' | Native items | Entries']['triggers'][1]['trigger']['event'],'Blizzard CDM Item')
         armor=by_id['ForeverHUD | Warlock | Player effects | Demon armor']
         self.assertEqual(armor['parent'],'ForeverHUD | Warlock | Maintenance')
         self.assertIn('_maintenance_',armor['load']['loadFlag'])
@@ -224,23 +250,37 @@ class PackTests(unittest.TestCase):
 
     def test_resource_colors_follow_native_type_across_classes(self):
         by_id={d['id']:d for d in self.regions}
+        # One shared pair serves every class; the power type picks the colour.
+        health=by_id[CORE_ID+' | Health']
+        self.assertEqual(health['barColor'],rgba(HEALTH_COLOR))
+        power=by_id[CORE_ID+' | Resource']
+        self.assertEqual(power['barColor'],rgba(UNKNOWN_RESOURCE_COLOR))
+        self.assertFalse(power['triggers'][1]['trigger'].get('use_powertype',False))
+        mapping={rule['check']['value']:rule['changes'][0]['value'] for rule in power['conditions']}
+        self.assertEqual(mapping,{kind:rgba(style['color']) for kind,style in RESOURCE_STYLES.items()})
+        self.assertTrue(all(rule['check']['variable']=='powertype' for rule in power['conditions']))
+        self.assertIn('ForeverHUD.ResourceLabel()',power['customText'])
+        self.assertIn('ForeverHUD.StyleResource(',power['actions']['init']['custom'])
+        self.assertIn('"CORE"',power['actions']['init']['custom'])
         for c in CLASSES.values():
             prefix='ForeverHUD | '+c['name']
-            health=by_id[prefix+' | Health']
-            self.assertEqual(health['barColor'],rgba(HEALTH_COLOR))
-            power=by_id[prefix+' | Resource']
-            self.assertEqual(power['barColor'],rgba(UNKNOWN_RESOURCE_COLOR))
-            self.assertFalse(power['triggers'][1]['trigger'].get('use_powertype',False))
-            mapping={rule['check']['value']:rule['changes'][0]['value'] for rule in power['conditions']}
-            self.assertEqual(mapping,{kind:rgba(style['color']) for kind,style in RESOURCE_STYLES.items()})
-            self.assertTrue(all(rule['check']['variable']=='powertype' for rule in power['conditions']))
-            self.assertIn('ForeverHUD.ResourceLabel()',power['customText'])
             if c.get('pet'):
                 self.assertEqual(by_id[prefix+' | Pet health']['barColor'],rgba(PET_HEALTH_COLOR))
             if c.get('extra')=='combo':
                 number=by_id[prefix+' | Combo points']['subRegions'][2]
                 self.assertEqual(number['text_text'],'%p / %t')
                 self.assertEqual(number['text_text_format_t_decimal_precision'],0)
+
+    def test_class_art_draws_below_core(self):
+        # Core and class roots get independent frame levels, so strata keeps
+        # the shared bars above class art: textures LOW, everything else inherits.
+        for d in self.regions:
+            if d['regionType']=='texture':
+                self.assertEqual(d['frameStrata'],ART_STRATA,d['id'])
+                self.assertNotEqual(owner_of(d),CORE,d['id'])
+            else:
+                self.assertEqual(d['frameStrata'],1,d['id'])
+        self.assertEqual(ART_STRATA,3,'FA strata index 3 is LOW')
 
     def test_painted_art_preserves_transparency_and_class_identity(self):
         from PIL import Image

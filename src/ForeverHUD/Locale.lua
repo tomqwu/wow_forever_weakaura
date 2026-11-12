@@ -68,6 +68,8 @@ local strings = {
     ["Each class keeps its own settings."] = "每个职业独立保存设置。",
     ["Import ForeverHUD-All-Classes.txt through /fa first."] = "请先通过 /fa 导入 ForeverHUD-All-Classes.txt。",
     ["Preview in /fa; only learned abilities appear in play."] = "在 /fa 中预览；实战仅显示已学技能。",
+    ['"%s" is from ForeverHUD 0.4 or earlier. In /fa, delete that group, then run /fhud install to add the Core and the new class group.'] = "“%s”来自 ForeverHUD 0.4 或更早版本。请在 /fa 中删除该分组，然后输入 /fhud install 安装核心和新的职业分组。",
+    ['After "%s" is installed, run /fhud install again for "%s".'] = "“%s”安装完成后，请再次输入 /fhud install 安装“%s”。",
     ["Warlock"] = "术士", ["Warrior"] = "战士", ["Mage"] = "法师",
     ["Priest"] = "牧师", ["Rogue"] = "盗贼", ["Druid"] = "德鲁伊",
     ["Hunter"] = "猎人", ["Shaman"] = "萨满祭司", ["Paladin"] = "圣骑士",

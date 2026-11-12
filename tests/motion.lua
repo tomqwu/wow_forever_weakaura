@@ -45,7 +45,8 @@ do
     assert(pcall(M.Gather),'UI hide before a supported class is known must not error')
     E.class=class
 end
-local resource=M.entries['ForeverHUD | Warlock | Health']
+local resource=M.entries['ForeverHUD | Core | Health']
+check(M.entries['ForeverHUD | Warlock | Chassis'],'Class art still slides from the class group')
 M.Change(true,false);check(resource.transition.alpha==1,'Opening resources remain visible while sliding')
 now=1
 for _,item in pairs(M.entries)do item.group.scripts.OnFinished()end
