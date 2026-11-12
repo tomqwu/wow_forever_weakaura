@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.0 — unreleased (prerelease)
+## 0.6.0 — 2026-11-12 (prerelease)
 
 - **Damage left, everything else right.** The left wing over Health shows up to four **Essential** Cooldown Manager entries (damage cooldowns); the right wing over the resource bar shows up to four **Utility** entries (defensives, control, support). The game's own Essential/Utility split decides the side: drag a spell between them in Cooldown Settings to move it. Further entries stay in the rows below. With Utility abilities off, the right wing stays empty. Before, the wings held Essential entries 1–4 and 5–8.
 - Your **DoTs on the target** move from below the seal to a fixed row above the left wing.
