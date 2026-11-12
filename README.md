@@ -10,7 +10,7 @@
 2. Download the [release ZIP](https://github.com/tomqwu/wow_forever_weakaura/releases) and copy **`ForeverHUD/`** into your current client's `Interface/AddOns/`. The TOC belongs directly inside that folder.
 3. Enable ForeverHUD and ForeverAuras, then **`/reload`**.
 4. Out of combat, open **`/fa`**. **ForeverHUD | Core** and your class appear under **ready to be installed** (first install) or under **updates** (an older ForeverHUD group). Click each one: ForeverAuras opens its own import window, and you confirm **Import** or **Update** there. Install the Core first. **`/fhud install`** opens the next one that is missing or older (Core, then your class); after it finishes, run **`/fhud install`** again for the second.
-5. Choose **Update** for an existing group; it preserves the combined parent and other classes. Avoid **Import as Copy** for updates.
+5. Choose **Update** for an existing group; it preserves the combined parent and other classes. Avoid **Import as Copy** for updates. In the update window, under *What do you want to do?*, select **Update Auras**. After a fresh install, ForeverAuras pre-selects **Create a Copy**, which adds a second group such as `ForeverHUD | Warlock 2`. After one Update it pre-selects Update. If you got a copy, delete that whole `… 2` group in `/fa` and update again.
 6. Use **`/fhud`** or **`/foreverhud`** for controls. Positions/preferences survive ForeverHUD updates; **Position → Reset position** changes only X/Y.
 
 **Moving from 0.4 to 0.5.** The bars and native rows moved from each class group into the Core, so an old class group would draw them twice. ForeverHUD warns at login while a 0.4 class group is installed, and `/fhud install` waits until it is gone. In **`/fa`**, delete **`ForeverHUD | <Class>`**, then install the Core and your class as in step 4. Your `/fhud` settings are kept.
@@ -181,7 +181,7 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 2. 下载[发布 ZIP](https://github.com/tomqwu/wow_forever_weakaura/releases)，把 **`ForeverHUD/`** 放入当前客户端的 `Interface/AddOns/`，TOC 文件应直接位于该文件夹中。
 3. 启用 ForeverHUD 与 ForeverAuras，然后输入 **`/reload`**。
 4. 脱离战斗后打开 **`/fa`**。**ForeverHUD | Core** 和当前职业会出现在 **待安装（ready to be installed）**（首次安装）或 **更新** 列表中（旧版 ForeverHUD 组）。逐个点击后，ForeverAuras 会打开自己的导入窗口，由你确认 **导入** 或 **更新**。请先安装核心。**`/fhud install`** 会打开下一个缺失或较旧的导入（先核心，后职业）；完成后再输入一次 **`/fhud install`** 安装第二个。
-5. 已有分组请选择 **更新（Update）**，不要导入为副本。更新仅涉及该分组，保留其原有合并父组及其他职业。
+5. 已有分组请选择 **更新（Update）**，不要导入为副本。更新仅涉及该分组，保留其原有合并父组及其他职业。在更新窗口的 *What do you want to do?* 下选择 **Update Auras（更新光环）**。首次安装后，ForeverAuras 会默认选中 **Create a Copy（创建副本）**，这会多出一个 `ForeverHUD | Warlock 2` 之类的分组；更新一次后会默认选中更新。如果已生成副本，请在 `/fa` 中删除整个 `… 2` 分组后重新更新。
 6. 输入 **`/fhud`** 或 **`/foreverhud`** 配置。ForeverHUD 版本之间升级保留位置和偏好；**位置与缩放 → 重置位置** 只重置 X/Y。
 
 **从 0.4 升级到 0.5。** 条形和原生行已从各职业组移入核心，旧职业组会让它们显示两次。安装了 0.4 职业组时，ForeverHUD 会在登录时提示，`/fhud install` 也会等待其删除。请在 **`/fa`** 中删除 **`ForeverHUD | <职业>`**，然后按第 4 步安装核心和当前职业。`/fhud` 设置保持不变。
