@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.0 — unreleased (prerelease)
+## 0.5.0 — 2026-11-12 (prerelease)
 
 - Split the auras into one shared **`ForeverHUD | Core`** group and one group per class. Core holds what every class uses: health, the current resource, the cast bar, the native Cooldown Manager rows (overflow cooldowns, utility, items), native player effects and the tracked bars. It loads for all nine classes (`FOREVERHUD_CORE_<module>` load flags) and follows the current class's `/fhud` settings. Class groups keep their spells, effects, art, pet health and class extras. Warlock: 126 → 112 displays; Core: 17.
 - Class art (chassis, runes, seal, FX) now draws in the LOW strata, so the Core bars stay above it although the two groups are separate roots with their own frame levels.
