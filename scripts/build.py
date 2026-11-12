@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.6.1"
+VERSION = "0.6.2"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -50,6 +50,11 @@ DOT_ROW_Y = 40
 DOT_SIZE = 24
 DOT_STEP = 26
 DOT_ROW_END = -60
+# Mirror row seated over the resource bar (x 48..228) for the player's own
+# buffs, Battle Shout reminders and weapon coatings: non-damage sits right.
+BUFF_ROW_START = 60
+# Class-plan secondary rows by side: damage left, support right.
+ROLE_X = {'Offense':-160,'Control':0,'Defense':160}
 # Neutral Core paint until the helper applies the class colour.
 CORE_ACCENT = "#B9A3E8"
 SORT_CDM = 'function(a,b) return ForeverHUD and ForeverHUD.SortCDM(a,b) or false end'
@@ -240,22 +245,25 @@ def generate():
         x=138,y=13,width=180,height=13,label='resource',color=rgba(UNKNOWN_RESOURCE_COLOR))
     rows=CORE_ID+' | Native rows'; p.group(rows,CORE_ID,CORE,'base')
     overflow=CORE_ID+" | Native cooldowns"
-    extra=p.group(overflow,rows,CORE,"primary",y=-214,dynamic=True)
-    extra.update(grow='GRID',gridType='HD',gridWidth=12,rowSpace=8,columnSpace=8,sort='custom',sortOn='index',customSort=SORT_CDM)
+    # Overflow rows follow the sides too: Essential (damage) under Health,
+    # Utility and items under the resource bar.
+    extra=p.group(overflow,rows,CORE,"primary",x=-138,y=-110,dynamic=True)
+    extra.update(grow='GRID',gridType='HD',gridWidth=5,rowSpace=8,columnSpace=8,sort='custom',sortOn='index',customSort=SORT_CDM)
     icon(p,overflow+" | Entries",overflow,CORE,"primary",dict(type="cdm",event="Blizzard Cooldown Manager",
         cdmSource="cooldown",cdmSpells=dict(multi={}),cdmShow="cooldown",use_cdmShowGCD=False,
         cdmTrack="auto",cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
     for title,event,source,y in [('Native utility','Blizzard Cooldown Manager','cooldown',-57),
-        ('Native items','Blizzard CDM Item','cooldown',-98)]:
+        ('Native items','Blizzard CDM Item','cooldown',-130)]:
         name=CORE_ID+' | '+title
-        extra=p.group(name,rows,CORE,'utility',y=y,dynamic=True)
-        extra.update(grow='GRID',gridType='HD',gridWidth=10,rowSpace=12,columnSpace=8,sort='custom',sortOn='index',customSort=SORT_CDM)
+        extra=p.group(name,rows,CORE,'utility',x=138,y=y,dynamic=True)
+        extra.update(grow='GRID',gridType='HD',gridWidth=5,rowSpace=12,columnSpace=8,sort='custom',sortOn='index',customSort=SORT_CDM)
         icon(p,name+' | Entries',name,CORE,'utility',dict(type='cdm',event=event,
             cdmSource=source,cdmSpells=dict(multi={}),cdmShow='cooldown',use_cdmShowGCD=False,
             cdmTrack='auto',cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
     native_auras=CORE_ID+' | Native auras'; p.group(native_auras,CORE_ID,CORE,'base')
     native_effects=CORE_ID+' | Native player effects'
-    p.group(native_effects,native_auras,CORE,'buffs',y=151,dynamic=True)
+    # Native buffs are not damage: right, above the Utility wing.
+    p.group(native_effects,native_auras,CORE,'buffs',x=83,y=116,dynamic=True).update(grow='RIGHT',space=6)
     icon(p,native_effects+' | Entries',native_effects,CORE,'buffs',dict(type='cdm',event='Blizzard CDM Buff',
         cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
         use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),26)
@@ -348,8 +356,8 @@ def generate():
                     d['conditions'].append(dict(check=dict(trigger=4,variable='show',value=1),
                         changes=[dict(property='sub.5.glow',value=True)]))
         utility=prefix+" | Utility";p.group(utility,prefix,cls,"utility",y=-57)
-        for i,role in enumerate(('Defense','Offense','Control')):
-            secondary=p.group(utility+" | "+role,utility,cls,"utility",x=(i-1)*160,dynamic=True)
+        for role in ('Defense','Offense','Control'):
+            secondary=p.group(utility+" | "+role,utility,cls,"utility",x=ROLE_X[role],dynamic=True)
             secondary.update(grow='GRID',gridType='HD',gridWidth=4,rowSpace=8,columnSpace=8)
         for seed,name in candidates(cls)+[(seed,name) for seed,name in c['utility'] if seed in PREPARATION]:
             d=icon(p,utility+" | "+name,utility+" | "+combat_role(name),cls,"utility",cooldown(seed,True),28,known=seed)
@@ -375,14 +383,17 @@ def generate():
         # Upkeep buffs are not damage: they sit right, beyond the resource bar.
         if cls=='WARLOCK' or UPKEEP.get(cls):
             p.group(maintenance,auras,cls,'maintenance',x=286,y=13,dynamic=True).update(grow='RIGHT',space=6)
-        effects=prefix+" | Player effects";p.group(effects,auras,cls,"buffs",y=116)
+        # The player's own buffs are not damage: a fixed row seated over the
+        # resource bar, mirroring the DoT row over Health.
+        effects=prefix+" | Player effects";p.group(effects,auras,cls,"buffs",y=DOT_ROW_Y)
         buffs=list(c['buffs'])
         if cls=="WARLOCK": buffs.append(([687,706,28176],"Demon armor"))
+        def buff_slot(index): return BUFF_ROW_START+index*DOT_STEP
         for i,(seed,name) in enumerate(buffs):
             upkeep=name=='Demon armor'
             d=icon(p,effects+" | "+name,maintenance if upkeep else effects,cls,'maintenance' if upkeep else 'buffs',
-                aura_trigger(seed if isinstance(seed,list) else [seed]),20 if upkeep else 26,
-                x=0 if upkeep else (i-(len(c['buffs'])-1)/2)*34,modern=True)
+                aura_trigger(seed if isinstance(seed,list) else [seed]),20 if upkeep else DOT_SIZE,
+                x=0 if upkeep else buff_slot(i),modern=True)
             if upkeep: d['subRegions'][2]['text_visible']=False
 
         for i,(seeds,name,missing) in enumerate(UPKEEP.get(cls,[])):
@@ -396,22 +407,24 @@ def generate():
                     icon(p,prefix+' | Upkeep reminder | '+name+(' expiring' if expiring else ' missing'),maintenance,cls,'maintenance',
                         reminder,24,modern=True)
         if cls=='WARRIOR':
+            # Rend (damage) takes the next DoT slot over Health; Battle Shout
+            # (a buff) takes the next buff slot over the resource bar.
             for name,seed,unit,missing,remaining,x in (
-                ('Rend missing',772,'target',True,False,-44),
-                ('Battle Shout missing',6673,'player',True,False,0),
-                ('Battle Shout expiring',6673,'player',False,True,0)):
+                ('Rend missing',772,'target',True,False,DOT_ROW_END-len(c['dots'])*DOT_STEP),
+                ('Battle Shout missing',6673,'player',True,False,buff_slot(len(c['buffs']))),
+                ('Battle Shout expiring',6673,'player',False,True,buff_slot(len(c['buffs'])))):
                 trigger=aura_trigger([seed],unit,unit=='target')
                 if unit=='player': trigger['nativeFilters']={}
                 trigger.update(secretShowOn='showOnMissing' if missing else 'showOnActive',
                     secretUseRem=remaining,secretRem=15,secretRemOperator='<=')
-                reminder=icon(p,prefix+' | '+name,auras,cls,'dots' if unit=='target' else 'buffs',trigger,28,x=x,y=94,modern=True)
+                reminder=icon(p,prefix+' | '+name,auras,cls,'dots' if unit=='target' else 'buffs',trigger,DOT_SIZE,x=x,y=DOT_ROW_Y,modern=True)
                 if unit=='target':
                     reminder['triggers'][2]['trigger']['custom']='function() return ForeverHUD and ForeverHUD.Gate("dots","WARRIOR") and ForeverHUD.ReminderContext() or false end'
             for i,(seed,name) in enumerate(((7384,'Overpower'),(6572,'Revenge'),(5308,'Execute'),(402927,'Victory Rush'))):
-                # Inside Primary, so the offset is relative to PRIMARY_Y; the
-                # screen position matches the former class-root y=-23.
+                # Damage procs sit left, under the Health bar. Inside Primary,
+                # so the offset is relative to PRIMARY_Y (screen y=-23).
                 proc=icon(p,prefix+' | Usable proc | '+name,primary,cls,'primary',dict(type='spell',event='Action Usable',
-                    spellName=seed,use_spellName=True,use_exact_spellName=False,use_ignoreSpellCooldown=False,use_targetRequired=True),28,x=(i-1.5)*36,y=-23-PRIMARY_Y,known=seed)
+                    spellName=seed,use_spellName=True,use_exact_spellName=False,use_ignoreSpellCooldown=False,use_targetRequired=True),28,x=-74-i*32,y=-23-PRIMARY_Y,known=seed)
                 p.eligibility[proc['id']].update(proc=name)
         # FA's native Aura Start/Main settings bind playback to aura assignment
         # and lifetime. No helper hooks or alpha readback on native buttons.
@@ -477,12 +490,12 @@ def generate():
         elif c.get('extra')=="totems":
             for slot in range(1,5):
                 icon(p,prefix+f" | Totem {slot}",resources,cls,"pet",dict(type="spell",event="Totem",unit="player",
-                    use_totemType=True,totemType=slot,use_inverse=False,use_clones=False),24,x=180+(slot-2.5)*32,y=-130)
+                    use_totemType=True,totemType=slot,use_inverse=False,use_clones=False),24,x=180+(slot-2.5)*32,y=-157)
         if cls in ('SHAMAN','ROGUE'):
             for i,hand in enumerate(('main','off') if cls=='ROGUE' else ('main',)):
                 icon(p,prefix+' | Weapon coating | '+hand,auras,cls,'buffs',dict(type='item',event='Weapon Enchant',
-                    weapon=hand,enchantKind='imbue' if cls=='SHAMAN' else 'temporary',showOn='showOnActive',use_enchant=False),24,
-                    x=180+i*32,y=130)
+                    weapon=hand,enchantKind='imbue' if cls=='SHAMAN' else 'temporary',showOn='showOnActive',use_enchant=False),DOT_SIZE,
+                    x=buff_slot(len(c['buffs'])+i),y=DOT_ROW_Y)
         # FA computes frame levels from controlledChildren, not a display's
         # frameLevel field. Put ordered FX behind foreground bars/icons/seal.
         frame_group=p.by_id[frame]

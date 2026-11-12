@@ -1,6 +1,16 @@
-# Validation for 0.6.1
+# Validation for 0.6.2
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.6.2 (prerelease) — every row on its side
+
+- **Game evidence (user screenshot, Warlock, 0.6.0):** a tracked buff appeared centred about 170 px above the HUD, in the Core's native player-effects row. The user asked why non-damage elements were not all moved right together.
+- **Audit:** every positioned row of the combined import was listed and given a side by role.
+- **Tests:** `test_damage_left_everything_else_right` computes each display's screen x through its parents for all nine classes.
+  - Damage displays must be left, and everything else right.
+  - The buff row and the Rend reminder must be at y=40, within their bar spans.
+- **Previous release:** 0.6.1 was published (14 assets verified) and installed over 0.6.0, with all 38 files verified (3 changed), after a verified backup.
+- **Not verified in game:** any 0.6.1 or 0.6.2 position.
 
 ## 0.6.1 (prerelease) — DoT row seated over Health
 
