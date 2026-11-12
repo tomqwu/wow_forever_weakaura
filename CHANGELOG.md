@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.0 — unreleased (prerelease)
+## 0.7.0 — 2026-11-12 (prerelease)
 
 - **Rows centred on each bar.** Every row starts at the middle of its bar (x=±138) and grows evenly both ways, as the user chose ("balance in the middle, then expand to both sides"). This is the layout half of [the 0.7 design](docs/hud-design-0.7.md).
   - **DoT and buff rails** (y=40) are ForeverAuras **Modern Aura Groups** with *Centered Horizontal* growth. The client chains the icons and keeps the row centred in combat, without any Lua reading aura state. The Warrior Rend and Battle Shout reminders join their rails.
