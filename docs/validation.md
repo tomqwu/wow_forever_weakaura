@@ -11,6 +11,7 @@ Sections below 0.4.0 describe releases made under the Eclipse name and keep the 
   - The row is at y = −74 with a single icon size.
   - Soul Shards lead the row and show only the corner count.
 - **Not verified in game:** the ordinary counter chaining inside the Modern Aura Group.
+- **Published 2026-11-12 as v0.9.2,** including 0.9.1: all 14 downloaded release assets match the build, and the 38 runtime files match the source. Installed over 0.9.0, with all 38 files verified (3 changed). The 0.9.0 folder was backed up and verified first, and SavedVariables were not touched. This is file evidence, not game-client evidence.
 
 ## 0.9.1 (prerelease) — minimal tray
 
