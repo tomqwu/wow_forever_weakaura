@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.3 — unreleased (prerelease)
+## 0.7.3 — 2026-11-12 (prerelease)
 
 - Warlock Demon Armor reminders, asked for by the user ("missing demon armor alert?"). Two native displays sit in the Maintenance row to the right of the resource bar:
   - **missing:** Show On: Aura(s) Missing, when none of Demon Skin, Demon Armor or Fel Armor is up;
@@ -8,7 +8,7 @@
   - They use the same reminder generator as the other classes' upkeep buffs. The existing active Demon Armor icon stays.
 - Update the Core and your class in `/fa`, choosing **Update Auras**.
 
-## 0.7.2 — unreleased (prerelease)
+## 0.7.2 — 2026-11-12 (prerelease)
 
 - Rim icons on both sides are a bit larger: 24 → 28 px, spacing 26 → 30 px (user: "can both side icon a bit larger? a bit is fine"). This covers the DoT row and Rend reminder over Health, and the buff row, Battle Shout reminders, native tracked buffs and weapon coatings over the resource bar. They still clear the cooldown cradles above.
 - Update the Core and your class in `/fa`, choosing **Update Auras**.
