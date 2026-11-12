@@ -1,6 +1,29 @@
-# Validation for 0.7.3
+# Validation for 0.8.0
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.8.0 (prerelease) — retracted seal and tray
+
+Automated only; nothing here is game-client evidence.
+
+- **Source review:** ForeverAuras' Modern trigger expands a name in `auraRankSpellIDs` to every spell ID with that name (`BlizzardAuraDisplay.lua` 428–432), and its validator accepts names. So Food, Drink and Well Fed need no ID list.
+- **`tests/test_pack.py` (`test_retracted_seal_and_tray`), for all nine classes:**
+  - The normal seal is gated `not Retracted()` and the larger one `Retracted()`.
+  - Every tray member has a tray load flag and a tray gate, and hangs below the larger seal.
+  - The second row is a centred Modern Aura Group, with Food, Drink and Well Fed matched by name.
+  - The health and resource texts use native percent formats.
+  - Warlock has Soul Shards and a Demon Armor missing reminder.
+  - Name-matched icons skip spell discovery.
+- **`tests/bundle.lua`:**
+  - Folded: the tray shows and the buff and upkeep rows give way.
+  - Open: no tray.
+  - Tray off: the old behaviour.
+- **`tests/state.lua`:** updated, because buffs no longer show while folded with the tray on.
+- **ForeverAuras native schema:** passes (installed ForeverAuras 1.3.9).
+- **Not verified in game:**
+  - the fold and seal swap;
+  - tray contents and spacing;
+  - name matching against Forever's food and drink.
 
 ## 0.7.3 (prerelease) — Demon Armor reminder
 

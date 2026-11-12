@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.7.3"
+VERSION = "0.8.0"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -58,6 +58,12 @@ BAR_X = 138
 # ForeverAuras Modern Aura Group: a normal group whose Aura (Modern) children
 # are chained by the client and kept centred with half-size shadows, so the
 # row re-centres in combat without any Lua reading aura state.
+# 0.8 retracted mode: larger seal and the tray under it.
+RETRACTED_SEAL = 132
+TRAY_ICON = 34
+TRAY_TEXT_X = 62
+TRAY_ROW1_Y = -74
+TRAY_ROW2_Y = -116
 CENTRED_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='CENTER_HORIZONTAL', blizzardFlowSpacing=2)
 # Class-plan secondary rows by side: damage left, support right.
 ROLE_X = {'Offense':-160,'Control':0,'Defense':160}
@@ -312,7 +318,12 @@ def generate():
         rune=texture(p,prefix+" | Living runes",frame,cls,"motion","runes",112,112,y=13,color=rgba(c['color'],.18))
         rune["animation"]["main"]=dict(type="custom",duration_type="seconds",duration=45,use_rotate=True,rotate=360,
             rotateType="straight",easeType="none",easeStrength=3)
-        texture(p,prefix+" | Seal",frame,cls,"art","crest-"+cls.lower(),104,104,y=13)
+        seal=texture(p,prefix+" | Seal",frame,cls,"art","crest-"+cls.lower(),104,104,y=13)
+        # 0.8 retracted mode: a larger seal replaces the normal one while the
+        # HUD is folded and its tray shows (both gated by the companion).
+        seal['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and not ForeverHUD.Retracted() or false end'
+        big=texture(p,prefix+" | Seal | Retracted",frame,cls,"art","crest-"+cls.lower(),RETRACTED_SEAL,RETRACTED_SEAL,y=13)
+        big['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.Retracted() or false end'
         # ForeverAuras compiles custom actions only for non-group displays and
         # fails when a group with an Init action is activated (for example by
         # a dynamic-group sort during import). The companion bind and the
@@ -475,6 +486,41 @@ def generate():
         powerfx['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("fx","{cls}") and ForeverHUD.InCombat() or false end'
         powerfx['conditions']=[dict(check=dict(trigger=1,variable='percentpower',op='>=',value=threshold),
             changes=[dict(property='alpha',value=alpha)]) for threshold,alpha in ((65,.1),(80,.3),(95,.48))]
+        # 0.8 retracted tray, shown only while folded (module "tray", gate
+        # Retracted). Row 1 flanks the seal's foot: health %, the class
+        # counter, resource %. Row 2 is a centred Modern Aura Group: missing
+        # upkeep, then food, drink and Well Fed (matched by aura name).
+        tray=prefix+' | Tray'; p.group(tray,prefix,cls,'tray')
+        for side,label,trigger,color,fmt in ((-1,'Health',dict(type='unit',event='Health',unit='player',use_unit=True),rgba(HEALTH_COLOR),'percenthealth'),
+                (1,'Resource',dict(type='unit',event='Power',unit='player',use_unit=True),[.94,.91,1,1],'percentpower')):
+            text=p.add(f'{tray} | {label}','text',tray,cls,'tray',x=side*TRAY_TEXT_X,y=TRAY_ROW1_Y,displayText=f'%{fmt}%%',
+                font="Friz Quadrata TT",fontSize=14,outline="OUTLINE",color=color,justify="CENTER",
+                automaticWidth="Auto",fixedWidth=80,wordWrap="WordWrap",shadowColor=[0,0,0,1],shadowXOffset=0,shadowYOffset=0,
+                **{f'displayText_format_{fmt}_format':'Number',f'displayText_format_{fmt}_decimal_precision':0})
+            p.triggers(text,[trigger],cls,'tray')
+        if c.get('extra')=='shards':
+            # The carried reagent count on its own item icon (native Item Count).
+            icon(p,tray+' | Soul Shards',tray,cls,'tray',dict(type='item',event='Item Count',itemName=6265,
+                use_itemName=True,use_exact_itemName=True,use_includeBank=False,use_includeWarBandBank=False,use_includeCharges=False),
+                TRAY_ICON,y=TRAY_ROW1_Y)
+        row=tray+' | Row'; p.group(row,tray,cls,'tray',y=TRAY_ROW2_Y).update(CENTRED_FLOW)
+        upkeeps=[(seeds,name) for seeds,name,missing in UPKEEP.get(cls,[]) if missing]
+        if cls=='WARLOCK': upkeeps.append(([687,706,28176],'Demon armor'))
+        for seeds,name in upkeeps:
+            trigger=aura_trigger(seeds);trigger.update(nativeFilters={},secretShowOn='showOnMissing')
+            icon(p,f'{row} | Upkeep reminder | {name} missing',row,cls,'tray',trigger,TRAY_ICON,modern=True)
+        for name in ('Food','Drink','Well Fed'):
+            # Aura names expand natively to every spell ID with that name
+            # (ForeverAuras BlizzardAuraDisplay GetSpellIDs), so no ID list.
+            d=icon(p,f'{row} | {name}',row,cls,'tray',aura_trigger([name]),TRAY_ICON,modern=True)
+        # Name-matched tray icons follow the tray module only: a name is not a
+        # learned spell for discovery. Upkeep reminders keep their learned-
+        # spell eligibility, so an unlearned buff never nags.
+        for d in p.displays:
+            entry=p.eligibility.get(d['id'])
+            if d['id'].startswith(tray+' | ') and entry and any(isinstance(seed,str) for seed in entry['seeds']):
+                p.eligibility.pop(d['id'])
+                d['load']['loadFlag']=f'FOREVERHUD_{cls}_tray'
         alerts=prefix+' | Alerts'; p.group(alerts,prefix,cls,'base')
         for seed,priority in ALERTS[cls]:
             alert=p.add(prefix+f' | Ready alert | {seed}','empty',alerts,cls,'alerts',width=1,height=1)

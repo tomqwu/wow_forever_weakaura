@@ -16,7 +16,7 @@ assert(loadfile('src/ForeverHUD/State.lua'))('ForeverHUD',E)
 local S=E.state
 E.Reset();E.Set('castBarMode','ForeverHUD');S.Start()
 check(not S.Visible() and E.Gate('art','WARLOCK') and not E.Gate('resources','WARLOCK'),'Compact idle retains emblem, folds resources')
-check(E.Gate('cast','WARLOCK') and E.Gate('buffs','WARLOCK'),'Casting and active effects keep independent rules')
+check(E.Gate('cast','WARLOCK') and not E.Gate('buffs','WARLOCK') and E.Gate('tray','WARLOCK'),'Casting keeps its own rule; folded, the tray replaces the buff rows (0.8)')
 exists=true;attack=true;S.Update(false)
 check(S.open and S.Visible() and E.Gate('primary','WARLOCK'),'Living hostile target opens primary')
 exists=false;S.Update(false);local close=S.closeTimer

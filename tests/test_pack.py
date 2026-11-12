@@ -14,7 +14,7 @@ from build import rgba
 
 def sections(c):
     """Class sections in draw order; Resources only for a pet or class extra."""
-    return ['Frame']+(['Resources'] if c.get('pet') or c.get('extra') else [])+['Primary','Utility','Auras','Nameplates','Alerts']
+    return ['Frame']+(['Resources'] if c.get('pet') or c.get('extra') else [])+['Primary','Utility','Auras','Nameplates','Tray','Alerts']
 CORE_SECTIONS=['Resources','Native rows','Native auras']
 
 def subtree(by_id,root):
@@ -331,6 +331,34 @@ class PackTests(unittest.TestCase):
                 x,y=screen(d);half=d['width']/2
                 self.assertEqual(y,40,id);self.assertTrue(-228<=x-half and x+half<=-48,(id,x))
         self.assertGreater(seen['left'],40);self.assertGreater(seen['right'],40)
+
+    def test_retracted_seal_and_tray(self):
+        by_id={d['id']:d for d in self.regions}
+        for cls,c in CLASSES.items():
+            prefix='ForeverHUD | '+c['name']
+            seal,big=by_id[prefix+' | Seal'],by_id[prefix+' | Seal | Retracted']
+            self.assertIn('not ForeverHUD.Retracted()',seal['triggers'][2]['trigger']['custom'])
+            self.assertIn('and ForeverHUD.Retracted()',big['triggers'][2]['trigger']['custom'])
+            self.assertGreater(big['width'],seal['width'],'The retracted seal is larger')
+            self.assertEqual(big['parent'],prefix+' | Frame')
+            tray=subtree(by_id,prefix+' | Tray')[1:]
+            self.assertTrue(tray)
+            for id in tray:
+                d=by_id[id]
+                self.assertTrue(d['load']['loadFlag'].startswith(f'FOREVERHUD_{cls}_tray'),id)
+                gate=d['triggers'][max(k for k in d['triggers'] if isinstance(k,int))]['trigger'].get('custom','')
+                if 'controlledChildren' not in d: self.assertIn('Gate("tray"',gate,id)
+                self.assertLess(d['yOffset']+by_id[d['parent']]['yOffset'],-52,'Tray hangs below the larger seal')
+            row=by_id[prefix+' | Tray | Row']
+            self.assertEqual((row['blizzardFlow'],row['blizzardFlowGrowth']),(True,'CENTER_HORIZONTAL'))
+            names=[by_id[id]['triggers'][1]['trigger']['auraRankSpellIDs'] for id in row['controlledChildren'] if id.split(' | ')[-1] in ('Food','Drink','Well Fed')]
+            self.assertEqual(names,[['Food'],['Drink'],['Well Fed']],'Matched by aura name, not an ID list')
+            for side in ('Health','Resource'):
+                text=by_id[f'{prefix} | Tray | {side}']
+                self.assertIn('%percent',text['displayText'])
+        self.assertIn(prefix_warlock:='ForeverHUD | Warlock | Tray | Soul Shards',by_id)
+        self.assertIn('ForeverHUD | Warlock | Tray | Row | Upkeep reminder | Demon armor missing',by_id)
+        self.assertNotIn('ForeverHUD | Warlock | Tray | Row | Food',self.eligibility,'Name-matched icons skip spell discovery')
 
     def test_class_art_draws_below_core(self):
         # Core and class roots get independent frame levels, so strata keeps

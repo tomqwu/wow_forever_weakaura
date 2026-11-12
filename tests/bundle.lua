@@ -141,6 +141,19 @@ print=oldPrint
 -- Core displays pass "CORE" and follow the current class's preferences.
 check(E.Owner('CORE')=='WARLOCK' and E.Owner('WARRIOR')=='WARRIOR','CORE resolves to the current class only')
 check(E.Gate('base','CORE')==E.Gate('base','WARLOCK') and not E.Gate('base','WARRIOR'),'Core gates like the current class')
+-- 0.8 retracted mode: folded shows only the seal and its tray.
+do
+    local saved=E.state
+    E.state={world=true,ObservePreview=function()end,Visible=function()return false end}
+    check(E.Retracted() and E.Gate('tray','WARLOCK'),'Folded: the tray shows')
+    check(not E.Gate('buffs','WARLOCK') and not E.Gate('maintenance','WARLOCK') and not E.Gate('buffs','CORE'),'Folded: buff and upkeep rows give way to the tray')
+    check(E.Gate('art','WARLOCK') and E.Gate('dots','WARLOCK'),'Folded: the seal and target rows are unaffected')
+    E.state.Visible=function()return true end
+    check(not E.Retracted() and not E.Gate('tray','WARLOCK') and E.Gate('buffs','WARLOCK'),'Open: full HUD, no tray')
+    E.state.Visible=function()return false end;E.Profile().tray=false
+    check(not E.Retracted() and not E.Gate('tray','WARLOCK') and E.Gate('buffs','WARLOCK'),'Tray off: folding keeps the old behaviour')
+    E.Profile().tray=true;E.state=saved
+end
 local flags={}
 local oldFlag=ForeverAuras.SetLoadFlag
 ForeverAuras.SetLoadFlag=function(name,value)flags[name]=value end
