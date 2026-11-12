@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.6.2 — unreleased (prerelease)
+
+- Apply "damage left, everything else right" to every row, not only the wings, DoTs and Maintenance (the user asked why it was not done all together):
+  - **Right:**
+    - The player-effects (buff) row is seated over the resource bar, mirroring the DoT row over Health. Before, it was centred 116 px above.
+    - Warrior Battle Shout reminders and Shaman/Rogue weapon coatings take the next slots in that row.
+    - The Core native buff row sits right, above the Utility wing (y=116), instead of centred 151 px above.
+    - Utility and item overflow rows sit under the resource bar. Shaman totems sit lower right.
+    - In class-plan mode, the Defense row is on the right.
+  - **Left:**
+    - Warrior Rend reminder takes the next slot in the DoT row.
+    - Warrior usable-proc cues sit under the Health bar.
+    - Essential overflow sits under the Health bar, moved up from below the cast bar.
+    - In class-plan mode, the Offense row is on the left.
+- A pack test now checks every row's side across all nine classes, and that both seated rows stay within their bars.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.6.1 — 2026-11-12 (prerelease)
 
 - The DoT row now sits on the frame directly over the Health bar, within its width. In 0.6.0 it floated about 80 px above, away from the frame (reported in game). The icons are 24 px, 26 px apart, starting at the seal end of the bar.

@@ -285,6 +285,34 @@ class PackTests(unittest.TestCase):
                 self.assertEqual(number['text_text'],'%p / %t')
                 self.assertEqual(number['text_text_format_t_decimal_precision'],0)
 
+    def test_damage_left_everything_else_right(self):
+        by_id={d['id']:d for d in self.regions}
+        def screen(d):
+            x,y=d['xOffset'],d['yOffset']
+            while d.get('parent') in by_id and d['parent'] not in (TITLE,):
+                d=by_id[d['parent']];x+=d['xOffset'];y+=d['yOffset']
+            return x,y
+        left=lambda id:(' | Target effects | ' in id or id.endswith(' | Rend missing') or ' | Usable proc | ' in id
+            or id.endswith(' | Utility | Offense') or id in (CORE_ID+' | Native cooldowns',CORE_ID+' | Native tracked bars'))
+        right=lambda id:((' | Player effects | ' in id and not id.endswith('Demon armor')) or ' | Battle Shout ' in id
+            or ' | Weapon coating | ' in id or id.endswith(' | Maintenance') or ' | Totem ' in id or id.endswith(' | Utility | Defense')
+            or id in (CORE_ID+' | Native player effects',CORE_ID+' | Native utility',CORE_ID+' | Native items'))
+        seen={'left':0,'right':0}
+        for d in self.regions:
+            id=d['id']
+            if left(id):
+                self.assertLess(screen(d)[0],0,id);seen['left']+=1
+            elif right(id):
+                self.assertGreater(screen(d)[0],0,id);seen['right']+=1
+            # Rows seated on the frame stay within their bar (Health -228..-48, resource 48..228).
+            if (' | Player effects | ' in id and not id.endswith('Demon armor')) or ' | Battle Shout ' in id or ' | Weapon coating | ' in id:
+                x,y=screen(d);half=d['width']/2
+                self.assertEqual(y,40,id);self.assertTrue(48<=x-half and x+half<=228,(id,x))
+            if id.endswith(' | Rend missing'):
+                x,y=screen(d);half=d['width']/2
+                self.assertEqual(y,40,id);self.assertTrue(-228<=x-half and x+half<=-48,(id,x))
+        self.assertGreater(seen['left'],40);self.assertGreater(seen['right'],40)
+
     def test_class_art_draws_below_core(self):
         # Core and class roots get independent frame levels, so strata keeps
         # the shared bars above class art: textures LOW, everything else inherits.
