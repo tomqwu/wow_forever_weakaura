@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.7.2"
+VERSION = "0.7.3"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -408,16 +408,23 @@ def generate():
             if not upkeep: p.eligibility[d['id']].update(effect=True)
             if upkeep: d['subRegions'][2]['text_visible']=False
 
+        def upkeep_reminders(seeds,name):
+            # Native Show On: Aura(s) Missing / Remaining Time; nothing inferred.
+            upkeep=aura_trigger(seeds);upkeep['nativeFilters']={}
+            for expiring in (False,True):
+                reminder=copy.deepcopy(upkeep)
+                reminder.update(secretShowOn='showOnActive' if expiring else 'showOnMissing',
+                    secretUseRem=expiring,secretRem=15,secretRemOperator='<=')
+                icon(p,prefix+' | Upkeep reminder | '+name+(' expiring' if expiring else ' missing'),maintenance,cls,'maintenance',
+                    reminder,24,modern=True)
         for i,(seeds,name,missing) in enumerate(UPKEEP.get(cls,[])):
             upkeep=aura_trigger(seeds);upkeep['nativeFilters']={}
             icon(p,prefix+' | Upkeep | '+name,maintenance,cls,'maintenance',upkeep,20,modern=True)
-            if missing:
-                for expiring in (False,True):
-                    reminder=copy.deepcopy(upkeep)
-                    reminder.update(secretShowOn='showOnActive' if expiring else 'showOnMissing',
-                        secretUseRem=expiring,secretRem=15,secretRemOperator='<=')
-                    icon(p,prefix+' | Upkeep reminder | '+name+(' expiring' if expiring else ' missing'),maintenance,cls,'maintenance',
-                        reminder,24,modern=True)
+            if missing: upkeep_reminders(seeds,name)
+        if cls=='WARLOCK':
+            # Demon Skin / Demon Armor / Fel Armor: the active icon above stays;
+            # these warn when none is up, or in its last 15 seconds.
+            upkeep_reminders([687,706,28176],'Demon armor')
         if cls=='WARRIOR':
             # Rend (damage) joins the centred DoT row over Health; Battle Shout
             # (a buff) joins the centred buff row over the resource bar.
