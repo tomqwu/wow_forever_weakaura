@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.4.0"
+E.releaseVersion = "0.4.1"
 E.importAPI = 1
 E.rootID = "ForeverHUD"
 E.classNames = {

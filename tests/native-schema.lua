@@ -128,7 +128,21 @@ xpcall=function(fn,handler,...)
 end
 WeakAuras.LoadFunction=P.LoadFunction
 WeakAuras.split=function()return {'index'}end
-P.ActivateAuraEnvironment=noop
+-- ForeverAuras compiles custom actions only for non-group displays, and
+-- activating a group whose Init action is custom indexes a missing table
+-- (AuraEnvironment.lua). Fail the same way so a group Init cannot ship.
+P.ActivateAuraEnvironment=function(id)
+    local d=id and saved[id]
+    local init=d and d.controlledChildren and d.actions and d.actions.init
+    assert(not (init and init.do_custom),tostring(id)..': ForeverAuras never compiles Init actions for groups')
+end
+for id,d in pairs(saved)do
+    if d.controlledChildren then
+        for key,action in pairs(d.actions or {})do
+            assert(not action.do_custom,id..': group has a custom '..key..' action ForeverAuras never compiles')
+        end
+    end
+end
 P.GetErrorHandlerId=function()return error end
 P.regionPrototype={AddAlphaToDefault=noop}
 P.RegisterRegionType=noop
@@ -142,6 +156,14 @@ local nativeSort=WeakAuras.SortFunctions.custom(sortData)
 assert(nativeSort({cloneId='5',region=secret},{cloneId='3',region=secret})==true)
 assert(nativeSort({cloneId='3',region=secret},{cloneId='5',region=secret})==false)
 print('Actual ForeverAuras dynamic-group sorting passed native identity order without state inspection')
+local sorted=0
+for id,d in pairs(saved)do
+    if d.regionType=='dynamicgroup' and d.sort=='custom' then
+        WeakAuras.SortFunctions.custom(d)({cloneId='5',region=secret},{cloneId='3',region=secret});sorted=sorted+1
+    end
+end
+assert(sorted>0,'No custom-sorted dynamic groups')
+print('Every custom-sorted dynamic group activates without a group Init action: '..sorted)
 
 load('CDMAuraProgress')
 local bars=0

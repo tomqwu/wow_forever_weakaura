@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.4.0"
+VERSION = "0.4.1"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -198,7 +198,6 @@ def generate():
     p=Pack()
     root=p.add(TITLE,"group",anchorFrameType="SELECTFRAME",anchorFrameFrame="ForeverHUDAnchor",anchorFrameParent=True,
         groupIcon=MEDIA+"crest-warlock.tga",desc="ForeverHUD "+VERSION+" / 职业战斗界面\nOne import, nine classes. Controls: /fhud. Native aura tracking; learned abilities only.\n一份导入，九职业自动切换。/fhud 打开设置。使用原生光环追踪，只显示已学技能。")
-    root["actions"]["init"] = dict(do_custom=True,custom="if ForeverHUD then ForeverHUD.Bind() end")
     for cls,c in CLASSES.items():
         prefix=f"ForeverHUD | {c['name']}"
         group=p.group(prefix,TITLE,cls,"base")
@@ -215,9 +214,14 @@ def generate():
         rune["animation"]["main"]=dict(type="custom",duration_type="seconds",duration=45,use_rotate=True,rotate=360,
             rotateType="straight",easeType="none",easeStrength=3)
         texture(p,prefix+" | Seal",frame,cls,"art","crest-"+cls.lower(),104,104,y=13)
-        p.add(prefix+" | Class name","text",frame,cls,"base",y=79,displayText="",
+        # ForeverAuras compiles custom actions only for non-group displays and
+        # fails when a group with an Init action is activated (for example by
+        # a dynamic-group sort during import). The companion bind and the
+        # version guard therefore live on this always-loaded class leaf.
+        name_text=p.add(prefix+" | Class name","text",frame,cls,"base",y=79,displayText="",
             font="Friz Quadrata TT",fontSize=10,outline="OUTLINE",color=rgba(c['color']),justify="CENTER",
             automaticWidth="Auto",fixedWidth=200,wordWrap="WordWrap",shadowColor=[0,0,0,1],shadowXOffset=0,shadowYOffset=0)
+        name_text['actions']['init']=dict(do_custom=True,custom="if ForeverHUD then ForeverHUD.Bind() end")
         # Measured channel interiors in the packaged AI-painted frame.
         bar(p,prefix+" | Health",resources,cls,"resources",dict(type="unit",event="Health",unit="player",use_unit=True),
             x=-138,y=13,width=180,height=13,color=rgba(HEALTH_COLOR),label='Health')
@@ -231,7 +235,6 @@ def generate():
             wing=p.group(wing_id,primary,cls,'primary',dynamic=True)
             wing.update(grow=grow,space=7,animate=True,sort='custom',sortOn='index',
                 customSort='function(a,b) return ForeverHUD and ForeverHUD.SortCDM(a,b) or false end')
-            wing['actions']['init']=dict(do_custom=True,custom=f'if ForeverHUD then ForeverHUD.BindAbility("{wing_id}") end')
         for slot in range(1,9):
             # Entry IDs/UIDs are stable since v0.3.2. Their former empty
             # "Native N" slot groups are gone: Update removes them, and a
@@ -240,6 +243,8 @@ def generate():
             slot_icon=icon(p,f'{primary} | Native {slot} | Entry',wing,cls,'primary',dict(type='cdm',event='Blizzard Cooldown Manager',
                 cdmSource='cooldown',cdmSpells=dict(multi={}),cdmShow='cooldown',use_cdmShowGCD=False,
                 cdmTrack='auto',cdmHideGCDText=True,use_ignoreSpellKnown=False),40)
+            # The wing is a group, so its layout bind rides on each entry.
+            slot_icon['actions']['init']['custom']+=f'\nif ForeverHUD then ForeverHUD.BindAbility("{wing}") end'
             slot_icon['conditions']=[dict(check=dict(trigger=1,variable=variable,value=value),changes=[dict(property=prop,value=color)]) for variable,value,prop,color in [('onCooldown',1,'desaturate',True),('isUsable',0,'desaturate',True),('inRange',0,'color',[1,.3,.3,1])]]
         for seed,name in candidates(cls):
             d=icon(p,primary+" | "+name,primary,cls,"primary",cooldown(seed),40,known=seed)
@@ -457,8 +462,14 @@ def generate():
     for display in p.displays[1:]:
         display['url']=update_url(display['load']['class']['single'])
     message='Companion update required: install ForeverHUD and /reload before importing.'
-    p.displays[0]['actions']['init']['custom']=(f'if ForeverHUD and ForeverHUD.importAPI == {IMPORT_API} then ForeverHUD.Bind() '
-        f'else local message="{message}"; print("ForeverHUD {VERSION}: "..(ForeverHUD and ForeverHUD.L and ForeverHUD.L(message) or message)) end')
+    for display in p.displays:
+        if 'controlledChildren' in display:
+            custom=[key for key,action in display['actions'].items() if action.get('do_custom')]
+            assert not custom,f'Group {display["id"]} has custom {custom} actions ForeverAuras never compiles'
+    for display in p.displays[1:]:
+        if display['id'].endswith(' | Class name'):
+            display['actions']['init']['custom']=(f'if ForeverHUD and ForeverHUD.importAPI == {IMPORT_API} then ForeverHUD.Bind() '
+                f'else local message="{message}"; print("ForeverHUD {VERSION}: "..(ForeverHUD and ForeverHUD.L and ForeverHUD.L(message) or message)) end')
     return dict(m="d",v=2000,s="1.3.5",d=p.displays[0],c=p.displays[1:]),p.eligibility
 
 def class_import(data, cls):
@@ -467,7 +478,6 @@ def class_import(data, cls):
     class_id='ForeverHUD | '+CLASSES[cls]['name']
     root=next(d for d in selected if d['id']==class_id)
     root.pop('parent',None)
-    root['actions']['init']=copy.deepcopy(data['d']['actions']['init'])
     root['desc']='ForeverHUD '+VERSION+' / '+CLASSES[cls]['name']+' only. Update this class group; controls: /fhud.'
     return dict(m=data['m'],v=data['v'],s=data['s'],d=root,c=[d for d in selected if d is not root])
 

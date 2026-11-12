@@ -2,7 +2,7 @@
 
 ## English
 
-**Version 0.4.0 — renamed from Eclipse to ForeverHUD (prerelease).** One companion supports all nine classes, with independent preferences and automatic class loading. The addon carries the auras for every class: install it, and ForeverAuras offers your class's group in `/fa`. No string to paste. Manual class files remain available: [Warlock only](dist/classes/ForeverHUD-Warlock.txt) is roughly 83% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
+**Version 0.4.1 — fixes the ForeverAuras import error (prerelease).** 0.4.0 imports could stop with `AuraEnvironment.lua:524: attempt to index field '?'`; delete any half-imported ForeverHUD group in `/fa` and install again. 0.4.0 renamed the project from Eclipse to ForeverHUD. One companion supports all nine classes, with independent preferences and automatic class loading. The addon carries the auras for every class: install it, and ForeverAuras offers your class's group in `/fa`. No string to paste. Manual class files remain available: [Warlock only](dist/classes/ForeverHUD-Warlock.txt) is roughly 83% smaller than the combined import; [exact sizes](dist/classes/README.md) are generated with each build.
 
 ### Install or update
 
@@ -155,7 +155,7 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 ## 简体中文
 
-**版本 0.4.0：由 Eclipse 更名为 ForeverHUD（预发布）。** 一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。插件附带所有职业的光环：安装后，ForeverAuras 会在 `/fa` 中提供当前职业的光环组，无需粘贴字符串。手动职业文件仍可使用：[术士独立导入](dist/classes/ForeverHUD-Warlock.txt)比合并文件约小 83%；[精确大小](dist/classes/README.md)由构建自动生成。
+**版本 0.4.1：修复 ForeverAuras 导入错误（预发布）。** 0.4.0 导入可能因 `AuraEnvironment.lua:524: attempt to index field '?'` 中断；请在 `/fa` 中删除导入一半的 ForeverHUD 组后重新安装。0.4.0 已由 Eclipse 更名为 ForeverHUD。 一套配套插件支持九职业，按当前角色自动加载，并分别保存设置。插件附带所有职业的光环：安装后，ForeverAuras 会在 `/fa` 中提供当前职业的光环组，无需粘贴字符串。手动职业文件仍可使用：[术士独立导入](dist/classes/ForeverHUD-Warlock.txt)比合并文件约小 83%；[精确大小](dist/classes/README.md)由构建自动生成。
 
 ### 安装与更新
 
