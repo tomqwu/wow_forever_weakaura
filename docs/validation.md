@@ -11,6 +11,7 @@ Automated only; nothing here is game-client evidence.
 - `python scripts/build.py`, `python scripts/check.py` and `git diff --check` pass in WSL; CI repeats them with the pinned ForeverAuras checkout and the native-schema test.
 - Not verified in game: the folder swap, the login warnings, or a fresh ForeverHUD install beside deleted Eclipse auras.
 - Preview PNGs were renamed only; their pixels are 0.3.x illustrative captures.
+- Published 2026-11-12: all 13 downloaded release assets match the build. Installed into the `_forever_` client with all 38 files verified. EclipseHUD was removed only after a verified backup. This is file evidence, not game-client evidence.
 
 ## 0.3.5 (prerelease) — auras bundled in the addon
 
