@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.8.1"
+VERSION = "0.9.0"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -58,6 +58,19 @@ BAR_X = 138
 # ForeverAuras Modern Aura Group: a normal group whose Aura (Modern) children
 # are chained by the client and kept centred with half-size shadows, so the
 # row re-centres in combat without any Lua reading aura state.
+# 0.9 spell suggestions above the seal, highest priority first.
+SUGGEST_Y = 112
+SUGGEST_SIZE = 32
+SUGGEST_STEP = 36
+SUGGESTIONS = {
+    'WARLOCK': [
+        dict(kind='curve',name='Life Tap',event='Power',unit='player',variable='percentpower',at=30,known=1454,icon='Spell_Shadow_BurningSpirit'),
+        dict(kind='missing',name='Corruption',seed=172),
+        dict(kind='missing',name='Immolate',seed=348),
+        dict(kind='active',name='Shadow Trance',seed=17941,talent=[18094,18095]),
+        dict(kind='curve',name='Health Funnel',event='Health',unit='pet',variable='percenthealth',at=35,known=755,icon='Spell_Shadow_LifeDrain'),
+    ],
+}
 # 0.8 retracted mode: larger seal and the tray under it.
 RETRACTED_SEAL = 132
 TRAY_ICON = 34
@@ -524,6 +537,30 @@ def generate():
             if d['id'].startswith(tray+' | ') and entry and any(isinstance(seed,str) for seed in entry['seeds']):
                 p.eligibility.pop(d['id'])
                 d['load']['loadFlag']=f'FOREVERHUD_{cls}_tray'
+        # 0.9 spell suggestions: a fixed row above the seal. Each rule is a
+        # native check (power/health curve, Show On Missing, aura active);
+        # nothing is inferred in Lua. Protected percentages cannot be
+        # combined natively, so each rule tests a single value.
+        rules=SUGGESTIONS.get(cls,[])
+        if rules:
+            suggest=prefix+' | Suggest'; p.group(suggest,prefix,cls,'suggest',y=SUGGEST_Y)
+            for i,rule in enumerate(rules):
+                x=(i-(len(rules)-1)/2)*SUGGEST_STEP
+                if rule['kind']=='curve':
+                    d=icon(p,f"{suggest} | {rule['name']}",suggest,cls,'suggest',dict(type='unit',event=rule['event'],unit=rule['unit'],use_unit=True),
+                        SUGGEST_SIZE,x=x,known=rule['known'])
+                    d.update(iconSource=0,displayIcon='Interface\\Icons\\'+rule['icon'],alpha=0)
+                    d['subRegions'][2]['text_visible']=False;d['subRegions'][3]['text_visible']=False
+                    # Hidden unless the native curve says the value is at or under the threshold.
+                    d['conditions']=[dict(check=dict(trigger=1,variable=rule['variable'],op='<=',value=rule['at']),
+                        changes=[dict(property='alpha',value=1)])]
+                elif rule['kind']=='missing':
+                    t=aura_trigger([rule['seed']],'target',True);t['secretShowOn']='showOnMissing'
+                    d=icon(p,f"{suggest} | {rule['name']}",suggest,cls,'suggest',t,SUGGEST_SIZE,x=x,modern=True)
+                    d['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("suggest","{cls}") and ForeverHUD.SuggestTarget() or false end'
+                else:
+                    d=icon(p,f"{suggest} | {rule['name']}",suggest,cls,'suggest',aura_trigger([rule['seed']]),SUGGEST_SIZE,x=x,modern=True)
+                    if rule.get('talent'): p.eligibility[d['id']].update(seeds=rule['talent'])
         alerts=prefix+' | Alerts'; p.group(alerts,prefix,cls,'base')
         for seed,priority in ALERTS[cls]:
             alert=p.add(prefix+f' | Ready alert | {seed}','empty',alerts,cls,'alerts',width=1,height=1)

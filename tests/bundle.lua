@@ -152,7 +152,22 @@ do
     check(not E.Retracted() and not E.Gate('tray','WARLOCK') and E.Gate('buffs','WARLOCK'),'Open: full HUD, no tray')
     E.state.Visible=function()return false end;E.Profile().tray=false
     check(not E.Retracted() and not E.Gate('tray','WARLOCK') and E.Gate('buffs','WARLOCK'),'Tray off: folding keeps the old behaviour')
-    E.Profile().tray=true;E.state=saved
+    E.Profile().tray=true
+    -- 0.9: suggestions give way while retracted; DoT suggestions need combat and a hostile target.
+    E.state.Visible=function()return false end
+    check(not E.Gate('suggest','WARLOCK'),'Folded: suggestions give way to the tray')
+    E.state.Visible=function()return true end
+    local hostile=false
+    E.state.HostileTarget=function()return hostile end
+    local oldCombat=InCombatLockdown
+    InCombatLockdown=function()return true end
+    check(E.Gate('suggest','WARLOCK') and not E.SuggestTarget(),'Open: suggestions show; DoT rules wait for a target')
+    hostile=true
+    check(E.SuggestTarget(),'In combat with a hostile target, DoT rules apply')
+    InCombatLockdown=function()return false end
+    check(not E.SuggestTarget(),'Out of combat, DoT rules stay quiet')
+    InCombatLockdown=oldCombat
+    E.state=saved
 end
 local flags={}
 local oldFlag=ForeverAuras.SetLoadFlag

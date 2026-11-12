@@ -31,6 +31,15 @@ function E.RefreshOptions()
     panel.swing:SetShown(E.class=='WARRIOR')
     panel.checks.cleave:SetShown(E.class=='WARRIOR')
     panel.notice:SetText(E.L(E.InCombat() and "Changes apply after combat." or "Drag the center seal to move. Right-click it for settings."))
+    local problems = E.AuraProblems and E.AuraProblems() or {}
+    if #problems > 0 then
+        panel.auraStatus:SetText(table.concat(problems, " "))
+        panel.auraStatus:SetTextColor(1, 0.45, 0.4)
+    else
+        panel.auraStatus:SetText(E.L("Auras up to date"))
+        panel.auraStatus:SetTextColor(0.55, 0.85, 0.6)
+    end
+    panel.install:SetShown(#problems > 0)
     panel.refreshing = false
 end
 local function build()
@@ -41,7 +50,7 @@ local function build()
     p:SetScript("OnDragStart", p.StartMoving); p:SetScript("OnDragStop", p.StopMovingOrSizing)
     p:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8", edgeFile="Interface\\Buttons\\WHITE8X8", edgeSize=1})
     p:SetBackdropColor(0.035, 0.03, 0.065, 0.98); p:SetBackdropBorderColor(0.36, 0.26, 0.52, 1)
-    label(p, "E C L I P S E", 22, 24, -23)
+    label(p, "F O R E V E R H U D", 22, 24, -23)
     label(p, "Class Combat HUD", 11, 26, -51, {0.65,0.6,0.73})
     p.classLabel = label(p, "", 11, 25, -80)
     local close = CreateFrame("Button", nil, p, "UIPanelCloseButton")
@@ -67,9 +76,9 @@ local function build()
         section:SetShown(i==1)
     end
     for i,entry in ipairs(E.modules)do
-        check(p.sections.Modules,entry[1],entry[2],i%2==1 and 22 or 292,-195-math.floor((i-1)/2)*36)
+        check(p.sections.Modules,entry[1],entry[2],i%2==1 and 22 or 292,-190-math.floor((i-1)/2)*30)
     end
-    label(p.sections.Modules,'Disabled modules unload their trackers.',11,27,-438,{.65,.61,.73})
+    label(p.sections.Modules,'Disabled modules unload their trackers.',11,27,-440,{.65,.61,.73})
     local behavior=p.sections.Behavior
     for i,entry in ipairs({{'combatOnly','Combat only'},{'hoverUtility','Utility on hover'},
         {'expandCombat','Expand when combat starts'},{'unfold','Unfold animation'},
@@ -117,7 +126,16 @@ local function build()
     local inspect=CreateFrame('Button',nil,position,'UIPanelButtonTemplate')
     inspect:SetSize(506,29);inspect:SetPoint('TOPLEFT',27,-382);inspect:SetText(E.L('Expand for inspection'))
     inspect:SetScript('OnClick',function()if E.state then E.state.Inspect()end end)
-    p.notice=label(p,'',11,27,-473,{.65,.61,.73});p.notice:SetWidth(506);p.notice:SetJustifyH('LEFT')
+    p.notice=label(p,'',11,27,-466,{.65,.61,.73});p.notice:SetWidth(506);p.notice:SetJustifyH('LEFT')
+    -- Aura install status: red with an install button when the Core or class
+    -- auras are missing, older than the addon, or need cleaning up.
+    p.auraStatus=label(p,'',11,27,-490);p.auraStatus:SetWidth(335);p.auraStatus:SetJustifyH('LEFT')
+    p.install=CreateFrame('Button',nil,p,'UIPanelButtonTemplate')
+    p.install:SetSize(163,24);p.install:SetPoint('TOPLEFT',373,-486);p.install:SetText(E.L('Install / update auras'))
+    p.install:SetScript('OnClick',function()
+        if E.InCombat()then p.notice:SetText(E.L('Changes apply after combat.'));return end
+        if E.InstallBundled then E.InstallBundled() end
+    end)
     button(p,'Open aura editor',25,18,163,function()
         local api=E.API()
         if E.InCombat()then p.notice:SetText(E.L('Changes apply after combat.'));return end

@@ -14,7 +14,8 @@ from build import rgba
 
 def sections(c):
     """Class sections in draw order; Resources only for a pet or class extra."""
-    return ['Frame']+(['Resources'] if c.get('pet') or c.get('extra') else [])+['Primary','Utility','Auras','Nameplates','Tray','Alerts']
+    return (['Frame']+(['Resources'] if c.get('pet') or c.get('extra') else [])+['Primary','Utility','Auras','Nameplates','Tray']
+        +(['Suggest'] if c['name']=='Warlock' else [])+['Alerts'])
 CORE_SECTIONS=['Resources','Native rows','Native auras']
 
 def subtree(by_id,root):
@@ -362,6 +363,30 @@ class PackTests(unittest.TestCase):
         self.assertIn(prefix_warlock:='ForeverHUD | Warlock | Tray | Soul Shards',by_id)
         self.assertIn('ForeverHUD | Warlock | Tray | Row | Upkeep reminder | Demon armor missing',by_id)
         self.assertNotIn('ForeverHUD | Warlock | Tray | Row | Food',self.eligibility,'Name-matched icons skip spell discovery')
+
+    def test_warlock_spell_suggestions(self):
+        by_id={d['id']:d for d in self.regions}
+        row=by_id['ForeverHUD | Warlock | Suggest']
+        names=[id.split(' | ')[-1] for id in row['controlledChildren']]
+        self.assertEqual(names,['Life Tap','Corruption','Immolate','Shadow Trance','Health Funnel'],'Priority order, left to right')
+        xs=[by_id[id]['xOffset'] for id in row['controlledChildren']]
+        self.assertEqual(sum(xs),0,'Centred above the seal')
+        self.assertGreater(row['yOffset'],65+16,'Clear of the seal top')
+        tap=by_id['ForeverHUD | Warlock | Suggest | Life Tap']
+        self.assertEqual(tap['alpha'],0)
+        self.assertEqual(tap['triggers'][1]['trigger']['event'],'Power')
+        self.assertEqual(tap['conditions'],[dict(check=dict(trigger=1,variable='percentpower',op='<=',value=30),changes=[dict(property='alpha',value=1)])])
+        funnel=by_id['ForeverHUD | Warlock | Suggest | Health Funnel']
+        self.assertEqual((funnel['triggers'][1]['trigger']['unit'],funnel['conditions'][0]['check']['variable']),('pet','percenthealth'))
+        for name in ('Corruption','Immolate'):
+            d=by_id['ForeverHUD | Warlock | Suggest | '+name]
+            self.assertEqual(d['triggers'][1]['trigger']['secretShowOn'],'showOnMissing')
+            self.assertIn('ForeverHUD.SuggestTarget()',d['triggers'][2]['trigger']['custom'])
+        self.assertEqual(self.eligibility['ForeverHUD | Warlock | Suggest | Shadow Trance']['seeds'],[18094,18095],'Shown once Nightfall is learned')
+        self.assertEqual(self.eligibility['ForeverHUD | Warlock | Suggest | Life Tap']['seeds'],[1454])
+        for d in self.regions:
+            if ' | Suggest | ' in d['id']:
+                self.assertTrue(d['load']['loadFlag'].startswith('FOREVERHUD_WARLOCK_suggest'),d['id'])
 
     def test_class_art_draws_below_core(self):
         # Core and class roots get independent frame levels, so strata keeps

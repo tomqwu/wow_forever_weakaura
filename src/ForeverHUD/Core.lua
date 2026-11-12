@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.8.1"
+E.releaseVersion = "0.9.0"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -31,7 +31,7 @@ local defaults = {
     alerts=true,
     resources=true, primary=true, utility=true, dots=true, buffs=true, maintenance=true, trackedBars=false,
     cast=false, pet=true, art=true, motion=true, nameplates=false,
-    tray=true,
+    tray=true, suggest=true,
 }
 local anchor = CreateFrame("Frame", "ForeverHUDAnchor", UIParent)
 anchor:SetSize(1, 1)
@@ -167,6 +167,10 @@ function E.Retracted()
     local p = E.Profile()
     return p ~= nil and p.tray ~= false and E.state ~= nil and E.state.world == true and not E.state.Visible()
 end
+-- DoT suggestions apply only in combat against a living hostile target.
+function E.SuggestTarget()
+    return E.InCombat() and E.state ~= nil and E.state.HostileTarget() == true
+end
 function E.Gate(module, class)
     class = E.Owner(class)
     local p = E.Profile()
@@ -179,7 +183,7 @@ function E.Gate(module, class)
     if p[module] == false then return false end
     -- 0.8 retracted mode: while folded only the seal and its tray remain.
     if module == "tray" then return E.Retracted() end
-    if E.Retracted() and (module == "buffs" or module == "maintenance" or module == "trackedBars") then return false end
+    if E.Retracted() and (module == "buffs" or module == "maintenance" or module == "trackedBars" or module == "suggest") then return false end
     if module == "motion" and not p.art then return false end
     if module == "fx" and (not p.art or (E.state and (not E.state.world or E.state.loading or E.state.hidden or preview
         or E.Call(UnitIsDeadOrGhost,"player")~=false))) then return false end
@@ -427,6 +431,41 @@ function E.CheckLegacy()
         print('ForeverHUD: '..E.L('%d old "Eclipse | ..." displays are still in /fa. ForeverHUD does not use them; delete every "Eclipse | ..." group.'):format(count))
     end
 end
+-- What still needs doing for this character's auras, as short localized
+-- lines; empty when the Core and class groups are current. Read-only.
+function E.AuraProblems()
+    local problems={}
+    local bundles=bundlesFor(E.class)
+    if #bundles==0 then return problems end
+    if E.OldClassLayout() then
+        problems[#problems+1]=E.L('"%s" is from ForeverHUD 0.4 or earlier. In /fa, delete that group, then run /fhud install to add the Core and the new class group.'):format(E.ClassID())
+        return problems
+    end
+    for _,bundle in ipairs(bundles) do
+        local installed=E.InstalledBuild(bundle.rootID)
+        if not installed then
+            problems[#problems+1]=E.L('"%s" is not installed.'):format(bundle.rootID)
+        elseif installed<bundle.build then
+            problems[#problems+1]=E.L('"%s" is older than this addon (%s).'):format(bundle.rootID,bundle.version)
+        end
+        local detached=E.DetachedDisplays(bundle.rootID)
+        if detached>0 then
+            problems[#problems+1]=E.L('%d displays of "%s" are outside their group because an earlier import stopped part way. In /fa, delete every top-level "%s" entry, then run /fhud install.'):format(detached,bundle.rootID,bundle.rootID)
+        end
+    end
+    return problems
+end
+-- One login reminder when the auras the addon ships are missing or older.
+function E.CheckAuras()
+    if E.aurasChecked or E.OldClassLayout() then return end
+    E.aurasChecked=true
+    local missing=false
+    for _,bundle in ipairs(bundlesFor(E.class)) do
+        local installed=E.InstalledBuild(bundle.rootID)
+        if not installed or installed<bundle.build then missing=true end
+    end
+    if missing then print('ForeverHUD: '..E.L('Your ForeverHUD auras are missing or older than the addon. Type /fhud install (or open /fa) and choose Update Auras.')) end
+end
 -- FA runs one import window at a time, so /fhud install opens the first
 -- bundle that is missing or older (Core before class) and says what is next.
 function E.NextBundle()
@@ -573,7 +612,7 @@ events:SetScript("OnEvent", function(_, event, addon)
         E.InitDB(); E.ApplyLayout()
         if E.discovery then E.discovery.Start() end
         if E.state then E.state.Start() end
-        if event == "PLAYER_ENTERING_WORLD" then E.RegisterBundledImport(); E.CheckDetached(); E.CheckLegacy(); E.CheckOldLayout() end
+        if event == "PLAYER_ENTERING_WORLD" then E.RegisterBundledImport(); E.CheckDetached(); E.CheckLegacy(); E.CheckOldLayout(); E.CheckAuras() end
     end
     E.Notify()
 end)
