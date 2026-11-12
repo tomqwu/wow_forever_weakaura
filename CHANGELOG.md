@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.8.1 — unreleased (prerelease)
+## 0.8.1 — 2026-11-12 (prerelease)
 
 - No icon for an upkeep buff that's up (user: "If armor is up, you don't have to show it here"). These buffs now show only through their native missing and expiring reminders:
   - Warlock Demon Skin, Demon Armor and Fel Armor;
