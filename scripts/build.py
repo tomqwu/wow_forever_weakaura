@@ -15,11 +15,11 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.3.5"
-TITLE = "Eclipse | Class Combat HUD"
-MEDIA = "Interface\\AddOns\\EclipseHUD\\Media\\"
-EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM ECLIPSE_HUD_UPDATE FA_OPTIONS_CLOSED"
-# Must equal E.importAPI in src/EclipseHUD/Core.lua (checked by scripts/check.py).
+VERSION = "0.4.0"
+TITLE = "ForeverHUD"
+MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
+EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
+# Must equal E.importAPI in src/ForeverHUD/Core.lua (checked by scripts/check.py).
 IMPORT_API = 1
 # Must equal the TOC "## Interface:" value (checked by scripts/check.py).
 TOC_VERSION = 16001
@@ -27,10 +27,10 @@ TOC_VERSION = 16001
 # display's url and offers an update when an addon registers a higher build for
 # that slug. Nothing is fetched online; the URL is only a version tag.
 BUILD = sum(int(part)*scale for part,scale in zip(VERSION.split('.'),(10000,100,1)))
-def update_slug(cls): return 'eclipse-hud-'+cls.lower()
+def update_slug(cls): return 'forever-hud-'+cls.lower()
 def update_url(cls): return f'https://wago.io/{update_slug(cls)}/{BUILD}'
 PRIMARY_Y = 52
-SORT_CDM = 'function(a,b) return EclipseHUD and EclipseHUD.SortCDM(a,b) or false end'
+SORT_CDM = 'function(a,b) return ForeverHUD and ForeverHUD.SortCDM(a,b) or false end'
 # Fixed ZIP entry timestamp so identical inputs give an identical archive.
 ZIP_DATE = (2026, 1, 1, 0, 0, 0)
 UTF8 = dict(encoding='utf-8')
@@ -53,7 +53,7 @@ class Pack:
     def __init__(self): self.displays = []; self.by_id = {}; self.eligibility = {}
     def add(self, name, region, parent=None, cls=None, module="base", x=0, y=0, **fields):
         d = dict(id=name, uid=hashlib.sha256(name.encode()).hexdigest()[:11], regionType=region,
-            internalVersion=91, tocversion=TOC_VERSION, semver=VERSION, version=1, author="Eclipse HUD contributors",
+            internalVersion=91, tocversion=TOC_VERSION, semver=VERSION, version=1, author="ForeverHUD contributors",
             xOffset=x, yOffset=y, anchorPoint="CENTER", selfPoint="CENTER", anchorFrameType="SCREEN",
             frameStrata=1, alpha=1, scale=1, load={}, subRegions=[], config={}, authorOptions=[], conditions=[],
             information=dict(forceEvents=False, groupOffset=False, ignoreOptionsEventErrors=False),
@@ -64,7 +64,7 @@ class Pack:
             self.by_id[parent]["controlledChildren"].append(name)
         if cls:
             d["load"] = dict(use_class=True, **{"class":dict(single=cls,multi={})},
-                use_loadFlag=True, loadFlag=f"ECLIPSE_{cls}_{module}")
+                use_loadFlag=True, loadFlag=f"FOREVERHUD_{cls}_{module}")
         if region in ("group","dynamicgroup"):
             d.update(controlledChildren=[],border=False,borderColor=[0,0,0,1],backdropColor=[0,0,0,0],
                 borderEdge="Square Full White",borderOffset=4,borderInset=1,borderSize=2,borderBackdrop="Blizzard Tooltip")
@@ -77,7 +77,7 @@ class Pack:
     def always(): return dict(type="unit",event="Conditions",unit="player",use_alwaystrue=True)
     def triggers(self,d,triggers,cls,module):
         gate = dict(type="custom",custom_type="status",check="event",events=EVENTS,
-            custom=f'function(event) return EclipseHUD and EclipseHUD.Gate("{module}", "{cls}") or false end')
+            custom=f'function(event) return ForeverHUD and ForeverHUD.Gate("{module}", "{cls}") or false end')
         ts = {i+1:dict(trigger=t,untrigger={}) for i,t in enumerate(triggers+[gate])}
         ts.update(activeTriggerMode=1,disjunctive="all")
         if triggers[0].get('type')=='secretAura': ts['secretFallback']='none'
@@ -114,11 +114,11 @@ def icon(pack,name,parent,cls,module,trigger,size=40,x=0,y=0,known=None,modern=F
     if not modern and trigger['event'] in ('Cooldown Progress (Spell)','Blizzard Cooldown Manager','Blizzard CDM Item'):
         d['cooldownTextDisabled']=False
         d['subRegions'][2]['text_visible']=False
-        d['actions']['init']=dict(do_custom=True,custom=f'if EclipseHUD then EclipseHUD.StyleCooldown(aura_env.region or (ForeverAuras or WeakAuras).GetRegion(aura_env.id, aura_env.cloneId), "{cls}", "{module}") end')
+        d['actions']['init']=dict(do_custom=True,custom=f'if ForeverHUD then ForeverHUD.StyleCooldown(aura_env.region or (ForeverAuras or WeakAuras).GetRegion(aura_env.id, aura_env.cloneId), "{cls}", "{module}") end')
     if known: d["load"].update(use_spellknown=True,spellknown=known,use_exact_spellknown=False)
     seeds = trigger.get("auraRankSpellIDs") if modern else ([known] if known else None)
     if seeds:
-        flag = f"ECLIPSE_{cls}_{module}_"+d["uid"]
+        flag = f"FOREVERHUD_{cls}_{module}_"+d["uid"]
         d["load"]["loadFlag"] = flag
         pack.eligibility[name] = dict(cls=cls,module=module,seeds=seeds,flag=flag,kind="aura" if modern else "ability")
     pack.triggers(d,[trigger],cls,module)
@@ -151,13 +151,13 @@ def bar(pack,name,parent,cls,module,trigger,width=170,height=13,x=0,y=0,color=No
             d['subRegions'][-1].update(text_text_format_t_format='Number',text_text_format_t_decimal_precision=0)
         if trigger.get('unit')=='player' and module=='resources':
             side='left' if trigger['event']=='Health' else 'right'
-            d['actions']['init']=dict(do_custom=True,custom=f'if EclipseHUD then EclipseHUD.StyleResource(aura_env.region or (ForeverAuras or WeakAuras).GetRegion(aura_env.id), "{cls}", "{side}") end')
+            d['actions']['init']=dict(do_custom=True,custom=f'if ForeverHUD then ForeverHUD.StyleResource(aura_env.region or (ForeverAuras or WeakAuras).GetRegion(aura_env.id), "{cls}", "{side}") end')
     if name_text: d["subRegions"].append(subtext(name_text,"INNER_LEFT",9,x=4))
     if label:
         d['subRegions'].append(subtext('%c','INNER_LEFT',9,x=4))
         d['customTextUpdate']='event'
-        d['customText']=('function() return EclipseHUD and EclipseHUD.ResourceLabel() or "Resource" end' if label=='resource'
-            else f'function() return EclipseHUD and EclipseHUD.L("{label}") or "{label}" end')
+        d['customText']=('function() return ForeverHUD and ForeverHUD.ResourceLabel() or "Resource" end' if label=='resource'
+            else f'function() return ForeverHUD and ForeverHUD.L("{label}") or "{label}" end')
     if trigger['event']=='Power' and module=='resources':
         # Native state carries the current resource identity, including form
         # switches in combat. The helper never reads power amounts for color.
@@ -171,7 +171,7 @@ def texture(pack,name,parent,cls,module,asset,w,h,x=0,y=0,color=None,level=None)
     d=pack.add(name,"texture",parent,cls,module,x,y,width=w,height=h,texture=MEDIA+asset+".tga",
         color=color or [1,1,1,1],desaturate=False,blendMode="BLEND",textureWrapMode="CLAMPTOBLACKADDITIVE",
         rotation=0,mirror=False,rotate=False)
-    if level is not None: d['information']['eclipseFXPriority']=level
+    if level is not None: d['information']['fxPriority']=level
     return d
 
 def cooldown(seed, secondary=False):
@@ -196,11 +196,11 @@ def combat_role(name):
 
 def generate():
     p=Pack()
-    root=p.add(TITLE,"group",anchorFrameType="SELECTFRAME",anchorFrameFrame="EclipseHUDAnchor",anchorFrameParent=True,
-        groupIcon=MEDIA+"crest-warlock.tga",desc="Eclipse "+VERSION+" / 星蚀职业战斗界面\nOne import, nine classes. Controls: /eclipse. Native aura tracking; learned abilities only.\n一份导入，九职业自动切换。/eclipse 打开设置。使用原生光环追踪，只显示已学技能。")
-    root["actions"]["init"] = dict(do_custom=True,custom="if EclipseHUD then EclipseHUD.Bind() end")
+    root=p.add(TITLE,"group",anchorFrameType="SELECTFRAME",anchorFrameFrame="ForeverHUDAnchor",anchorFrameParent=True,
+        groupIcon=MEDIA+"crest-warlock.tga",desc="ForeverHUD "+VERSION+" / 职业战斗界面\nOne import, nine classes. Controls: /fhud. Native aura tracking; learned abilities only.\n一份导入，九职业自动切换。/fhud 打开设置。使用原生光环追踪，只显示已学技能。")
+    root["actions"]["init"] = dict(do_custom=True,custom="if ForeverHUD then ForeverHUD.Bind() end")
     for cls,c in CLASSES.items():
-        prefix=f"Eclipse | {c['name']}"
+        prefix=f"ForeverHUD | {c['name']}"
         group=p.group(prefix,TITLE,cls,"base")
         group["groupIcon"]="Interface\\Icons\\"+c['icon']
         # The class root holds only organising sections (plus the cast bar),
@@ -210,7 +210,7 @@ def generate():
         frame=prefix+' | Frame'; p.group(frame,prefix,cls,'base')
         resources=prefix+' | Resources'; p.group(resources,prefix,cls,'base')
         chassis=texture(p,prefix+" | Chassis",frame,cls,"art","chassis-"+cls.lower(),512,128,y=20)
-        chassis['triggers'][2]['trigger']['custom']=f'function() return EclipseHUD and EclipseHUD.Gate("art","{cls}") and EclipseHUD.LayoutVisible() or false end'
+        chassis['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() or false end'
         rune=texture(p,prefix+" | Living runes",frame,cls,"motion","runes",112,112,y=13,color=rgba(c['color'],.18))
         rune["animation"]["main"]=dict(type="custom",duration_type="seconds",duration=45,use_rotate=True,rotate=360,
             rotateType="straight",easeType="none",easeStrength=3)
@@ -230,8 +230,8 @@ def generate():
             wing_id=primary+' | Native '+side
             wing=p.group(wing_id,primary,cls,'primary',dynamic=True)
             wing.update(grow=grow,space=7,animate=True,sort='custom',sortOn='index',
-                customSort='function(a,b) return EclipseHUD and EclipseHUD.SortCDM(a,b) or false end')
-            wing['actions']['init']=dict(do_custom=True,custom=f'if EclipseHUD then EclipseHUD.BindAbility("{wing_id}") end')
+                customSort='function(a,b) return ForeverHUD and ForeverHUD.SortCDM(a,b) or false end')
+            wing['actions']['init']=dict(do_custom=True,custom=f'if ForeverHUD then ForeverHUD.BindAbility("{wing_id}") end')
         for slot in range(1,9):
             # Entry IDs/UIDs are stable since v0.3.2. Their former empty
             # "Native N" slot groups are gone: Update removes them, and a
@@ -243,7 +243,7 @@ def generate():
             slot_icon['conditions']=[dict(check=dict(trigger=1,variable=variable,value=value),changes=[dict(property=prop,value=color)]) for variable,value,prop,color in [('onCooldown',1,'desaturate',True),('isUsable',0,'desaturate',True),('inRange',0,'color',[1,.3,.3,1])]]
         for seed,name in candidates(cls):
             d=icon(p,primary+" | "+name,primary,cls,"primary",cooldown(seed),40,known=seed)
-            d['actions']['init']['custom']+='\nif EclipseHUD then EclipseHUD.BindAbility(aura_env.id) end'
+            d['actions']['init']['custom']+='\nif ForeverHUD then ForeverHUD.BindAbility(aura_env.id) end'
             p.eligibility[d['id']].update(key=name,seeds=RANKS.get(name,[seed]) if cls=='WARRIOR' else [seed])
             d['conditions']=[dict(check=dict(trigger=1,variable="onCooldown",value=1),
                 changes=[dict(property="desaturate",value=True)])]
@@ -349,7 +349,7 @@ def generate():
                     secretUseRem=remaining,secretRem=15,secretRemOperator='<=')
                 reminder=icon(p,prefix+' | '+name,auras,cls,'dots' if unit=='target' else 'buffs',trigger,28,x=x,y=94,modern=True)
                 if unit=='target':
-                    reminder['triggers'][2]['trigger']['custom']='function() return EclipseHUD and EclipseHUD.Gate("dots","WARRIOR") and EclipseHUD.ReminderContext() or false end'
+                    reminder['triggers'][2]['trigger']['custom']='function() return ForeverHUD and ForeverHUD.Gate("dots","WARRIOR") and ForeverHUD.ReminderContext() or false end'
             for i,(seed,name) in enumerate(((7384,'Overpower'),(6572,'Revenge'),(5308,'Execute'),(402927,'Victory Rush'))):
                 # Inside Primary, so the offset is relative to PRIMARY_Y; the
                 # screen position matches the former class-root y=-23.
@@ -369,21 +369,21 @@ def generate():
                 auraStart=dict(type='zoom' if tier in ('major','defense') else 'fade',duration=.35),
                 auraMain=dict(type='pulse',duration=1.6)))
             p.triggers(effect,[aura_trigger(seeds)],cls,'fx')
-            flag=f'ECLIPSE_{cls}_fx_'+effect['uid'];effect['load']['loadFlag']=flag
+            flag=f'FOREVERHUD_{cls}_fx_'+effect['uid'];effect['load']['loadFlag']=flag
             p.eligibility[effect['id']]=dict(cls=cls,module='fx',seeds=seeds,flag=flag,kind='aura')
             if tier in ('medium','major','defense'):
                 # Coordinated resource trim is native too and folds with bars.
                 trim=texture(p,prefix+' | FX trim | '+tier,frame,cls,'fx','divider',470,32,y=13,color=rgba(c['accent'],.5),level=priority)
                 trim.update(inverse=True,blizzardAuraDisplay=copy.deepcopy(effect['blizzardAuraDisplay']))
                 p.triggers(trim,[aura_trigger(seeds)],cls,'fx')
-                trim['triggers'][2]['trigger']['custom']=f'function() return EclipseHUD and EclipseHUD.Gate("fx","{cls}") and EclipseHUD.Gate("resources","{cls}") or false end'
-                flag=f'ECLIPSE_{cls}_fx_'+trim['uid'];trim['load']['loadFlag']=flag
+                trim['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("fx","{cls}") and ForeverHUD.Gate("resources","{cls}") or false end'
+                flag=f'FOREVERHUD_{cls}_fx_'+trim['uid'];trim['load']['loadFlag']=flag
                 p.eligibility[trim['id']]=dict(cls=cls,module='fx',requires='resources',seeds=seeds,flag=flag,kind='aura')
         powerfx=texture(p,prefix+' | FX resource intensity',frame,cls,'fx','runes',154,154,y=13,color=rgba(c['accent']),level=1)
         powerfx['alpha']=0
-        powerfx['load']['loadFlag']=f'ECLIPSE_{cls}_fx_power'
+        powerfx['load']['loadFlag']=f'FOREVERHUD_{cls}_fx_power'
         p.triggers(powerfx,[dict(type='unit',event='Power',unit='player',use_unit=True)],cls,'fx')
-        powerfx['triggers'][2]['trigger']['custom']=f'function() return EclipseHUD and EclipseHUD.Gate("fx","{cls}") and EclipseHUD.InCombat() or false end'
+        powerfx['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("fx","{cls}") and ForeverHUD.InCombat() or false end'
         powerfx['conditions']=[dict(check=dict(trigger=1,variable='percentpower',op='>=',value=threshold),
             changes=[dict(property='alpha',value=alpha)]) for threshold,alpha in ((65,.1),(80,.3),(95,.48))]
         alerts=prefix+' | Alerts'; p.group(alerts,prefix,cls,'base')
@@ -391,13 +391,13 @@ def generate():
             alert=p.add(prefix+f' | Ready alert | {seed}','empty',alerts,cls,'alerts',width=1,height=1)
             p.triggers(alert,[dict(type='spell',event='Cooldown Ready (Spell)',spellName=seed,
                 use_spellName=True,use_exact_spellName=False,use_ignoreSpellKnown=False,use_ignoreoverride=False)],cls,'alerts')
-            alert['triggers'][2]['trigger']['custom']=f'function() return EclipseHUD and EclipseHUD.AlertGate("{cls}") or false end'
-            flag=f'ECLIPSE_{cls}_alerts_'+alert['uid'];alert['load']['loadFlag']=flag
+            alert['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.AlertGate("{cls}") or false end'
+            flag=f'FOREVERHUD_{cls}_alerts_'+alert['uid'];alert['load']['loadFlag']=flag
             p.eligibility[alert['id']]=dict(cls=cls,module='alerts',seeds=[seed],flag=flag,kind='ability')
-            alert['actions']['start']=dict(do_custom=True,custom=f'if EclipseHUD then EclipseHUD.ReadyAlert("{alert["id"]}", {seed}, {priority}) end')
+            alert['actions']['start']=dict(do_custom=True,custom=f'if ForeverHUD then ForeverHUD.ReadyAlert("{alert["id"]}", {seed}, {priority}) end')
         cast=bar(p,prefix+" | Cast",prefix,cls,"cast",dict(type="unit",event="Cast",unit="player",use_unit=True,spellNames=[]),
             width=300,height=13,y=-178,color=rgba(c['accent']),text="%p",name_text="%n")
-        cast['actions']['init']=dict(do_custom=True,custom='if EclipseHUD then EclipseHUD.RefreshCasting() end')
+        cast['actions']['init']=dict(do_custom=True,custom='if ForeverHUD then ForeverHUD.RefreshCasting() end')
         # A second bar is optional; Blizzard's original cast bar is untouched.
         if c.get('pet'):
             bar(p,prefix+" | Pet health",resources,cls,"pet",dict(type="unit",event="Health",unit="pet",use_unit=True),
@@ -406,7 +406,7 @@ def generate():
             d=p.add(prefix+" | Soul Shards","text",resources,cls,"pet",x=138,y=-13,displayText="%c: %s  |TInterface\\Icons\\INV_Misc_Gem_Amethyst_02:12|t",
                 font="Friz Quadrata TT",fontSize=11,outline="OUTLINE",color=rgba(c['accent']),justify="CENTER",
                 automaticWidth="Auto",fixedWidth=180,wordWrap="WordWrap",customTextUpdate='event',
-                customText='function() return EclipseHUD and EclipseHUD.L("Soul Shards") or "Soul Shards" end')
+                customText='function() return ForeverHUD and ForeverHUD.L("Soul Shards") or "Soul Shards" end')
             # Count the carried reagent, not a guessed modern Soul Shard power.
             p.triggers(d,[dict(type="item",event="Item Count",itemName=6265,use_itemName=True,use_exact_itemName=True,
                 use_includeBank=False,use_includeWarBandBank=False,use_includeCharges=False)],cls,"pet")
@@ -414,12 +414,12 @@ def generate():
             combo=bar(p,prefix+" | Combo points",resources,cls,"pet",dict(type="unit",event="Power",unit="player",use_unit=True,
                 use_powertype=True,powertype=4),width=100,height=5,y=-155,color=rgba(RESOURCE_STYLES[4]['color']),text='%p / %t')
             if cls=='DRUID':
-                combo['triggers'][2]['trigger']['custom']='function() return EclipseHUD and EclipseHUD.Gate("pet","DRUID") and EclipseHUD.ComboAllowed() or false end'
+                combo['triggers'][2]['trigger']['custom']='function() return ForeverHUD and ForeverHUD.Gate("pet","DRUID") and ForeverHUD.ComboAllowed() or false end'
         elif c.get('extra')=="swing":
             for i,hand in enumerate([0,2] if cls=="HUNTER" else [0,1]):
                 swing=bar(p,prefix+f" | Swing {hand}",resources,cls,"pet",dict(type="unit",event="Swing Timer",swingType=hand,use_swingType=True),
                     width=100,height=4,x=-55+i*110,y=-153,color=rgba(c['accent']),text="%p")
-                if hand==1: swing['load']['loadFlag']='ECLIPSE_WARRIOR_pet_offhand'
+                if hand==1: swing['load']['loadFlag']='FOREVERHUD_WARRIOR_pet_offhand'
         elif c.get('extra')=="totems":
             for slot in range(1,5):
                 icon(p,prefix+f" | Totem {slot}",resources,cls,"pet",dict(type="spell",event="Totem",unit="player",
@@ -434,7 +434,7 @@ def generate():
         frame_group=p.by_id[frame]
         children=frame_group['controlledChildren']
         layers=[id for id in children if ' | FX' in id]
-        layers.sort(key=lambda id:p.by_id[id]['information'].get('eclipseFXPriority',0))
+        layers.sort(key=lambda id:p.by_id[id]['information'].get('fxPriority',0))
         foreground=[id for id in children if id not in layers]
         seal=foreground.index(prefix+' | Seal')
         frame_group['controlledChildren']=foreground[:seal]+layers+foreground[seal:]
@@ -449,26 +449,26 @@ def generate():
         for container in containers:
             for key in ('custom','customText','customSort'):
                 code=container.get(key)
-                if isinstance(code,str) and 'EclipseHUD' in code:
-                    guard=f'EclipseHUD and EclipseHUD.importAPI == {IMPORT_API}'
-                    container[key]=code.replace('if EclipseHUD then',f'if {guard} then').replace('return EclipseHUD and ',f'return {guard} and ')
+                if isinstance(code,str) and 'ForeverHUD' in code:
+                    guard=f'ForeverHUD and ForeverHUD.importAPI == {IMPORT_API}'
+                    container[key]=code.replace('if ForeverHUD then',f'if {guard} then').replace('return ForeverHUD and ',f'return {guard} and ')
     # Every class display carries its class's update tag, so FA links the
     # installed group to the build the companion offers.
     for display in p.displays[1:]:
         display['url']=update_url(display['load']['class']['single'])
-    message='Companion update required: install EclipseHUD and /reload before importing.'
-    p.displays[0]['actions']['init']['custom']=(f'if EclipseHUD and EclipseHUD.importAPI == {IMPORT_API} then EclipseHUD.Bind() '
-        f'else local message="{message}"; print("Eclipse {VERSION}: "..(EclipseHUD and EclipseHUD.L and EclipseHUD.L(message) or message)) end')
+    message='Companion update required: install ForeverHUD and /reload before importing.'
+    p.displays[0]['actions']['init']['custom']=(f'if ForeverHUD and ForeverHUD.importAPI == {IMPORT_API} then ForeverHUD.Bind() '
+        f'else local message="{message}"; print("ForeverHUD {VERSION}: "..(ForeverHUD and ForeverHUD.L and ForeverHUD.L(message) or message)) end')
     return dict(m="d",v=2000,s="1.3.5",d=p.displays[0],c=p.displays[1:]),p.eligibility
 
 def class_import(data, cls):
     """A native update is scoped to this class UID, never the shared root."""
     selected=[copy.deepcopy(d) for d in data['c'] if d['load']['class']['single']==cls]
-    class_id='Eclipse | '+CLASSES[cls]['name']
+    class_id='ForeverHUD | '+CLASSES[cls]['name']
     root=next(d for d in selected if d['id']==class_id)
     root.pop('parent',None)
     root['actions']['init']=copy.deepcopy(data['d']['actions']['init'])
-    root['desc']='Eclipse '+VERSION+' / '+CLASSES[cls]['name']+' only. Update this class group; controls: /eclipse.'
+    root['desc']='ForeverHUD '+VERSION+' / '+CLASSES[cls]['name']+' only. Update this class group; controls: /fhud.'
     return dict(m=data['m'],v=data['v'],s=data['s'],d=root,c=[d for d in selected if d is not root])
 
 def write_import(data, source, target):
@@ -485,7 +485,7 @@ def write_class_imports(data,dist):
         if folder.exists(): shutil.rmtree(folder)
     for cls,c in CLASSES.items():
         value=class_import(data,cls)
-        target=dist/'classes'/('Eclipse-'+c['name']+'.txt')
+        target=dist/'classes'/('ForeverHUD-'+c['name']+'.txt')
         write_import(value,dist/'.build/classes'/target.with_suffix('.lua').name,target)
         raw=target.read_bytes()
         records.append(dict(classToken=cls,name=c['name'],file=target.name,characters=len(raw.rstrip(b'\n')),
@@ -493,14 +493,14 @@ def write_class_imports(data,dist):
             updateSlug=update_slug(cls),updateBuild=BUILD))
     (dist/'classes/manifest.json').write_text(json.dumps(dict(version=VERSION,imports=records),indent=2)+'\n',**LF)
     rows=['# Per-class imports','','## English','',
-        'You normally do not need these files. Install the EclipseHUD addon, `/reload`, and open `/fa`: your class is listed under **ready to be installed** or **updates**, or type `/eclipse install`. ForeverAuras shows its import window and you confirm.',
+        'You normally do not need these files. Install the ForeverHUD addon, `/reload`, and open `/fa`: your class is listed under **ready to be installed** or **updates**, or type `/fhud install`. ForeverAuras shows its import window and you confirm.',
         'For manual import, paste one class file into `/fa` → Import; choose **Update** for an existing class group, not Import as Copy.',
         'Each file targets only its class group, preserving an existing combined parent and the other classes. New installations can use a class file alone.',
         'Use the combined import for a fresh nine-class installation or to update an existing combined group. Use class files for standalone class updates; choose Update rather than creating copies.',
         '', '| Class | Import | Characters | Displays |','| --- | --- | ---: | ---: |']
     rows += [f"| {r['name']} | [{r['file']}]({r['file']}) | {r['characters']:,} | {r['displays']} |" for r in records]
     rows += ['', '## 简体中文', '',
-        '通常无需使用这些文件。安装 EclipseHUD 插件后输入 `/reload` 并打开 `/fa`：当前职业会出现在“待安装”或“更新”列表中，也可输入 `/eclipse install`。ForeverAuras 会显示导入窗口，由你确认。',
+        '通常无需使用这些文件。安装 ForeverHUD 插件后输入 `/reload` 并打开 `/fa`：当前职业会出现在“待安装”或“更新”列表中，也可输入 `/fhud install`。ForeverAuras 会显示导入窗口，由你确认。',
         '如需手动导入，把职业文件粘贴到 `/fa` → 导入；已有职业组请选择“更新”，不要导入为副本。',
         '每份文件仅更新自身职业组，保留原有合并父组和其他职业；首次安装也可单独使用一个职业文件。',
         '合并文件用于首次安装九职业或更新已有合并组；独立职业安装继续使用职业文件更新。',
@@ -521,16 +521,16 @@ def zip_add(z,name,data):
 
 def write_package(target,dist):
     entries=[]
-    for path in sorted((ROOT/'src/EclipseHUD').rglob('*')):
+    for path in sorted((ROOT/'src/ForeverHUD').rglob('*')):
         if path.is_file() and path.suffix in ('.toc','.lua','.tga','.wav'):
             entries.append((path.relative_to(ROOT/'src').as_posix(),path.read_bytes()))
-    entries.append(('Eclipse-Class-Combat-HUD.txt',(dist/'Eclipse-Class-Combat-HUD.txt').read_bytes()))
+    entries.append(('ForeverHUD-All-Classes.txt',(dist/'ForeverHUD-All-Classes.txt').read_bytes()))
     for path in sorted((dist/'classes').iterdir()):
         if path.suffix in ('.txt','.json','.md'): entries.append(('imports/'+path.name,path.read_bytes()))
     entries.append(('README.md',packaged_readme().encode('utf-8')))
     for name in ('LICENSE','CHANGELOG.md'):
         if (ROOT/name).exists(): entries.append((name,(ROOT/name).read_bytes()))
-    for path in sorted((ROOT/'docs').glob('*.md'))+[ROOT/'preview/eclipse-warlock.png']:
+    for path in sorted((ROOT/'docs').glob('*.md'))+[ROOT/'preview/foreverhud-warlock.png']:
         if path.exists(): entries.append((path.relative_to(ROOT).as_posix(),path.read_bytes()))
     for folder in ('docs/images','preview/classes','preview/states','preview/casting'):
         for path in sorted((ROOT/folder).glob('*.png')): entries.append((path.relative_to(ROOT).as_posix(),path.read_bytes()))
@@ -544,12 +544,12 @@ def main():
     dist=ROOT/'dist';dist.mkdir(exist_ok=True)
     if not args.skip_media:
         from media import build
-        build(ROOT/'src/EclipseHUD/Media',CLASSES)
+        build(ROOT/'src/ForeverHUD/Media',CLASSES)
     from audio import build as build_audio
-    build_audio(ROOT/'src/EclipseHUD/Audio')
+    build_audio(ROOT/'src/ForeverHUD/Audio')
     data,eligibility=generate()
-    (dist/'Eclipse-Class-Combat-HUD.json').write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',**LF)
-    write_import(data,dist/'Eclipse-Class-Combat-HUD.lua',dist/'Eclipse-Class-Combat-HUD.txt')
+    (dist/'ForeverHUD-All-Classes.json').write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',**LF)
+    write_import(data,dist/'ForeverHUD-All-Classes.lua',dist/'ForeverHUD-All-Classes.txt')
     records=write_class_imports(data,dist)
     # The encoded class imports ship inside the addon (no separate file, so the
     # TOC file list is unchanged), for ForeverAuras' companion install/update.
@@ -560,8 +560,8 @@ def main():
         f'E.catalog = {lua(eligibility)}\nE.plans = {lua(PLANS)}\nE.schools = {lua(SCHOOLS)}\n'
         f'E.effectSpells = {lua(EFFECTS)}\nE.resourceNames = {lua(resource_names)}\n'
         f'E.bundledImports = {lua(bundled)}\n')
-    (ROOT/'src/EclipseHUD/Catalog.lua').write_text(catalog,**LF)
-    target=dist/f'Eclipse-Class-Combat-HUD-v{VERSION}.zip'
+    (ROOT/'src/ForeverHUD/Catalog.lua').write_text(catalog,**LF)
+    target=dist/f'ForeverHUD-v{VERSION}.zip'
     write_package(target,dist)
     (dist/(target.name+'.sha256')).write_text(hashlib.sha256(target.read_bytes()).hexdigest()+'  '+target.name+'\n',**LF)
     print(f'Built {len(data["c"])+1} displays; {target.name} ({target.stat().st_size:,} bytes)')

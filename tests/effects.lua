@@ -1,5 +1,5 @@
 dofile('tests/state.lua')
-local E=EclipseHUD
+local E=ForeverHUD
 local checks=0
 local function check(v,m)checks=checks+1;assert(v,m)end
 local now=1
@@ -29,7 +29,7 @@ ForeverAuras.GetRegion=function(id)
     if not ready then return end
     regions[id]=regions[id] or CreateFrame('Frame');return regions[id]
 end
-assert(loadfile('src/EclipseHUD/Effects.lua'))('EclipseHUD',E)
+assert(loadfile('src/ForeverHUD/Effects.lua'))('ForeverHUD',E)
 local F=E.effects
 E.state.world=true;E.state.open=true;E.Profile().fx=true;E.Profile().art=true
 for i=1,9 do E.RefreshFX(false);if F.retry then local t=F.retry;t.callback()end end
@@ -58,7 +58,7 @@ ForeverAuras.GetRegion=function(id)
     if id:match(' | Resource$')then return power end
     queriedCast=true
 end
-assert(loadfile('src/EclipseHUD/Effects.lua'))('EclipseHUD',E)
+assert(loadfile('src/ForeverHUD/Effects.lua'))('ForeverHUD',E)
 F=E.effects;E.RefreshFX(true)
 check(F.built and F.left and F.right and not F.cast and not queriedCast,'Resource FX build without disabled cast/seal dependencies')
 check(not F.retry and #F.groups==2,'Disabled widgets consume no attachment retry or animation allocation')

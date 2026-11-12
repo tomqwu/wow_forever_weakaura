@@ -55,7 +55,7 @@ function M.Gather()
         local item=entry(id,p.x,rank,counts[p.side],false)
         if item then active[id]=true end
     end
-    local prefix='Eclipse | '..E.classNames[E.class]
+    local prefix='ForeverHUD | '..E.classNames[E.class]
     for _,row in ipairs({{'Health',-138,'resources'},{'Resource',138,'resources'},{'Chassis',0,'art'},{'Pet health',-138,'pet'},{'Soul Shards',138,'pet'}}) do
         local item=p and p[row[3]] and entry(prefix..' | '..row[1],row[2],1,1,true)
         if item then active[prefix..' | '..row[1]]=true end

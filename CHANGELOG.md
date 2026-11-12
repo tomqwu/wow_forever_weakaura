@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 — 2026-11-11 (prerelease)
+
+- Rename the project from Eclipse to **ForeverHUD**. Addon folder and TOC `ForeverHUD`, global `ForeverHUD`, settings `ForeverHUDDB`, anchor `ForeverHUDAnchor`, slash commands `/fhud` and `/foreverhud`, load flags `FOREVERHUD_<CLASS>_<module>`, event `FOREVERHUD_UPDATE`, cast-bar choice "ForeverHUD bar".
+- Aura names become `ForeverHUD` (combined root) and `ForeverHUD | <Class> | …`; update tags become `wago.io/forever-hud-<class>/<build>` (0.4.0 = build 400). UIDs derive from names, so these are new auras: old `Eclipse | …` auras are not updated or deleted.
+- Files: `ForeverHUD-All-Classes.txt`, `dist/classes/ForeverHUD-<Class>.txt`, release `ForeverHUD-v0.4.0.zip`.
+- Not migrated: the old `EclipseHUD` folder and its `EclipseHUDDB` settings (WoW loads saved settings only for the addon that owns them), and the old auras. At login ForeverHUD warns once if the old addon is loaded or `Eclipse | …` auras remain (read-only scan). The README gives the one-time cleanup.
+- Preview captures are file-renamed only; their pixels still show the old Eclipse wordmark until the next capture.
+
 ### Post-release documentation correction — 2026-11-10
 
 The current README supersedes the v0.3.3 ZIP’s native Essential/Utility → Hidden guidance: native OnHide unregisters update events. Keep viewers Always. Choose native displays with duplicate Eclipse modules off, or Eclipse tracked bars with FA global opacity hide. No runtime/version change or release-asset overwrite.

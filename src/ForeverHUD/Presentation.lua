@@ -77,7 +77,7 @@ local function resourceActive(item)
 end
 local function applyResource(item)
     if not resourceActive(item) then item.group:Stop();return end
-    item.texture:SetTexture('Interface\\AddOns\\EclipseHUD\\Media\\resource-flow-'..item.side..'.tga')
+    item.texture:SetTexture('Interface\\AddOns\\ForeverHUD\\Media\\resource-flow-'..item.side..'.tga')
     item.texture:SetTexCoord(0,1,0,1)
     item.group:Play()
 end
@@ -151,9 +151,9 @@ function E.RefreshEquipment()
         -- Manual Dual still requires an actual off-hand weapon. No fake timer.
     end
     E.dualSwing=dual
-    api.SetLoadFlag('ECLIPSE_WARRIOR_pet_offhand',p.enabled and E.LiveWorld() and p.pet and E.class=='WARRIOR' and dual==true)
+    api.SetLoadFlag('FOREVERHUD_WARRIOR_pet_offhand',p.enabled and E.LiveWorld() and p.pet and E.class=='WARRIOR' and dual==true)
     if E.class=='WARRIOR' and not E.InCombat() and api.GetRegion then
-        local main=api.GetRegion('Eclipse | Warrior | Swing 0')
+        local main=api.GetRegion('ForeverHUD | Warrior | Swing 0')
         if main then
             if main.SetOffset then main:SetOffset(dual and -55 or 0,-153) end
             if main.SetRegionWidth then main:SetRegionWidth(dual and 100 or 210) end

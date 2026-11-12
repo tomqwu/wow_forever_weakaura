@@ -91,13 +91,13 @@ function C.CastEvent(event,unit,guid)
 end
 function E.RefreshCasting()
     local p,api=E.Profile(),E.API()
-    local id=E.class and ('Eclipse | '..E.classNames[E.class]..' | Cast')
+    local id=E.class and ('ForeverHUD | '..E.classNames[E.class]..' | Cast')
     local imported=api and api.GetData and id and api.GetData(id)
     local loaded=api and id and (api.IsAuraLoaded and E.Call(api.IsAuraLoaded,id)==true
         or not api.IsAuraLoaded and api.GetRegion and api.GetRegion(id)~=nil)
     local active=p and p.enabled and p.cast and imported~=nil
     if E.state then active=active and E.LiveWorld() and not E.state.Preview() end
-    if active and loaded and p.hideDefaultCast and E.Gate('cast',E.class) then C.Acquire('EclipseHUD') else C.Release('EclipseHUD') end
+    if active and loaded and p.hideDefaultCast and E.Gate('cast',E.class) then C.Acquire('ForeverHUD') else C.Release('ForeverHUD') end
     if active~=C.active then
         C.active=active
         for _,event in ipairs(castEvents) do
@@ -109,7 +109,7 @@ function E.RefreshCasting()
     end
 end
 function E.StopCasting()
-    clear();C.Release('EclipseHUD');C.active=false
+    clear();C.Release('ForeverHUD');C.active=false
     for _,event in ipairs(castEvents) do events:UnregisterEvent(event) end
     if E.CastMotion then E.CastMotion('cancel') end
 end

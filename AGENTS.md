@@ -1,6 +1,6 @@
-# Eclipse HUD working conventions
+# ForeverHUD working conventions
 
-This repository builds a ForeverAuras import and the EclipseHUD companion addon.
+This repository builds a ForeverAuras import and the ForeverHUD companion addon.
 It is separate from Forever Classmate / ForeverUtilities. Do not apply that
 project's folder names, SavedVariables, installation script or release tags here.
 
@@ -10,7 +10,7 @@ project's folder names, SavedVariables, installation script or release tags here
   Do not treat artwork, an import/schema check, or a mock as live feature parity.
 
 - Read `README.md`, `docs/design.md` and `docs/validation.md` before runtime edits.
-- Edit `src/catalog.py`, `scripts/build.py`, or `src/EclipseHUD/`; regenerate
+- Edit `src/catalog.py`, `scripts/build.py`, or `src/ForeverHUD/`; regenerate
   `dist/` instead of hand-editing an encoded import.
 - Keep the combined nine-class import available and also generate per-class
   imports as requested. Scope each class import to its stable class-group root;

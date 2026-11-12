@@ -1,4 +1,16 @@
-# Validation for 0.3.5
+# Validation for 0.4.0
+
+Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.4.0 (prerelease) — renamed to ForeverHUD
+
+Automated only; nothing here is game-client evidence.
+
+- Mechanical rename of every runtime, generator, test, workflow and documentation identifier. Afterwards, `git grep -i eclipse` outside the history docs finds only the deliberate legacy checks (`EclipseHUD`, `Eclipse | `) and the migration notes.
+- `tests/bundle.lua` now has 21 checks. The new ones: the old addon and old displays each warn once, the warnings name what to delete, and the legacy displays are never modified.
+- `python scripts/build.py`, `python scripts/check.py` and `git diff --check` pass in WSL; CI repeats them with the pinned ForeverAuras checkout and the native-schema test.
+- Not verified in game: the folder swap, the login warnings, or a fresh ForeverHUD install beside deleted Eclipse auras.
+- Preview PNGs were renamed only; their pixels are 0.3.x illustrative captures.
 
 ## 0.3.5 (prerelease) — auras bundled in the addon
 
@@ -12,7 +24,7 @@ Automated only; nothing here is game-client evidence.
   - the Chinese warning, which keeps the English placeholder order.
 - `tests/test_pack.py` asserts every class display's update tag matches FA's `wago.io/<slug>/<number>` pattern and the current build, that the combined root has no tag, and that the manifest slug/build match.
 - FA source review (`ForeverAuras.lua` `AddCompanionData`/`PostAddCompanion`/`CountWagoUpdates`; `ForeverAurasOptions.lua` pending install/update lists and their buttons): the registered fields (`name`, `author`, `encoded`, `wagoVersion`, `versionNote`) are the ones FA reads. Clicking either calls FA's `Import`. Not yet seen in the client.
-- Published: the immutable [v0.3.5 prerelease](https://github.com/tomqwu/wow_forever_weakaura/releases/tag/v0.3.5) targets `0094fa25833b34c46a61aab6dc73175793fefe6d`, and [main CI](https://github.com/tomqwu/wow_forever_weakaura/actions/runs/43091139641) passed on it. ZIP SHA-256: `8742a94f7f8392ca66433333788ff2ac086f3660ae9fd1dc17f5bbcb1d0d0287`. All 13 downloaded assets match the local build, and the 38 runtime files in the ZIP match the source. Not yet installed in the game.
+- Published: the immutable [v0.3.5 prerelease](https://github.com/tomqwu/wow_forever_weakaura/releases/tag/v0.3.5) targets `0094fa25833b34c46a61aab6dc73175793fefe6d`, and [main CI](https://github.com/tomqwu/wow_forever_weakaura/actions/runs/43091139641) passed on it. ZIP SHA-256: `8742a94f7f8392ca66433333788ff2ac086f3660ae9fd1dc17f5bbcb1d0d0287`. All 13 downloaded assets match the local build, and the 38 runtime files in the ZIP match the source. Installed on 2026-11-11 at the user's request: all 38 file hashes match the package, with 5 changed. The v0.3.4 backup is verified at `F:\WoW-addon-backups\EclipseHUD\20261111-152210\before\EclipseHUD`. SavedVariables were not changed. Installing files is not live-client evidence.
 - Pending live checks: after installing 0.3.5 and `/reload`, `/fa` lists the class under ready to install or updates; the window imports or updates cleanly; after a `/reload` it is no longer listed; the detached warning appears only when parentless displays exist.
 
 # Validation for 0.3.4

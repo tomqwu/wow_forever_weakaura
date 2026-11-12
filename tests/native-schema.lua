@@ -41,7 +41,7 @@ load("SecretAuraSingle")
 load("SecretAuraConditions")
 load("SecretAuraFlow")
 local D=P.BlizzardAuraDisplay
-local data=dofile(arg[2] or "dist/Eclipse-Class-Combat-HUD.lua")
+local data=dofile(arg[2] or "dist/ForeverHUD-All-Classes.lua")
 local saved={[data.d.id]=data.d}
 for _,d in ipairs(data.c)do saved[d.id]=d end
 WeakAuras.GetData=function(id)return saved[id]end
@@ -88,7 +88,7 @@ print('Actual ForeverAuras resource-curve path accepted restricted state')
 
 -- Compile and run the actual FA condition code for a form-changing bar.
 -- Trigger/property metadata is a fixture; condition evaluation is FA's code.
-local resource=saved['Eclipse | Druid | Resource']
+local resource=saved['ForeverHUD | Druid | Resource']
 if not resource then for id,d in pairs(saved)do if id:match(' | Resource$')then resource=d;break end end end
 P.regionTypes={aurabar={properties={barColor={type='color',setter='Color'}}}}
 P.GetTriggerConditions=function()return {[1]={powertype={type='select'}}}end
@@ -134,9 +134,9 @@ P.regionPrototype={AddAlphaToDefault=noop}
 P.RegisterRegionType=noop
 load('RegionTypes/DynamicGroup')
 local E={version='0.3.2',importAPI=1,discovery={cdmRank={[5]=1,[3]=2}},Readable=function(v)return not issecretvalue(v)end}
-assert(loadfile('src/EclipseHUD/Selection.lua'))('EclipseHUD',E)
-EclipseHUD=E
-local sortData=saved['Eclipse | Warlock | Native cooldowns']
+assert(loadfile('src/ForeverHUD/Selection.lua'))('ForeverHUD',E)
+ForeverHUD=E
+local sortData=saved['ForeverHUD | Warlock | Native cooldowns']
 if not sortData then for id,d in pairs(saved)do if id:match(' | Native cooldowns$')then sortData=d;break end end end
 local nativeSort=WeakAuras.SortFunctions.custom(sortData)
 assert(nativeSort({cloneId='5',region=secret},{cloneId='3',region=secret})==true)

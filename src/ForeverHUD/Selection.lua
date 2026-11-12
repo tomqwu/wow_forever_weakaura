@@ -97,7 +97,7 @@ function S.SyncCDM()
             if not preparation(entry) then selected[id]=true end
         end
     end
-    local prefix='Eclipse | '..E.classNames[E.class]
+    local prefix='ForeverHUD | '..E.classNames[E.class]
     syncEntries(api,prefix..' | Native cooldowns | Entries',selected,'cooldown')
     syncEntries(api,prefix..' | Native utility | Entries',utility,'cooldown')
     syncEntries(api,prefix..' | Native items | Entries',items,'cooldown')
@@ -194,7 +194,7 @@ function S.Refresh()
         end
         local count=math.min(8,#records)
         local left=math.min(4,count)
-        local prefix='Eclipse | '..E.classNames[E.class]
+        local prefix='ForeverHUD | '..E.classNames[E.class]
         local api=E.API()
         local wing=api and api.GetData and api.GetData(prefix..' | Primary | Native left')
         S.nativeWings=wing and wing.regionType=='dynamicgroup'
@@ -206,7 +206,7 @@ function S.Refresh()
             local record=records[index]
             local side=index<=left and 1 or 2
             local slot=side==1 and index or index-left
-            local id='Eclipse | '..E.classNames[E.class]..' | Primary | Native '..index
+            local id='ForeverHUD | '..E.classNames[E.class]..' | Primary | Native '..index
             S.nativeSlots[index]=record.cdmID;S.nativeUsed[record.cdmID]=true
             S.primary[id]=true
             if not S.nativeWings then S.positions[id]={x=(side==1 and -1 or 1)*(83+(slot-1)*47),side=side,slot=slot}end

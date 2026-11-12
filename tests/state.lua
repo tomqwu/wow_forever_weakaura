@@ -1,5 +1,5 @@
 dofile('tests/core.lua')
-local E=EclipseHUD
+local E=ForeverHUD
 local checks=0
 local function check(v,m)checks=checks+1;assert(v,m)end
 local combat,exists,attack,dead,playerDead,preview=false,false,false,false,false,false
@@ -11,10 +11,10 @@ function UnitIsDeadOrGhost(unit)return unit=='player' and playerDead or dead end
 function InCombatLockdown()return combat end
 ForeverAuras.IsOptionsOpen=function()return preview end
 C_Timer.NewTimer=function(delay,callback)return {delay=delay,callback=callback,Cancel=function(self)self.cancelled=true end}end
-assert(loadfile('src/EclipseHUD/Discovery.lua'))('EclipseHUD',E)
-assert(loadfile('src/EclipseHUD/State.lua'))('EclipseHUD',E)
+assert(loadfile('src/ForeverHUD/Discovery.lua'))('ForeverHUD',E)
+assert(loadfile('src/ForeverHUD/State.lua'))('ForeverHUD',E)
 local S=E.state
-E.Reset();E.Set('castBarMode','Eclipse');S.Start()
+E.Reset();E.Set('castBarMode','ForeverHUD');S.Start()
 check(not S.Visible() and E.Gate('art','WARLOCK') and not E.Gate('resources','WARLOCK'),'Compact idle retains emblem, folds resources')
 check(E.Gate('cast','WARLOCK') and E.Gate('buffs','WARLOCK'),'Casting and active effects keep independent rules')
 exists=true;attack=true;S.Update(false)

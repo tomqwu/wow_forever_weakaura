@@ -1,10 +1,10 @@
 dofile('tests/core.lua')
-local E=EclipseHUD
+local E=ForeverHUD
 local checks=0
 local function check(v,m)checks=checks+1;assert(v,m)end
-assert(loadfile('src/EclipseHUD/Catalog.lua'))('EclipseHUD',E)
-assert(loadfile('src/EclipseHUD/Discovery.lua'))('EclipseHUD',E)
-assert(loadfile('src/EclipseHUD/Selection.lua'))('EclipseHUD',E)
+assert(loadfile('src/ForeverHUD/Catalog.lua'))('ForeverHUD',E)
+assert(loadfile('src/ForeverHUD/Discovery.lua'))('ForeverHUD',E)
+assert(loadfile('src/ForeverHUD/Selection.lua'))('ForeverHUD',E)
 local S,D=E.selection,E.discovery
 local frames={}
 ForeverAuras.GetRegion=function(id)
@@ -24,7 +24,7 @@ local function loadout(class,names)
     S.Refresh()
 end
 local function selected(name)
-    return S.positions['Eclipse | '..E.classNames[E.class]..' | Primary | '..name]
+    return S.positions['ForeverHUD | '..E.classNames[E.class]..' | Primary | '..name]
 end
 loadout('WARLOCK',{'Shadow Bolt','Corruption','Immolate','Drain Life','Drain Soul','Life Tap','Fear','Health Funnel'})
 check(selected('Shadow Bolt') and selected('Corruption') and selected('Immolate'),'Leveling learned attacks fill main row')
@@ -102,7 +102,7 @@ InCombatLockdown=function()return true end
 D.events.scripts.OnEvent(nil,'UPDATE_SHAPESHIFT_FORM')
 check(S.stage=='Bear' and selected('Maul') and not selected('Shred'),'Combat form switch reuses learned identities and switches native flags')
 check(D.pending,'Combat form switch defers spellbook/CDM rediscovery')
-local id='Eclipse | Druid | Primary | Maul'
+local id='ForeverHUD | Druid | Primary | Maul'
 local late={SetOffset=function(self,x,y)self.x,self.y=x,y end}
 ForeverAuras.GetRegion=function(key)if key==id then return late end end
 E.BindAbility(id);local layout=S.layoutTimer;E.BindAbility(id)
@@ -134,7 +134,7 @@ check(E.SortCDM({cloneId='13',region=noState},{cloneId='11',region=noState}),'Ov
 check(not E.SortCDM({cloneId='11'},{cloneId='13'}),'Native-order comparator is consistent in both directions')
 check(S.nativeMode and S.nativeSlots[1]==13 and S.nativeSlots[2]==11,'Native Essential order replaces authored priorities, including uncatalogued spells')
 check(#S.nativeSlots==8 and S.nativeUsed[18] and not S.nativeUsed[19],'Eight main slots have complete Essential overflow')
-local prefix='Eclipse | Warlock'
+local prefix='ForeverHUD | Warlock'
 local function trigger(suffix)return saved[prefix..suffix].triggers[1].trigger end
 check(trigger(' | Native cooldowns | Entries').cdmSpells.multi[19] and trigger(' | Native cooldowns | Entries').cdmShow=='cooldown','Remaining Essential entries use native real-cooldown filtering')
 check(trigger(' | Native utility | Entries').cdmSpells.multi[30] and not trigger(' | Native utility | Entries').cdmSpells.multi[32],'Utility retains native placement and excludes preparation')

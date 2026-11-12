@@ -1,8 +1,8 @@
 dofile('tests/core.lua')
-local E=EclipseHUD
+local E=ForeverHUD
 local checks=0
 local function check(v,m)checks=checks+1;assert(v,m)end
-assert(loadfile('src/EclipseHUD/Discovery.lua'))('EclipseHUD',E)
+assert(loadfile('src/ForeverHUD/Discovery.lua'))('ForeverHUD',E)
 local now,combat=0,true
 function GetTime()return now end
 function UnitAffectingCombat()return combat end
@@ -20,7 +20,7 @@ end,RemoveAuraSound=function(id)removed[#removed+1]=id end}
 E.effectSpells={WARLOCK={major={101,999}}}
 E.discovery.Resolve=function(id)if id==101 then return {id=101,name='Learned'}end end
 E.discovery.eligible={low={id=101},high={id=102}}
-assert(loadfile('src/EclipseHUD/Alerts.lua'))('EclipseHUD',E)
+assert(loadfile('src/ForeverHUD/Alerts.lua'))('ForeverHUD',E)
 E.Profile().alerts=true;E.RefreshAlerts()
 local A=E.alerts
 E.ReadyAlert('low',101,10);check(#A.queue==0,'Initial one-second suppression')

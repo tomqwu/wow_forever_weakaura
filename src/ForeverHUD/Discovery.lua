@@ -219,13 +219,13 @@ frame:SetScript("OnEvent",function(_,event,unit)
     D.Schedule()
 end)
 function E.ReportSpells()
-    if E.InCombat() then print("Eclipse: "..E.L("Changes apply after combat.")); return end
+    if E.InCombat() then print("ForeverHUD: "..E.L("Changes apply after combat.")); return end
     D.Refresh()
-    print("Eclipse: "..E.L("Learned spell identities"))
+    print("ForeverHUD: "..E.L("Learned spell identities"))
     local rows={}
     for name,record in pairs(D.spells) do rows[#rows+1]=name.." ["..record.id.."]" end
     table.sort(rows); for _,row in ipairs(rows) do print(row) end
-    print('Eclipse: '..E.L('Forever cooldown layout'))
+    print('ForeverHUD: '..E.L('Forever cooldown layout'))
     for _,category in ipairs({'Essential','Utility','EquipSlotEssential','HiddenActive'})do
         for _,id in ipairs(D.cdmOrder and D.cdmOrder[category] or {})do
             local record=D.cdm[id]

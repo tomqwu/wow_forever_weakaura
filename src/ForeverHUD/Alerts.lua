@@ -9,7 +9,7 @@ function E.AlertGate(class)
     -- must not re-show every already-ready controller at combat entry.
     return p and p.enabled and p.alerts and E.class==class and E.LiveWorld() or false
 end
-local path='Interface\\AddOns\\EclipseHUD\\Audio\\'
+local path='Interface\\AddOns\\ForeverHUD\\Audio\\'
 local function cancel(key)
     if A[key] then A[key]:Cancel();A[key]=nil end
 end
@@ -138,7 +138,7 @@ events:SetScript('OnEvent',function(_,event,unit,_,spell)
     end
     -- These source shouts have no player buff. Actual success is their event.
     if E.class=='WARRIOR' and (spell==1161 or spell==5246) then
-        local id='Eclipse | Warrior | Ready alert | '..spell
+        local id='ForeverHUD | Warrior | Ready alert | '..spell
         enqueue(id,spell,80,'active')
     end
 end)

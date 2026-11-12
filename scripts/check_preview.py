@@ -10,7 +10,7 @@ parser.add_argument('--capture',action='store_true')
 args=parser.parse_args()
 with sync_playwright() as p:
     options=dict(headless=True,args=['--no-sandbox'])
-    if os.environ.get('ECLIPSE_CHROMIUM'): options['executable_path']=os.environ['ECLIPSE_CHROMIUM']
+    if os.environ.get('FOREVERHUD_CHROMIUM'): options['executable_path']=os.environ['FOREVERHUD_CHROMIUM']
     browser=p.chromium.launch(**options)
     page=browser.new_page(viewport={'width':1400,'height':1000},device_scale_factor=1)
     errors=[]
@@ -40,7 +40,7 @@ with sync_playwright() as p:
     })'''),'Artwork must not cover main spell centers'
     if args.capture:
         page.wait_for_function("Array.from(document.querySelectorAll('.viewport img')).every(img=>img.complete&&img.naturalWidth>0)")
-        page.screenshot(path=str(ROOT/'preview/eclipse-warlock.png'))
+        page.screenshot(path=str(ROOT/'preview/foreverhud-warlock.png'))
         page.locator('.viewport').screenshot(path=str(ROOT/'preview/classes/warlock.png'))
     page.locator('button[data-state="lost"]').click()
     assert page.locator('.effects .tile').count()==0,'Lost target clears effects immediately'
@@ -109,10 +109,10 @@ with sync_playwright() as p:
     page.locator('.crest').click();page.wait_for_timeout(550)
     assert opacity()==0,'Second crest click folds immediately'
     page.locator('button[data-state="combat"]').click()
-    for mode in ('Default','Eclipse','Both'):
+    for mode in ('Default','ForeverHUD','Both'):
         page.locator('#cast-mode').select_option(mode);page.wait_for_timeout(550)
         assert page.locator('.cast').is_visible()==(mode!='Default')
-        assert page.locator('.game-cast').is_visible()==(mode!='Eclipse')
+        assert page.locator('.game-cast').is_visible()==(mode!='ForeverHUD')
         if args.capture:page.locator('.viewport').screenshot(path=str(ROOT/'preview/casting'/f'warlock-{mode.lower()}.png'))
     page.locator('button[data-state="enemy"]').click()
     page.locator('[data-module="trackedBars"]').check()
