@@ -108,7 +108,11 @@ function S.SyncCDM()
     local buffs,bars,representedBuffs,representedBuffIDs={},{},{},{}
     local p=E.Profile()
     for id,entry in pairs(E.catalog) do
-        if entry.cls==E.class and (entry.module=='buffs' or entry.module=='maintenance') and entry.kind=='aura' and E.discovery.eligible[id] then
+        -- The CDM's tracked list also holds the player's DoTs on the target.
+        -- A DoT the HUD's own target-effects row shows stays out of the
+        -- native row above the HUD (unless that row is switched off).
+        local shown=entry.module=='buffs' or entry.module=='maintenance' or (entry.module=='dots' and p.dots~=false)
+        if entry.cls==E.class and shown and entry.kind=='aura' and E.discovery.eligible[id] then
             local record=E.discovery.eligible[id]
             representedBuffs[record.name]=true;representedBuffIDs[record.id]=true
             for _,seed in ipairs(entry.seeds)do

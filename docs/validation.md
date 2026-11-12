@@ -1,6 +1,17 @@
-# Validation for 0.5.0
+# Validation for 0.5.1
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.5.1 (prerelease) — DoTs stay in the HUD's target row
+
+- **Game evidence (user screenshots, Warlock, 0.5.0):**
+  - The Core health, mana and pet bars draw above the Warlock chassis.
+  - Both groups line up on one anchor.
+  - A DoT with its countdown appeared about 170 px above the HUD centre, near the target. The user's `nameplates` setting is off, so this is consistent with the Core's native player-effects row (y = 151), which shows the Cooldown Manager's tracked list.
+  - The saved aura data had not been written since the install, so the exact display was not read from it.
+- **Fix:** `S.SyncCDM` now treats catalogued `dots` auras like tracked buffs. A native entry that matches one by name or spell ID is left out of the native player-effects row while the target-effects module is on.
+- **Tests:** two new `tests/selection.lua` checks, 79 in total. Immolate is left out of the row while the target-effects module is on, and kept when it is off.
+- **Not verified in game:** the DoT gone from the row above the HUD.
 
 ## 0.5.0 (prerelease) — shared Core plus class groups
 
