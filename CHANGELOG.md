@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.1 — unreleased (prerelease)
+## 0.5.1 — 2026-11-12 (prerelease)
 
 - Your DoTs on the target show only in the HUD's **Target effects** row under the seal. The Cooldown Manager's tracked list includes them, so 0.5.0 also put them in the native player-effects row 151 px above the HUD, near the target (reported in game). DoTs the HUD tracks are now left out of that row, the same way tracked player buffs already were. With the target-effects module off, the native row keeps them.
 - Companion-only change: the imports are unchanged apart from their version tags.
