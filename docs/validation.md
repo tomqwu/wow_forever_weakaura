@@ -1,6 +1,27 @@
-# Validation for 0.6.2
+# Validation for 0.7.0
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.7.0 (prerelease) — rows centred on each bar
+
+Automated only; nothing here is game-client evidence.
+
+- **Source review** of the installed ForeverAuras (`SecretAuraFlow.lua`):
+  - A normal group with `blizzardFlow` is a Modern Aura Group.
+  - `CENTER_HORIZONTAL` keeps the row centred with half-size shadow frames.
+  - `FlowProblem` accepts Icon displays, and rejects a Remaining Time window only in grids. The Battle Shout "expiring" reminder uses one, but outside a grid.
+  - Non-Modern displays in a screen-mode flow are chained as ordinary displays. Weapon coatings are therefore kept out of the rail.
+- **`tests/test_pack.py`:**
+  - Both rails sit at (±138, 40) as centred flow groups.
+  - Every rail member has offset 0 and a `secretAura` trigger.
+  - Every row keeps its side.
+  - Buff-row members lie within the resource bar, and coatings sit past its end.
+- **`tests/selection.lua`:** class-plan sides average exactly ±138, and the step between consecutive ranks is 47.
+- **ForeverAuras native schema:** the installed ForeverAuras 1.3.9 accepts the combined, Core and nine class files.
+- **Not verified in game:**
+  - rows staying centred in and out of combat;
+  - the Modern Aura Group chain with the class and module load flags;
+  - wing centring and the unfold motion.
 
 ## 0.6.2 (prerelease) — every row on its side
 

@@ -1,6 +1,12 @@
 local _, E = ...
 local S={primary={},used={},positions={}}
 E.selection=S
+-- Ability rows are centred on their bar (x=±138) and grow both ways; rank 1
+-- sits nearest the seal. Matches BAR_X in scripts/build.py.
+S.BAR_X,S.STEP=138,47
+function S.Centred(sign,rank,count)
+    return sign*(S.BAR_X-((count-1)/2-(rank-1))*S.STEP)
+end
 -- Only purchased, readable ranks contribute. Unavailable data leaves Leveling.
 function S.TalentSchool()
     local config=E.Call(C_ClassTalents and C_ClassTalents.GetActiveConfigID)
@@ -208,8 +214,9 @@ function S.Refresh()
         local api=E.API()
         local wing=api and api.GetData and api.GetData(prefix..' | Primary | Native left')
         S.nativeWings=wing and wing.regionType=='dynamicgroup'
-        if S.nativeWings and #sides[1]>0 then S.positions[prefix..' | Primary | Native left']={x=-83,side=1,slot=1}end
-        if S.nativeWings and #sides[2]>0 then S.positions[prefix..' | Primary | Native right']={x=83,side=2,slot=1}end
+        -- Each wing is a centred dynamic group placed at its bar's centre.
+        if S.nativeWings and #sides[1]>0 then S.positions[prefix..' | Primary | Native left']={x=-S.BAR_X,side=1,slot=1}end
+        if S.nativeWings and #sides[2]>0 then S.positions[prefix..' | Primary | Native right']={x=S.BAR_X,side=2,slot=1}end
         -- Every selected entry is rendered by an unchanged native FA CDM
         -- trigger inside an ordinary slot group. Never move its private widget.
         -- Entries 1-4 sit in the left wing, 5-8 in the right wing.
@@ -219,24 +226,26 @@ function S.Refresh()
                 local id=prefix..' | Primary | Native '..index
                 S.nativeSlots[index]=record.cdmID;S.nativeUsed[record.cdmID]=true
                 S.primary[id]=true
-                if not S.nativeWings then S.positions[id]={x=(side==1 and -1 or 1)*(83+(slot-1)*47),side=side,slot=slot}end
+                if not S.nativeWings then S.positions[id]={x=S.Centred(side==1 and -1 or 1,slot,#records),side=side,slot=slot}end
             end
         end
     else for side,slots in ipairs(scheme) do
-        local visibleRank=0
+        local shown={}
         for index,choices in ipairs(slots) do
             if E.class=="WARRIOR" and stage=="Fury" and side==2 and index==4 and p.cleave and available.Cleave then choices={"Cleave"} end
             for _,key in ipairs(choices) do
                 local entry=available[key]
                 if entry and not S.used[entry.record.name] then
-                    visibleRank=visibleRank+1
                     S.primary[entry.id]=true; S.used[entry.record.name]=true
-                    -- Plan side 1 is cooldown/support, side 2 attack/heal. Damage
-                    -- sits left over Health and support right, as in native mode.
-                    S.positions[entry.id]={x=(side==1 and 1 or -1)*(83+(visibleRank-1)*47),side=side,slot=index}
+                    shown[#shown+1]={id=entry.id,slot=index}
                     break
                 end
             end
+        end
+        -- Plan side 1 is cooldown/support, side 2 attack/heal. Damage sits
+        -- left over Health and support right, centred on the bar.
+        for rank,item in ipairs(shown) do
+            S.positions[item.id]={x=S.Centred(side==1 and 1 or -1,rank,#shown),side=side,slot=item.slot}
         end
     end end
     S.ApplyLayout(); S.SyncCDM()

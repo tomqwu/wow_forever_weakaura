@@ -31,8 +31,14 @@ check(selected('Shadow Bolt') and selected('Corruption') and selected('Immolate'
 check(selected('Life Tap').side==1 and selected('Shadow Bolt').side==2,'Two-sided functional hierarchy')
 check(not selected('Conflagrate'),'No untrained maximum-level slot')
 check(selected('Drain Life') and not selected('Drain Soul'),'Learned slot fallback has stable priority')
-check(selected('Fear').x==130 and selected('Health Funnel').x==177,'Unlearned priority slots compact without gaps or reordered learned skills')
+check(selected('Health Funnel').x-selected('Fear').x==47,'Unlearned priority slots compact without gaps or reordered learned skills')
 check(selected('Shadow Bolt').x<0 and selected('Life Tap').x>0,'Class plans put attacks left over Health and support right')
+do
+    -- 0.7: each side is centred on its bar (x=±138) and grows both ways.
+    local sums,counts={0,0},{0,0}
+    for _,pos in pairs(S.positions) do sums[pos.side]=sums[pos.side]+pos.x;counts[pos.side]=counts[pos.side]+1 end
+    check(math.abs(sums[1]/counts[1]-138)<1e-9 and math.abs(sums[2]/counts[2]+138)<1e-9,'Class-plan rows are centred on their bars')
+end
 for id,entry in pairs(E.catalog) do
     if entry.cls=='WARLOCK' and entry.prep then check(not S.Allowed(id,entry),'Preparation excluded') end
     if entry.cls=='WARLOCK' and entry.key=='Fear' and entry.module=='utility' then check(not S.Allowed(id,entry),'Main ability absent from secondary') end

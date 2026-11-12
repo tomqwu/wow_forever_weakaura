@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.6.2"
+VERSION = "0.7.0"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -53,6 +53,12 @@ DOT_ROW_END = -60
 # Mirror row seated over the resource bar (x 48..228) for the player's own
 # buffs, Battle Shout reminders and weapon coatings: non-damage sits right.
 BUFF_ROW_START = 60
+# 0.7: rows are centred on their own bar and grow both ways. Bars sit at x=±138.
+BAR_X = 138
+# ForeverAuras Modern Aura Group: a normal group whose Aura (Modern) children
+# are chained by the client and kept centred with half-size shadows, so the
+# row re-centres in combat without any Lua reading aura state.
+CENTRED_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='CENTER_HORIZONTAL', blizzardFlowSpacing=2)
 # Class-plan secondary rows by side: damage left, support right.
 ROLE_X = {'Offense':-160,'Control':0,'Defense':160}
 # Neutral Core paint until the helper applies the class colour.
@@ -262,8 +268,9 @@ def generate():
             cdmTrack='auto',cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
     native_auras=CORE_ID+' | Native auras'; p.group(native_auras,CORE_ID,CORE,'base')
     native_effects=CORE_ID+' | Native player effects'
-    # Native buffs are not damage: right, above the Utility wing.
-    p.group(native_effects,native_auras,CORE,'buffs',x=83,y=116,dynamic=True).update(grow='RIGHT',space=6)
+    # Native buffs are not damage: the upper rail on the right, centred on
+    # the resource bar above the Utility cradle.
+    p.group(native_effects,native_auras,CORE,'buffs',x=BAR_X,y=116,dynamic=True).update(grow='HORIZONTAL',align='CENTER',space=4)
     icon(p,native_effects+' | Entries',native_effects,CORE,'buffs',dict(type='cdm',event='Blizzard CDM Buff',
         cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
         use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),26)
@@ -313,10 +320,12 @@ def generate():
             automaticWidth="Auto",fixedWidth=200,wordWrap="WordWrap",shadowColor=[0,0,0,1],shadowXOffset=0,shadowYOffset=0)
         name_text['actions']['init']=dict(do_custom=True,custom="if ForeverHUD then ForeverHUD.Bind() end")
         primary=prefix+" | Primary"; p.group(primary,prefix,cls,"primary",y=PRIMARY_Y)
-        for side,grow in [('left','LEFT'),('right','RIGHT')]:
+        # Cradles: each wing is centred on its bar (the companion places it at
+        # x=±138) and grows evenly both ways.
+        for side in ('left','right'):
             wing_id=primary+' | Native '+side
             wing=p.group(wing_id,primary,cls,'primary',dynamic=True)
-            wing.update(grow=grow,space=7,animate=True,sort='custom',sortOn='index',
+            wing.update(grow='HORIZONTAL',align='CENTER',space=7,animate=True,sort='custom',sortOn='index',
                 customSort='function(a,b) return ForeverHUD and ForeverHUD.SortCDM(a,b) or false end')
         for slot in range(1,9):
             # Entry IDs/UIDs are stable since v0.3.2. Their former empty
@@ -370,10 +379,10 @@ def generate():
         # Damage sits on the left: the player's DoTs form a fixed row seated
         # on the frame over the Health bar, below the left (Essential) wing.
         # Fixed slots, never a combat reflow of modern aura buttons.
-        dots=prefix+" | Target effects"; p.group(dots,auras,cls,"dots",y=DOT_ROW_Y)
+        dots=prefix+" | Target effects"; p.group(dots,auras,cls,"dots",x=-BAR_X,y=DOT_ROW_Y).update(CENTRED_FLOW)
         count=len(c['dots'])
         for i,(seed,name) in enumerate(c['dots']):
-            icon(p,dots+" | "+name,dots,cls,"dots",aura_trigger([seed],"target",True),DOT_SIZE,x=DOT_ROW_END-i*DOT_STEP,modern=True)
+            icon(p,dots+" | "+name,dots,cls,"dots",aura_trigger([seed],"target",True),DOT_SIZE,modern=True)
             # Native nameplate displays are opt-in and tied to live plates.
             d=icon(p,nameplates+" | "+name,nameplates,cls,"nameplates",aura_trigger([seed],"nameplate",True),22,
                 x=(i-(count-1)/2)*26,y=26,modern=True)
@@ -385,15 +394,13 @@ def generate():
             p.group(maintenance,auras,cls,'maintenance',x=286,y=13,dynamic=True).update(grow='RIGHT',space=6)
         # The player's own buffs are not damage: a fixed row seated over the
         # resource bar, mirroring the DoT row over Health.
-        effects=prefix+" | Player effects";p.group(effects,auras,cls,"buffs",y=DOT_ROW_Y)
+        effects=prefix+" | Player effects";p.group(effects,auras,cls,"buffs",x=BAR_X,y=DOT_ROW_Y).update(CENTRED_FLOW)
         buffs=list(c['buffs'])
         if cls=="WARLOCK": buffs.append(([687,706,28176],"Demon armor"))
-        def buff_slot(index): return BUFF_ROW_START+index*DOT_STEP
         for i,(seed,name) in enumerate(buffs):
             upkeep=name=='Demon armor'
             d=icon(p,effects+" | "+name,maintenance if upkeep else effects,cls,'maintenance' if upkeep else 'buffs',
-                aura_trigger(seed if isinstance(seed,list) else [seed]),20 if upkeep else DOT_SIZE,
-                x=0 if upkeep else buff_slot(i),modern=True)
+                aura_trigger(seed if isinstance(seed,list) else [seed]),20 if upkeep else DOT_SIZE,modern=True)
             if upkeep: d['subRegions'][2]['text_visible']=False
 
         for i,(seeds,name,missing) in enumerate(UPKEEP.get(cls,[])):
@@ -407,17 +414,17 @@ def generate():
                     icon(p,prefix+' | Upkeep reminder | '+name+(' expiring' if expiring else ' missing'),maintenance,cls,'maintenance',
                         reminder,24,modern=True)
         if cls=='WARRIOR':
-            # Rend (damage) takes the next DoT slot over Health; Battle Shout
-            # (a buff) takes the next buff slot over the resource bar.
-            for name,seed,unit,missing,remaining,x in (
-                ('Rend missing',772,'target',True,False,DOT_ROW_END-len(c['dots'])*DOT_STEP),
-                ('Battle Shout missing',6673,'player',True,False,buff_slot(len(c['buffs']))),
-                ('Battle Shout expiring',6673,'player',False,True,buff_slot(len(c['buffs'])))):
+            # Rend (damage) joins the centred DoT row over Health; Battle Shout
+            # (a buff) joins the centred buff row over the resource bar.
+            for name,seed,unit,missing,remaining in (
+                ('Rend missing',772,'target',True,False),
+                ('Battle Shout missing',6673,'player',True,False),
+                ('Battle Shout expiring',6673,'player',False,True)):
                 trigger=aura_trigger([seed],unit,unit=='target')
                 if unit=='player': trigger['nativeFilters']={}
                 trigger.update(secretShowOn='showOnMissing' if missing else 'showOnActive',
                     secretUseRem=remaining,secretRem=15,secretRemOperator='<=')
-                reminder=icon(p,prefix+' | '+name,auras,cls,'dots' if unit=='target' else 'buffs',trigger,DOT_SIZE,x=x,y=DOT_ROW_Y,modern=True)
+                reminder=icon(p,prefix+' | '+name,dots if unit=='target' else effects,cls,'dots' if unit=='target' else 'buffs',trigger,DOT_SIZE,modern=True)
                 if unit=='target':
                     reminder['triggers'][2]['trigger']['custom']='function() return ForeverHUD and ForeverHUD.Gate("dots","WARRIOR") and ForeverHUD.ReminderContext() or false end'
             for i,(seed,name) in enumerate(((7384,'Overpower'),(6572,'Revenge'),(5308,'Execute'),(402927,'Victory Rush'))):
@@ -495,7 +502,9 @@ def generate():
             for i,hand in enumerate(('main','off') if cls=='ROGUE' else ('main',)):
                 icon(p,prefix+' | Weapon coating | '+hand,auras,cls,'buffs',dict(type='item',event='Weapon Enchant',
                     weapon=hand,enchantKind='imbue' if cls=='SHAMAN' else 'temporary',showOn='showOnActive',use_enchant=False),DOT_SIZE,
-                    x=buff_slot(len(c['buffs'])+i),y=DOT_ROW_Y)
+                    # Not a Modern aura, so not in the centred row: fixed slots
+                    # on the rim just past the resource bar's outer end.
+                    x=BAR_X+90+16+i*DOT_STEP,y=DOT_ROW_Y)
         # FA computes frame levels from controlledChildren, not a display's
         # frameLevel field. Put ordered FX behind foreground bars/icons/seal.
         frame_group=p.by_id[frame]
