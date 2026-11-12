@@ -10,6 +10,7 @@ Automated only; nothing here is game-client evidence.
 - The generator now refuses custom actions on any group. The root and wing Init actions moved to the `Class name` text display and the wing entry icons.
 - `tests/native-schema.lua` no longer stubs `ActivateAuraEnvironment` as a no-op: the mock fails like ForeverAuras on a group Init action, every group's actions are checked, and every custom-sorted dynamic group runs its sort. Against the 0.4.0 generator it fails on `Native left`.
 - Not verified in game: the import completing, or the companion binding from the new location.
+- Published 2026-11-12: all 13 downloaded release assets match the build, and the 38 runtime files match the source. Not installed. This is file evidence, not game-client evidence.
 
 ## 0.4.0 (prerelease) — renamed to ForeverHUD
 
