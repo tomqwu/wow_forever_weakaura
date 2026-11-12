@@ -1,6 +1,30 @@
-# Validation for 0.5.1
+# Validation for 0.6.0
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.6.0 (prerelease) — damage left, everything else right
+
+Automated only; nothing here is game-client evidence.
+
+- **Requested layout:** the user asked for "dps dots on the left bar (health) attach to the frame, and right group … other non dps CD", and for Demon Armor on the right.
+- **`tests/selection.lua` (now 85 checks):**
+  - The left wing takes the first four Essential entries in Cooldown Manager order.
+  - The right wing takes the first four Utility entries, skipping preparation spells.
+  - Overflow goes to the Essential and Utility rows without repeating wing entries.
+  - With Utility abilities off, the right wing is empty.
+  - Wing x offsets: left is negative, right is positive.
+  - An empty Essential list leaves only the right wing; empty lists invent nothing.
+  - Class plans put attacks left and support right.
+- **`tests/test_pack.py`:**
+  - Maintenance is at x > 250 and grows right.
+  - Each class's DoT row is at y = 92 with distinct fixed slots inside the chassis (−256 < x < −60).
+  - Core tracked bars are at x < −250.
+- **Preview page:** mirrors the moved rows and class-plan sides. Captures in `preview/` and `docs/images` predate 0.6.0 and remain illustrative.
+- **Not verified in game:**
+  - wing contents and sides;
+  - DoT row spacing against the left wing;
+  - Maintenance beside the resource bar;
+  - the update in `/fa`.
 
 ## 0.5.1 (prerelease) — DoTs stay in the HUD's target row
 

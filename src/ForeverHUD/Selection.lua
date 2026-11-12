@@ -89,7 +89,7 @@ function S.SyncCDM()
         if S.nativeMode then
             if not preparation(entry) then
                 if entry.category=='Essential' and not S.nativeUsed[id] then selected[id]=true
-                elseif entry.category=='Utility' then utility[id]=true
+                elseif entry.category=='Utility' and not S.nativeUsed[id] then utility[id]=true
                 elseif entry.category=='EquipSlotEssential' then items[id]=true end
             end
         elseif (entry.category=="Essential" or entry.category=="Utility" or entry.category=="SpecAgnosticEssential")
@@ -189,31 +189,38 @@ function S.Refresh()
     S.nativeMode=p.cooldownLayout~='Class plan' and E.discovery.cdmReady==true
     S.nativeSlots,S.nativeUsed={},{}
     if S.nativeMode then
-        local records={}
-        for _,id in ipairs(E.discovery.cdmOrder.Essential or {})do
-            local record=E.discovery.cdm[id]
-            if record and not preparation(record) and not S.used[record.name] then
-                S.used[record.name]=true;records[#records+1]=record
+        -- The player's own Cooldown Manager split decides the side: Essential
+        -- (damage rotation) fills the left wing over Health, Utility
+        -- (defensive, control, support) the right wing over the resource bar.
+        -- Entries beyond four per side stay in the native rows below.
+        local function ordered(category)
+            local records={}
+            for _,id in ipairs(E.discovery.cdmOrder[category] or {})do
+                local record=E.discovery.cdm[id]
+                if record and not preparation(record) and not S.used[record.name] and #records<4 then
+                    S.used[record.name]=true;records[#records+1]=record
+                end
             end
+            return records
         end
-        local count=math.min(8,#records)
-        local left=math.min(4,count)
+        local sides={ordered('Essential'),p.utility~=false and ordered('Utility') or {}}
         local prefix='ForeverHUD | '..E.classNames[E.class]
         local api=E.API()
         local wing=api and api.GetData and api.GetData(prefix..' | Primary | Native left')
         S.nativeWings=wing and wing.regionType=='dynamicgroup'
-        if S.nativeWings and count>0 then S.positions[prefix..' | Primary | Native left']={x=-83,side=1,slot=1}end
-        if S.nativeWings and count>4 then S.positions[prefix..' | Primary | Native right']={x=83,side=2,slot=1}end
+        if S.nativeWings and #sides[1]>0 then S.positions[prefix..' | Primary | Native left']={x=-83,side=1,slot=1}end
+        if S.nativeWings and #sides[2]>0 then S.positions[prefix..' | Primary | Native right']={x=83,side=2,slot=1}end
         -- Every selected entry is rendered by an unchanged native FA CDM
         -- trigger inside an ordinary slot group. Never move its private widget.
-        for index=1,count do
-            local record=records[index]
-            local side=index<=left and 1 or 2
-            local slot=side==1 and index or index-left
-            local id='ForeverHUD | '..E.classNames[E.class]..' | Primary | Native '..index
-            S.nativeSlots[index]=record.cdmID;S.nativeUsed[record.cdmID]=true
-            S.primary[id]=true
-            if not S.nativeWings then S.positions[id]={x=(side==1 and -1 or 1)*(83+(slot-1)*47),side=side,slot=slot}end
+        -- Entries 1-4 sit in the left wing, 5-8 in the right wing.
+        for side,records in ipairs(sides) do
+            for slot,record in ipairs(records) do
+                local index=(side-1)*4+slot
+                local id=prefix..' | Primary | Native '..index
+                S.nativeSlots[index]=record.cdmID;S.nativeUsed[record.cdmID]=true
+                S.primary[id]=true
+                if not S.nativeWings then S.positions[id]={x=(side==1 and -1 or 1)*(83+(slot-1)*47),side=side,slot=slot}end
+            end
         end
     else for side,slots in ipairs(scheme) do
         local visibleRank=0
@@ -224,7 +231,9 @@ function S.Refresh()
                 if entry and not S.used[entry.record.name] then
                     visibleRank=visibleRank+1
                     S.primary[entry.id]=true; S.used[entry.record.name]=true
-                    S.positions[entry.id]={x=(side==1 and -1 or 1)*(83+(visibleRank-1)*47),side=side,slot=index}
+                    -- Plan side 1 is cooldown/support, side 2 attack/heal. Damage
+                    -- sits left over Health and support right, as in native mode.
+                    S.positions[entry.id]={x=(side==1 and 1 or -1)*(83+(visibleRank-1)*47),side=side,slot=index}
                     break
                 end
             end
