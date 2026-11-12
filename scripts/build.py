@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.6.0"
+VERSION = "0.6.1"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -41,13 +41,15 @@ def owner_of(display):
     """The import that owns a display: CORE or a class token."""
     load=display['load']
     return CORE if load.get('loadFlag','').startswith('FOREVERHUD_CORE_') else load['class']['single']
-PRIMARY_Y = 52
-# Target-effects (DoT) row above the left wing: the first slot ends near the
-# seal and later slots run left, inside the chassis.
-DOT_ROW_Y = 92
-DOT_SIZE = 26
-DOT_STEP = 30
-DOT_ROW_END = -73
+# Ability wings sit above the DoT row, clear of the frame's top rim.
+PRIMARY_Y = 80
+# Target-effects (DoT) row seated on the frame directly over the Health bar
+# (x -228..-48): the first slot sits at the bar's seal end, later slots run
+# left along the bar.
+DOT_ROW_Y = 40
+DOT_SIZE = 24
+DOT_STEP = 26
+DOT_ROW_END = -60
 # Neutral Core paint until the helper applies the class colour.
 CORE_ACCENT = "#B9A3E8"
 SORT_CDM = 'function(a,b) return ForeverHUD and ForeverHUD.SortCDM(a,b) or false end'
@@ -357,9 +359,9 @@ def generate():
         # inferred timers, refresh windows, or combat-dependent group reflow.
         auras=prefix+' | Auras'; p.group(auras,prefix,cls,'base')
         nameplates=prefix+' | Nameplates'; p.group(nameplates,prefix,cls,'base')
-        # Damage sits on the left, over Health: the player's DoTs form a fixed
-        # row above the left (Essential) wing, ending near the seal. Fixed
-        # slots, never a combat reflow of modern aura buttons.
+        # Damage sits on the left: the player's DoTs form a fixed row seated
+        # on the frame over the Health bar, below the left (Essential) wing.
+        # Fixed slots, never a combat reflow of modern aura buttons.
         dots=prefix+" | Target effects"; p.group(dots,auras,cls,"dots",y=DOT_ROW_Y)
         count=len(c['dots'])
         for i,(seed,name) in enumerate(c['dots']):
@@ -480,7 +482,7 @@ def generate():
             for i,hand in enumerate(('main','off') if cls=='ROGUE' else ('main',)):
                 icon(p,prefix+' | Weapon coating | '+hand,auras,cls,'buffs',dict(type='item',event='Weapon Enchant',
                     weapon=hand,enchantKind='imbue' if cls=='SHAMAN' else 'temporary',showOn='showOnActive',use_enchant=False),24,
-                    x=180+i*32,y=94)
+                    x=180+i*32,y=130)
         # FA computes frame levels from controlledChildren, not a display's
         # frameLevel field. Put ordered FX behind foreground bars/icons/seal.
         frame_group=p.by_id[frame]
