@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.0 — unreleased (prerelease)
+## 0.9.0 — 2026-11-12 (prerelease)
 
 - **Spell suggestions** (user: "add spell recommendation? based on certain condition? e.g. low mana 30% then life tap"). Warlock gets a fixed row of 32 px icons above the seal (y=112), in priority order. Every rule is native:
   - **Life Tap:** the Power curve ≤ 30% sets alpha (`Conditions.lua` PowerCurve).
