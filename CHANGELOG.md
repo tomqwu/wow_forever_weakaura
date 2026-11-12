@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1 — unreleased (prerelease)
+
+- The DoT row now sits on the frame directly over the Health bar, within its width. In 0.6.0 it floated about 80 px above, away from the frame (reported in game). The icons are 24 px, 26 px apart, starting at the seal end of the bar.
+- The ability wings (Essential left, Utility right) move up to y=80 so they clear the DoT row. Shaman and Rogue weapon-coating icons move up to y=130 to stay clear of the right wing.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.6.0 — 2026-11-12 (prerelease)
 
 - **Damage left, everything else right.** The left wing over Health shows up to four **Essential** Cooldown Manager entries (damage cooldowns); the right wing over the resource bar shows up to four **Utility** entries (defensives, control, support). The game's own Essential/Utility split decides the side: drag a spell between them in Cooldown Settings to move it. Further entries stay in the rows below. With Utility abilities off, the right wing stays empty. Before, the wings held Essential entries 1–4 and 5–8.

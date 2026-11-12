@@ -1,6 +1,19 @@
-# Validation for 0.6.0
+# Validation for 0.6.1
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.6.1 (prerelease) — DoT row seated over Health
+
+- **Game evidence (user screenshot, Warlock, 0.6.0):**
+  - The Immolate DoT shows in its fixed left slot, roughly 98 px above the anchor and away from the frame.
+  - Demon Armor shows to the right of the Mana bar, as designed.
+  - The user asked for these icons to be part of the frame, attached to the Health bar.
+- **Change:** the DoT row moves to y=40 (24 px icons, 26 px steps, from x=−60). The wings move to y=80. Weapon coatings move to y=130.
+- **Tests:** `tests/test_pack.py` now asserts:
+  - every DoT icon lies within the Health bar's x span;
+  - the row is at y=40;
+  - the wing icons clear the row.
+- **Not verified in game:** the row against the frame art, and the wing spacing.
 
 ## 0.6.0 (prerelease) — damage left, everything else right
 
