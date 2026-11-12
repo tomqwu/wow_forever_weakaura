@@ -34,6 +34,7 @@ Automated only; nothing here is game-client evidence.
   - Core displays loading per class and per module;
   - the cast-bar tint;
   - the 0.4 class-group warning.
+- Published 2026-11-12: all 14 downloaded release assets match the build, and the 38 runtime files match the source. Installed over 0.4.1 with all 38 files verified (9 changed); the 0.4.1 folder was backed up and verified first. SavedVariables were not touched. This is file evidence, not game-client evidence.
 
 ## 0.4.1 (prerelease) — import fix for group Init actions
 
