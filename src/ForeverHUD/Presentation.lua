@@ -4,7 +4,7 @@ E.presentation=P
 local formatter
 local function enabled(class,module)
     local p=E.Profile()
-    return p and p.enabled and E.class==class and p[module]~=false
+    return p and p.enabled and E.class~=nil and E.class==E.Owner(class) and p[module]~=false
 end
 local function getFormatter()
     if formatter then return formatter end
@@ -51,7 +51,7 @@ local function applyCooldown(item)
     end
 end
 function E.StyleCooldown(region,class,module)
-    if not region or not region.cooldown or class~=E.class then return end
+    if not region or not region.cooldown or E.class==nil or E.Owner(class)~=E.class then return end
     local item=P.cooldowns[region]
     if not item or item.cd~=region.cooldown then
         if item then restoreCooldown(item) end
@@ -89,7 +89,7 @@ local function restoreResource(item)
     item.restoring=false
 end
 function E.StyleResource(region,class,side)
-    if class~=E.class or not region or not region.bar or not region.bar.fg then return end
+    if E.class==nil or E.Owner(class)~=E.class or not region or not region.bar or not region.bar.fg then return end
     if E.InCombat() then P.pending[region]={class,side};return end
     local item=P.resources[region]
     if not item then

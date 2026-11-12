@@ -42,7 +42,7 @@ source=os.environ.get('FOREVERAURAS_SOURCE')
 if source:run(['lua','tests/native-schema.lua',source])
 manifest=json.loads(text('dist/classes/manifest.json'))
 assert manifest['version']==VERSION
-assert len(manifest['imports'])==9
+assert len(manifest['imports'])==10 and manifest['imports'][0]['classToken']=='CORE','Core plus nine class imports'
 combined_size=len(text('dist/ForeverHUD-All-Classes.txt').strip())
 class_files={path.name for path in (ROOT/'dist/classes').glob('*.txt')}
 assert class_files=={record['file'] for record in manifest['imports']},'Stale or missing class import'

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0 — unreleased (prerelease)
+
+- Split the auras into one shared **`ForeverHUD | Core`** group and one group per class. Core holds what every class uses: health, the current resource, the cast bar, the native Cooldown Manager rows (overflow cooldowns, utility, items), native player effects and the tracked bars. It loads for all nine classes (`FOREVERHUD_CORE_<module>` load flags) and follows the current class's `/fhud` settings. Class groups keep their spells, effects, art, pet health and class extras. Warlock: 126 → 112 displays; Core: 17.
+- Class art (chassis, runes, seal, FX) now draws in the LOW strata, so the Core bars stay above it although the two groups are separate roots with their own frame levels.
+- The companion anchors, scales and fades the Core and class roots together, or the combined root. It registers both with ForeverAuras' companion interface (`wago.io/forever-hud-core/<build>` for the Core), and `/fhud install` opens the first one that is missing or older, Core first, then says to run it again for the class.
+- Import API 2: 0.5 imports need the 0.5.0 companion, and the companion paints the Core cast bar in the class accent.
+- Moving from 0.4: the displays that moved to Core have new names, so an old class group would draw them twice. At login ForeverHUD warns once while a 0.4 class group is installed, and `/fhud install` waits until it is deleted. Delete `ForeverHUD | <Class>` in `/fa`, then install the Core and the class. `/fhud` settings are kept.
+- Files: `dist/classes/ForeverHUD-Core.txt` joins the nine class files; the combined import holds the Core and all nine classes.
+
 ## 0.4.1 — 2026-11-12 (prerelease)
 
 - Fix the import error `AuraEnvironment.lua:524: attempt to index field '?' (a nil value)` with ForeverAuras 1.3.9. ForeverAuras prepares custom actions only for non-group displays, but 0.4.0 put Init actions on the root and on the native cooldown wings; the wings' custom sort activated them during import.

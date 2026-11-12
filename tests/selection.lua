@@ -135,7 +135,10 @@ check(not E.SortCDM({cloneId='11'},{cloneId='13'}),'Native-order comparator is c
 check(S.nativeMode and S.nativeSlots[1]==13 and S.nativeSlots[2]==11,'Native Essential order replaces authored priorities, including uncatalogued spells')
 check(#S.nativeSlots==8 and S.nativeUsed[18] and not S.nativeUsed[19],'Eight main slots have complete Essential overflow')
 local prefix='ForeverHUD | Warlock'
-local function trigger(suffix)return saved[prefix..suffix].triggers[1].trigger end
+-- Native rows and auras live in Core since 0.5.0; DisplayID picks the group.
+local function trigger(suffix)return saved[E.DisplayID(suffix:sub(4))].triggers[1].trigger end
+check(E.DisplayID('Native cooldowns | Entries')=='ForeverHUD | Core | Native cooldowns | Entries'
+    and E.DisplayID('Primary | Native 1 | Entry')==prefix..' | Primary | Native 1 | Entry','Shared rows resolve to Core, class wings to the class group')
 check(trigger(' | Native cooldowns | Entries').cdmSpells.multi[19] and trigger(' | Native cooldowns | Entries').cdmShow=='cooldown','Remaining Essential entries use native real-cooldown filtering')
 check(trigger(' | Native utility | Entries').cdmSpells.multi[30] and not trigger(' | Native utility | Entries').cdmSpells.multi[32],'Utility retains native placement and excludes preparation')
 check(trigger(' | Native items | Entries').cdmSpells.multi[33],'Equipped cooldown items have a separate native row')

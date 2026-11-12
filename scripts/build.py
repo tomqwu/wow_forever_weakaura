@@ -15,21 +15,35 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.4.1"
+VERSION = "0.5.0"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
 # Must equal E.importAPI in src/ForeverHUD/Core.lua (checked by scripts/check.py).
-IMPORT_API = 1
+IMPORT_API = 2
 # Must equal the TOC "## Interface:" value (checked by scripts/check.py).
 TOC_VERSION = 16001
 # Companion install/update: ForeverAuras reads "wago.io/<slug>/<build>" from a
 # display's url and offers an update when an addon registers a higher build for
 # that slug. Nothing is fetched online; the URL is only a version tag.
 BUILD = sum(int(part)*scale for part,scale in zip(VERSION.split('.'),(10000,100,1)))
-def update_slug(cls): return 'forever-hud-'+cls.lower()
-def update_url(cls): return f'https://wago.io/{update_slug(cls)}/{BUILD}'
+# The shared Core import: displays every class uses, loaded for all classes
+# and gated on the current class at runtime. Class imports hold the rest.
+CORE = "CORE"
+CORE_ID = TITLE+" | Core"
+# Art draws in LOW strata so Core bars (inherited MEDIUM) stay above it even
+# though the two imports are separate roots with independent frame levels.
+ART_STRATA = 3
+def update_slug(owner): return 'forever-hud-'+owner.lower()
+def update_url(owner): return f'https://wago.io/{update_slug(owner)}/{BUILD}'
+def root_id(owner): return CORE_ID if owner==CORE else TITLE+' | '+CLASSES[owner]['name']
+def owner_of(display):
+    """The import that owns a display: CORE or a class token."""
+    load=display['load']
+    return CORE if load.get('loadFlag','').startswith('FOREVERHUD_CORE_') else load['class']['single']
 PRIMARY_Y = 52
+# Neutral Core paint until the helper applies the class colour.
+CORE_ACCENT = "#B9A3E8"
 SORT_CDM = 'function(a,b) return ForeverHUD and ForeverHUD.SortCDM(a,b) or false end'
 # Fixed ZIP entry timestamp so identical inputs give an identical archive.
 ZIP_DATE = (2026, 1, 1, 0, 0, 0)
@@ -62,7 +76,11 @@ class Pack:
         if parent:
             d["parent"] = parent
             self.by_id[parent]["controlledChildren"].append(name)
-        if cls:
+        if cls==CORE:
+            # use_class=false is FA's multi-select mode: every supported class.
+            d["load"] = dict(use_class=False, **{"class":dict(multi={c:True for c in CLASSES})},
+                use_loadFlag=True, loadFlag=f"FOREVERHUD_CORE_{module}")
+        elif cls:
             d["load"] = dict(use_class=True, **{"class":dict(single=cls,multi={})},
                 use_loadFlag=True, loadFlag=f"FOREVERHUD_{cls}_{module}")
         if region in ("group","dynamicgroup"):
@@ -172,6 +190,7 @@ def texture(pack,name,parent,cls,module,asset,w,h,x=0,y=0,color=None,level=None)
         color=color or [1,1,1,1],desaturate=False,blendMode="BLEND",textureWrapMode="CLAMPTOBLACKADDITIVE",
         rotation=0,mirror=False,rotate=False)
     if level is not None: d['information']['fxPriority']=level
+    d['frameStrata']=ART_STRATA
     return d
 
 def cooldown(seed, secondary=False):
@@ -197,7 +216,58 @@ def combat_role(name):
 def generate():
     p=Pack()
     root=p.add(TITLE,"group",anchorFrameType="SELECTFRAME",anchorFrameFrame="ForeverHUDAnchor",anchorFrameParent=True,
-        groupIcon=MEDIA+"crest-warlock.tga",desc="ForeverHUD "+VERSION+" / 职业战斗界面\nOne import, nine classes. Controls: /fhud. Native aura tracking; learned abilities only.\n一份导入，九职业自动切换。/fhud 打开设置。使用原生光环追踪，只显示已学技能。")
+        groupIcon=MEDIA+"crest-warlock.tga",desc="ForeverHUD "+VERSION+" / 职业战斗界面\nOne import: the shared Core plus nine classes. Controls: /fhud. Native aura tracking; learned abilities only.\n一份导入：通用核心加九个职业。/fhud 打开设置。使用原生光环追踪，只显示已学技能。")
+    # Core: displays with the same layout and native data for every class.
+    # Section order is draw order within this root; class art sits in LOW
+    # strata, so these bars and icons render above it.
+    core=p.group(CORE_ID,TITLE,CORE,'base')
+    core['groupIcon']=MEDIA+'crest-warlock.tga'
+    resources=CORE_ID+' | Resources'; p.group(resources,CORE_ID,CORE,'base')
+    # Measured channel interiors in the packaged AI-painted frame.
+    bar(p,CORE_ID+" | Health",resources,CORE,"resources",dict(type="unit",event="Health",unit="player",use_unit=True),
+        x=-138,y=13,width=180,height=13,color=rgba(HEALTH_COLOR),label='Health')
+    # No explicit powertype: Druid forms, Warrior rage and Rogue energy
+    # follow the client's current resource automatically.
+    bar(p,CORE_ID+" | Resource",resources,CORE,"resources",dict(type="unit",event="Power",unit="player",use_unit=True),
+        x=138,y=13,width=180,height=13,label='resource',color=rgba(UNKNOWN_RESOURCE_COLOR))
+    rows=CORE_ID+' | Native rows'; p.group(rows,CORE_ID,CORE,'base')
+    overflow=CORE_ID+" | Native cooldowns"
+    extra=p.group(overflow,rows,CORE,"primary",y=-214,dynamic=True)
+    extra.update(grow='GRID',gridType='HD',gridWidth=12,rowSpace=8,columnSpace=8,sort='custom',sortOn='index',customSort=SORT_CDM)
+    icon(p,overflow+" | Entries",overflow,CORE,"primary",dict(type="cdm",event="Blizzard Cooldown Manager",
+        cdmSource="cooldown",cdmSpells=dict(multi={}),cdmShow="cooldown",use_cdmShowGCD=False,
+        cdmTrack="auto",cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
+    for title,event,source,y in [('Native utility','Blizzard Cooldown Manager','cooldown',-57),
+        ('Native items','Blizzard CDM Item','cooldown',-98)]:
+        name=CORE_ID+' | '+title
+        extra=p.group(name,rows,CORE,'utility',y=y,dynamic=True)
+        extra.update(grow='GRID',gridType='HD',gridWidth=10,rowSpace=12,columnSpace=8,sort='custom',sortOn='index',customSort=SORT_CDM)
+        icon(p,name+' | Entries',name,CORE,'utility',dict(type='cdm',event=event,
+            cdmSource=source,cdmSpells=dict(multi={}),cdmShow='cooldown',use_cdmShowGCD=False,
+            cdmTrack='auto',cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
+    native_auras=CORE_ID+' | Native auras'; p.group(native_auras,CORE_ID,CORE,'base')
+    native_effects=CORE_ID+' | Native player effects'
+    p.group(native_effects,native_auras,CORE,'buffs',y=151,dynamic=True)
+    icon(p,native_effects+' | Entries',native_effects,CORE,'buffs',dict(type='cdm',event='Blizzard CDM Buff',
+        cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
+        use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),26)
+    tracked=CORE_ID+' | Native tracked bars'
+    p.group(tracked,native_auras,CORE,'trackedBars',x=410,y=13,dynamic=True).update(grow='DOWN',space=5,
+        sort='custom',sortOn='index',customSort=SORT_CDM)
+    bar(p,tracked+' | Entries',tracked,CORE,'trackedBars',dict(type='cdm',event='Blizzard CDM Buff',
+        cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
+        use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),
+        width=190,height=18,color=rgba(CORE_ACCENT),text='%p',name_text='%n')
+    cast=bar(p,CORE_ID+" | Cast",CORE_ID,CORE,"cast",dict(type="unit",event="Cast",unit="player",use_unit=True,spellNames=[]),
+        width=300,height=13,y=-178,color=rgba(CORE_ACCENT),text="%p",name_text="%n")
+    # One Core serves every class: the helper paints the class accent.
+    cast['actions']['init']=dict(do_custom=True,custom='if ForeverHUD then ForeverHUD.RefreshCasting(); ForeverHUD.Tint(aura_env.region or (ForeverAuras or WeakAuras).GetRegion(aura_env.id), "accent") end')
+    # Core has no class name leaf, so its always-on bars request the layout
+    # bind that anchors this root (Bind is idempotent).
+    for leaf in (CORE_ID+' | Health',CORE_ID+' | Resource',CORE_ID+' | Cast'):
+        p.by_id[leaf]['actions']['init']['custom']+='\nif ForeverHUD then ForeverHUD.Bind() end'
+    loose=[id for id in core['controlledChildren'] if 'controlledChildren' not in p.by_id[id] and id!=CORE_ID+' | Cast']
+    assert not loose,f'Loose displays at {CORE_ID}: {loose}'
     for cls,c in CLASSES.items():
         prefix=f"ForeverHUD | {c['name']}"
         group=p.group(prefix,TITLE,cls,"base")
@@ -207,7 +277,10 @@ def generate():
         # its class-root coordinates. Creation order is draw order: frame art
         # first, so bars, icons and auras render above the seal.
         frame=prefix+' | Frame'; p.group(frame,prefix,cls,'base')
-        resources=prefix+' | Resources'; p.group(resources,prefix,cls,'base')
+        # Health, resource and cast live in Core; this section holds only the
+        # class's own bars (pet health and the class extra), when it has any.
+        resources=prefix+' | Resources'
+        if c.get('pet') or c.get('extra'): p.group(resources,prefix,cls,'base')
         chassis=texture(p,prefix+" | Chassis",frame,cls,"art","chassis-"+cls.lower(),512,128,y=20)
         chassis['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() or false end'
         rune=texture(p,prefix+" | Living runes",frame,cls,"motion","runes",112,112,y=13,color=rgba(c['color'],.18))
@@ -222,13 +295,6 @@ def generate():
             font="Friz Quadrata TT",fontSize=10,outline="OUTLINE",color=rgba(c['color']),justify="CENTER",
             automaticWidth="Auto",fixedWidth=200,wordWrap="WordWrap",shadowColor=[0,0,0,1],shadowXOffset=0,shadowYOffset=0)
         name_text['actions']['init']=dict(do_custom=True,custom="if ForeverHUD then ForeverHUD.Bind() end")
-        # Measured channel interiors in the packaged AI-painted frame.
-        bar(p,prefix+" | Health",resources,cls,"resources",dict(type="unit",event="Health",unit="player",use_unit=True),
-            x=-138,y=13,width=180,height=13,color=rgba(HEALTH_COLOR),label='Health')
-        # No explicit powertype: Druid forms, Warrior rage and Rogue energy
-        # follow the client's current resource automatically.
-        bar(p,prefix+" | Resource",resources,cls,"resources",dict(type="unit",event="Power",unit="player",use_unit=True),
-            x=138,y=13,width=180,height=13,label='resource')
         primary=prefix+" | Primary"; p.group(primary,prefix,cls,"primary",y=PRIMARY_Y)
         for side,grow in [('left','LEFT'),('right','RIGHT')]:
             wing_id=primary+' | Native '+side
@@ -280,21 +346,6 @@ def generate():
             d=icon(p,utility+" | "+name,utility+" | "+combat_role(name),cls,"utility",cooldown(seed,True),28,known=seed)
             p.eligibility[d['id']].update(key=name,seeds=RANKS.get(name,[seed]) if cls=='WARRIOR' else [seed],prep=seed in PREPARATION)
             d['conditions']=[dict(check=dict(trigger=1,variable="onCooldown",value=1),changes=[dict(property="desaturate",value=True)])]
-        rows=prefix+' | Native rows'; p.group(rows,prefix,cls,'base')
-        overflow=prefix+" | Native cooldowns"
-        extra=p.group(overflow,rows,cls,"primary",y=-214,dynamic=True)
-        extra.update(grow='GRID',gridType='HD',gridWidth=12,rowSpace=8,columnSpace=8,sort='custom',sortOn='index',customSort=SORT_CDM)
-        icon(p,overflow+" | Entries",overflow,cls,"primary",dict(type="cdm",event="Blizzard Cooldown Manager",
-            cdmSource="cooldown",cdmSpells=dict(multi={}),cdmShow="cooldown",use_cdmShowGCD=False,
-            cdmTrack="auto",cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
-        for title,event,source,y in [('Native utility','Blizzard Cooldown Manager','cooldown',-57),
-            ('Native items','Blizzard CDM Item','cooldown',-98)]:
-            name=prefix+' | '+title
-            extra=p.group(name,rows,cls,'utility',y=y,dynamic=True)
-            extra.update(grow='GRID',gridType='HD',gridWidth=10,rowSpace=12,columnSpace=8,sort='custom',sortOn='index',customSort=SORT_CDM)
-            icon(p,name+' | Entries',name,cls,'utility',dict(type='cdm',event=event,
-                cdmSource=source,cdmSpells=dict(multi={}),cdmShow='cooldown',use_cdmShowGCD=False,
-                cdmTrack='auto',cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
         # Modern aura slots stay fixed in combat. No Lua presence inspection,
         # inferred timers, refresh windows, or combat-dependent group reflow.
         auras=prefix+' | Auras'; p.group(auras,prefix,cls,'base')
@@ -312,18 +363,6 @@ def generate():
         if cls=='WARLOCK' or UPKEEP.get(cls):
             p.group(maintenance,auras,cls,'maintenance',x=-286,y=13,dynamic=True).update(grow='LEFT',space=6)
         effects=prefix+" | Player effects";p.group(effects,auras,cls,"buffs",y=116)
-        native_effects=prefix+' | Native player effects'
-        p.group(native_effects,auras,cls,'buffs',y=151,dynamic=True)
-        icon(p,native_effects+' | Entries',native_effects,cls,'buffs',dict(type='cdm',event='Blizzard CDM Buff',
-            cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
-            use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),26)
-        tracked=prefix+' | Native tracked bars'
-        p.group(tracked,auras,cls,'trackedBars',x=410,y=13,dynamic=True).update(grow='DOWN',space=5,
-            sort='custom',sortOn='index',customSort=SORT_CDM)
-        bar(p,tracked+' | Entries',tracked,cls,'trackedBars',dict(type='cdm',event='Blizzard CDM Buff',
-            cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
-            use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),
-            width=190,height=18,color=rgba(c['color']),text='%p',name_text='%n')
         buffs=list(c['buffs'])
         if cls=="WARLOCK": buffs.append(([687,706,28176],"Demon armor"))
         for i,(seed,name) in enumerate(buffs):
@@ -400,9 +439,6 @@ def generate():
             flag=f'FOREVERHUD_{cls}_alerts_'+alert['uid'];alert['load']['loadFlag']=flag
             p.eligibility[alert['id']]=dict(cls=cls,module='alerts',seeds=[seed],flag=flag,kind='ability')
             alert['actions']['start']=dict(do_custom=True,custom=f'if ForeverHUD then ForeverHUD.ReadyAlert("{alert["id"]}", {seed}, {priority}) end')
-        cast=bar(p,prefix+" | Cast",prefix,cls,"cast",dict(type="unit",event="Cast",unit="player",use_unit=True,spellNames=[]),
-            width=300,height=13,y=-178,color=rgba(c['accent']),text="%p",name_text="%n")
-        cast['actions']['init']=dict(do_custom=True,custom='if ForeverHUD then ForeverHUD.RefreshCasting() end')
         # A second bar is optional; Blizzard's original cast bar is untouched.
         if c.get('pet'):
             bar(p,prefix+" | Pet health",resources,cls,"pet",dict(type="unit",event="Health",unit="pet",use_unit=True),
@@ -444,7 +480,7 @@ def generate():
         seal=foreground.index(prefix+' | Seal')
         frame_group['controlledChildren']=foreground[:seal]+layers+foreground[seal:]
         # Organising sections only: no loose leaves at the class root.
-        loose=[id for id in group['controlledChildren'] if 'controlledChildren' not in p.by_id[id] and id!=prefix+' | Cast']
+        loose=[id for id in group['controlledChildren'] if 'controlledChildren' not in p.by_id[id]]
         assert not loose,f'Loose displays at {prefix}: {loose}'
     # A newer import must fail closed while an older helper is still loaded.
     # Checking the table alone allowed hundreds of missing-method errors.
@@ -460,7 +496,7 @@ def generate():
     # Every class display carries its class's update tag, so FA links the
     # installed group to the build the companion offers.
     for display in p.displays[1:]:
-        display['url']=update_url(display['load']['class']['single'])
+        display['url']=update_url(owner_of(display))
     message='Companion update required: install ForeverHUD and /reload before importing.'
     for display in p.displays:
         if 'controlledChildren' in display:
@@ -472,13 +508,17 @@ def generate():
                 f'else local message="{message}"; print("ForeverHUD {VERSION}: "..(ForeverHUD and ForeverHUD.L and ForeverHUD.L(message) or message)) end')
     return dict(m="d",v=2000,s="1.3.5",d=p.displays[0],c=p.displays[1:]),p.eligibility
 
-def class_import(data, cls):
-    """A native update is scoped to this class UID, never the shared root."""
-    selected=[copy.deepcopy(d) for d in data['c'] if d['load']['class']['single']==cls]
-    class_id='ForeverHUD | '+CLASSES[cls]['name']
-    root=next(d for d in selected if d['id']==class_id)
+def class_import(data, owner):
+    """A native update is scoped to the Core or one class UID, never the
+    combined root, so it cannot remove other installed groups."""
+    selected=[copy.deepcopy(d) for d in data['c'] if owner_of(d)==owner]
+    root=next(d for d in selected if d['id']==root_id(owner))
     root.pop('parent',None)
-    root['desc']='ForeverHUD '+VERSION+' / '+CLASSES[cls]['name']+' only. Update this class group; controls: /fhud.'
+    # A standalone root follows the companion anchor like the combined root.
+    root.update(anchorFrameType='SELECTFRAME',anchorFrameFrame='ForeverHUDAnchor',anchorFrameParent=True)
+    root['desc']=('ForeverHUD '+VERSION+' Core, shared by every class. Install it with your class group; controls: /fhud.'
+        if owner==CORE else
+        'ForeverHUD '+VERSION+' / '+CLASSES[owner]['name']+' only. Needs the ForeverHUD Core group; controls: /fhud.')
     return dict(m=data['m'],v=data['v'],s=data['s'],d=root,c=[d for d in selected if d is not root])
 
 def write_import(data, source, target):
@@ -493,29 +533,32 @@ def write_class_imports(data,dist):
     # that would still be packaged.
     for folder in (dist/'classes',dist/'.build/classes'):
         if folder.exists(): shutil.rmtree(folder)
-    for cls,c in CLASSES.items():
-        value=class_import(data,cls)
-        target=dist/'classes'/('ForeverHUD-'+c['name']+'.txt')
+    for owner in [CORE]+list(CLASSES):
+        value=class_import(data,owner)
+        name='Core' if owner==CORE else CLASSES[owner]['name']
+        target=dist/'classes'/('ForeverHUD-'+name+'.txt')
         write_import(value,dist/'.build/classes'/target.with_suffix('.lua').name,target)
         raw=target.read_bytes()
-        records.append(dict(classToken=cls,name=c['name'],file=target.name,characters=len(raw.rstrip(b'\n')),
+        records.append(dict(classToken=owner,name=name,file=target.name,characters=len(raw.rstrip(b'\n')),
             bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),displays=len(value['c'])+1,rootID=value['d']['id'],rootUID=value['d']['uid'],
-            updateSlug=update_slug(cls),updateBuild=BUILD))
+            updateSlug=update_slug(owner),updateBuild=BUILD))
     (dist/'classes/manifest.json').write_text(json.dumps(dict(version=VERSION,imports=records),indent=2)+'\n',**LF)
-    rows=['# Per-class imports','','## English','',
-        'You normally do not need these files. Install the ForeverHUD addon, `/reload`, and open `/fa`: your class is listed under **ready to be installed** or **updates**, or type `/fhud install`. ForeverAuras shows its import window and you confirm.',
-        'For manual import, paste one class file into `/fa` → Import; choose **Update** for an existing class group, not Import as Copy.',
-        'Each file targets only its class group, preserving an existing combined parent and the other classes. New installations can use a class file alone.',
-        'Use the combined import for a fresh nine-class installation or to update an existing combined group. Use class files for standalone class updates; choose Update rather than creating copies.',
-        '', '| Class | Import | Characters | Displays |','| --- | --- | ---: | ---: |']
+    rows=['# Core and class imports','','## English','',
+        'You normally do not need these files. Install the ForeverHUD addon, `/reload`, and open `/fa`: the Core and your class are listed under **ready to be installed** or **updates**, or type `/fhud install`. ForeverAuras shows its import window and you confirm.',
+        'Every class needs `ForeverHUD-Core.txt` (health, resource, cast bar and the native cooldown and aura rows) plus its own class file (spells, effects and art).',
+        'For manual import, paste the Core file, then one class file, into `/fa` → Import; choose **Update** for an existing group, not Import as Copy.',
+        'Each file targets only its own group, preserving an existing combined parent and the other classes.',
+        'Use the combined import for a fresh nine-class installation or to update an existing combined group.',
+        '', '| Group | Import | Characters | Displays |','| --- | --- | ---: | ---: |']
     rows += [f"| {r['name']} | [{r['file']}]({r['file']}) | {r['characters']:,} | {r['displays']} |" for r in records]
     rows += ['', '## 简体中文', '',
-        '通常无需使用这些文件。安装 ForeverHUD 插件后输入 `/reload` 并打开 `/fa`：当前职业会出现在“待安装”或“更新”列表中，也可输入 `/fhud install`。ForeverAuras 会显示导入窗口，由你确认。',
-        '如需手动导入，把职业文件粘贴到 `/fa` → 导入；已有职业组请选择“更新”，不要导入为副本。',
-        '每份文件仅更新自身职业组，保留原有合并父组和其他职业；首次安装也可单独使用一个职业文件。',
-        '合并文件用于首次安装九职业或更新已有合并组；独立职业安装继续使用职业文件更新。',
-        '', '| 职业 | 导入文件 | 字符数 | 显示数量 |', '| --- | --- | ---: | ---: |']
-    rows += [f"| {CLASSES[r['classToken']]['zh']} | [{r['file']}]({r['file']}) | {r['characters']:,} | {r['displays']} |" for r in records]
+        '通常无需使用这些文件。安装 ForeverHUD 插件后输入 `/reload` 并打开 `/fa`：核心和当前职业会出现在“待安装”或“更新”列表中，也可输入 `/fhud install`。ForeverAuras 会显示导入窗口，由你确认。',
+        '每个职业都需要 `ForeverHUD-Core.txt`（生命、资源、施法条以及原生冷却和光环行）加上自己的职业文件（技能、特效和美术）。',
+        '如需手动导入，先把核心文件、再把职业文件粘贴到 `/fa` → 导入；已有分组请选择“更新”，不要导入为副本。',
+        '每份文件仅更新自身分组，保留原有合并父组和其他职业。',
+        '合并文件用于首次安装九职业或更新已有合并组。',
+        '', '| 分组 | 导入文件 | 字符数 | 显示数量 |', '| --- | --- | ---: | ---: |']
+    rows += [f"| {'核心' if r['classToken']==CORE else CLASSES[r['classToken']]['zh']} | [{r['file']}]({r['file']}) | {r['characters']:,} | {r['displays']} |" for r in records]
     (dist/'classes/README.md').write_text('\n'.join(rows)+'\n',**LF)
     return records
 
@@ -566,9 +609,11 @@ def main():
     bundled={r['classToken']:dict(slug=r['updateSlug'],build=BUILD,version=VERSION,rootID=r['rootID'],
         encoded=(dist/'classes'/r['file']).read_text(**UTF8).strip()) for r in records}
     resource_names={power:style['name'] for power,style in RESOURCE_STYLES.items()}
+    class_colors={cls:dict(color=rgba(c['color']),accent=rgba(c['accent'])) for cls,c in CLASSES.items()}
     catalog=('-- Generated by scripts/build.py. Edit src/catalog.py or the generator.\nlocal _, E = ...\n'
         f'E.catalog = {lua(eligibility)}\nE.plans = {lua(PLANS)}\nE.schools = {lua(SCHOOLS)}\n'
         f'E.effectSpells = {lua(EFFECTS)}\nE.resourceNames = {lua(resource_names)}\n'
+        f'E.classColors = {lua(class_colors)}\n'
         f'E.bundledImports = {lua(bundled)}\n')
     (ROOT/'src/ForeverHUD/Catalog.lua').write_text(catalog,**LF)
     target=dist/f'ForeverHUD-v{VERSION}.zip'

@@ -97,13 +97,13 @@ function S.SyncCDM()
             if not preparation(entry) then selected[id]=true end
         end
     end
-    local prefix='ForeverHUD | '..E.classNames[E.class]
-    syncEntries(api,prefix..' | Native cooldowns | Entries',selected,'cooldown')
-    syncEntries(api,prefix..' | Native utility | Entries',utility,'cooldown')
-    syncEntries(api,prefix..' | Native items | Entries',items,'cooldown')
+    local ID=E.DisplayID
+    syncEntries(api,ID('Native cooldowns | Entries'),selected,'cooldown')
+    syncEntries(api,ID('Native utility | Entries'),utility,'cooldown')
+    syncEntries(api,ID('Native items | Entries'),items,'cooldown')
     for index=1,8 do
         local cdmID=S.nativeSlots and S.nativeSlots[index]
-        syncEntries(api,prefix..' | Primary | Native '..index..' | Entry',cdmID and {[cdmID]=true} or {},'cooldown')
+        syncEntries(api,ID('Primary | Native '..index..' | Entry'),cdmID and {[cdmID]=true} or {},'cooldown')
     end
     local buffs,bars,representedBuffs,representedBuffIDs={},{},{},{}
     local p=E.Profile()
@@ -125,8 +125,8 @@ function S.SyncCDM()
         if (entry.category=='TrackedBuff' or (entry.category=='TrackedBar' and not p.trackedBars) or entry.category=='SpecAgnosticTracked')
             and not duplicate and not preparation(entry) then buffs[id]=true end
     end
-    syncEntries(api,prefix..' | Native player effects | Entries',buffs)
-    syncEntries(api,prefix..' | Native tracked bars | Entries',bars)
+    syncEntries(api,ID('Native player effects | Entries'),buffs)
+    syncEntries(api,ID('Native tracked bars | Entries'),bars)
     -- Native multi-entry pickers sort IDs internally. Re-sort ordinary clone
     -- containers by the public manager order, only outside combat. FA's
     -- SortUpdatedChildren only moves children flagged as updated, so a pure
@@ -138,7 +138,7 @@ function S.SyncCDM()
     if key==S.rankKey then return end
     S.rankKey=key
     for _,name in ipairs({'Native cooldowns','Native utility','Native items','Native tracked bars','Primary | Native left','Primary | Native right'})do
-        local region=api.GetRegion and api.GetRegion(prefix..' | '..name)
+        local region=api.GetRegion and api.GetRegion(ID(name))
         if region and region.ReloadControlledChildren then region:ReloadControlledChildren()
         elseif region and region.SortUpdatedChildren then region:SortUpdatedChildren() end
     end

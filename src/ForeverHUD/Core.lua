@@ -5,9 +5,17 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.4.1"
-E.importAPI = 1
+E.releaseVersion = "0.5.0"
+E.importAPI = 2
 E.rootID = "ForeverHUD"
+-- Since 0.5.0 displays every class shares live in one Core group; each class
+-- group holds only its own spells, effects and art.
+E.coreID = "ForeverHUD | Core"
+E.coreParts = {
+    ["Health"]=true, ["Resource"]=true, ["Cast"]=true,
+    ["Native cooldowns"]=true, ["Native utility"]=true, ["Native items"]=true,
+    ["Native player effects"]=true, ["Native tracked bars"]=true,
+}
 E.classNames = {
     WARLOCK="Warlock", WARRIOR="Warrior", MAGE="Mage", PRIEST="Priest",
     ROGUE="Rogue", DRUID="Druid", HUNTER="Hunter", SHAMAN="Shaman", PALADIN="Paladin",
@@ -53,16 +61,59 @@ function E.Importing()
     local api=E.API()
     return api and api.IsImporting and api.IsImporting()==true or false
 end
-function E.GetRootID()
-    local api=E.API()
-    local classID=E.class and ('ForeverHUD | '..E.classNames[E.class])
-    if classID and api and api.GetData then
-        local ok,data=pcall(api.GetData,classID)
-        -- Native per-class updates preserve an existing combined parent.
-        -- A fresh class-only import has no parent and owns its own anchor.
-        if ok and type(data)=='table' and data.id==classID and not data.parent then return classID end
+function E.ClassID()
+    return E.class and E.classNames[E.class] and ('ForeverHUD | '..E.classNames[E.class]) or nil
+end
+-- The display ID for a section name such as "Health" or "Primary | Native left":
+-- Core parts live under the Core group, everything else under the class group.
+function E.DisplayID(name)
+    local section=name:match('^(.-) | ') or name
+    if E.coreParts[section] then return E.coreID..' | '..name end
+    local classID=E.ClassID()
+    return classID and (classID..' | '..name) or nil
+end
+-- Gate/style calls from Core displays pass "CORE": they belong to the current class.
+function E.Owner(class)
+    if class=='CORE' then return E.class end
+    return class
+end
+local function topRoot(api,id)
+    local ok,data=pcall(api.GetData,id)
+    if not ok or type(data)~='table' or data.id~=id then return nil end
+    -- Native per-group updates preserve an existing combined parent.
+    -- A fresh Core or class import has no parent and owns its own anchor.
+    if data.parent then return E.rootID end
+    return id
+end
+-- Every installed root this class uses: the combined root, or the standalone
+-- class group and Core group. Never empty, so callers always have a target.
+function E.GetRootIDs()
+    local api,ids,seen=E.API(),{},{}
+    if api and api.GetData then
+        for _,id in ipairs({E.ClassID(),E.coreID}) do
+            local root=id and topRoot(api,id)
+            if root and not seen[root] then seen[root]=true;ids[#ids+1]=root end
+        end
     end
-    return E.rootID
+    if #ids==0 then ids[1]=E.rootID end
+    return ids
+end
+function E.GetRootID() return E.GetRootIDs()[1] end
+local function rootRegions()
+    local api,regions=E.API(),{}
+    if not api or not api.GetRegion then return regions end
+    for _,id in ipairs(E.GetRootIDs()) do
+        local region=api.GetRegion(id)
+        if region then regions[#regions+1]=region end
+    end
+    return regions
+end
+-- Paint a shared Core bar with the current class's colour.
+function E.Tint(region,key)
+    local colors=E.classColors and E.class and E.classColors[E.class]
+    local color=colors and colors[key]
+    if not region or not color or not region.Color then return end
+    region:Color(color[1],color[2],color[3],color[4])
 end
 function E.Profile()
     if not E.class then return end
@@ -110,6 +161,7 @@ function E.LiveWorld()
     return not E.state or (E.state.world and not E.state.loading and not E.state.hidden)
 end
 function E.Gate(module, class)
+    class = E.Owner(class)
     local p = E.Profile()
     if not p or E.class ~= class or not p.enabled or not E.LiveWorld() then return false end
     local api = E.API()
@@ -142,14 +194,19 @@ function E.Notify()
             end
             api.SetLoadFlag('FOREVERHUD_'..class..'_fx_power',enabled and p.fx and p.art and p.resources or false)
         end
+        -- Core displays follow the current class's preferences.
+        local enabled = p and p.enabled and E.class ~= nil and E.LiveWorld() or false
+        api.SetLoadFlag("FOREVERHUD_CORE_base", enabled)
+        for _, module in ipairs(E.modules) do
+            api.SetLoadFlag("FOREVERHUD_CORE_"..module[1], enabled and p[module[1]] ~= false or false)
+        end
     end
     if E.discovery then E.discovery.ApplyFlags() end
     if E.RefreshEquipment and not E.InCombat() then E.RefreshEquipment() end
     if E.RefreshCasting then E.RefreshCasting() end
     if E.RefreshFX then E.RefreshFX(false) end
     if E.RefreshAlerts then E.RefreshAlerts() end
-    local region = api and api.GetRegion and api.GetRegion(E.GetRootID())
-    handle:SetShown(region ~= nil and E.Gate("base", E.class) and (p.art or not p.locked))
+    handle:SetShown(#rootRegions() > 0 and E.Gate("base", E.class) and (p.art or not p.locked))
     if api and api.ScanEvents then api.ScanEvents("FOREVERHUD_UPDATE") end
 end
 function E.ApplyLayout()
@@ -161,9 +218,9 @@ function E.ApplyLayout()
     if not p then handle:Hide(); return end
     anchor:ClearAllPoints()
     anchor:SetPoint("CENTER", UIParent, "CENTER", p.x, p.y)
-    local api = E.API()
-    local region = api and api.GetRegion and api.GetRegion(E.GetRootID())
-    if region then
+    local regions = rootRegions()
+    -- The Core and class roots share the anchor, so they move and scale together.
+    for _, region in ipairs(regions) do
         -- FA can initialize before its companion anchor exists. Repair the
         -- actual parent/anchor once registered, outside combat, rather than
         -- assuming SELECTFRAME resolved its target during import.
@@ -178,7 +235,7 @@ function E.ApplyLayout()
     handle:ClearAllPoints()
     -- A scaled button's anchor offsets are in its own units.
     handle:SetPoint("CENTER", UIParent, "CENTER", p.x/p.scale, p.y/p.scale+13)
-    handle:SetShown(region ~= nil and E.Gate("base", E.class) and (p.art or not p.locked))
+    handle:SetShown(#regions > 0 and E.Gate("base", E.class) and (p.art or not p.locked))
     outline:SetShown(not p.locked)
     E.pending = nil
 end
@@ -198,13 +255,14 @@ local function finishBind()
     E.ApplyLayout()
     if E.discovery then E.discovery.Schedule() end
     if E.RefreshFX then E.RefreshFX(true) end
-    local region=api and api.GetRegion and api.GetRegion(E.GetRootID())
-    -- Hook each root region once: the root can switch between the combined
-    -- and a standalone class group, and re-hooking would stack handlers.
-    if region and region.HookScript and not E.hookedRoots[region] then
-        E.hookedRoots[region]=true
-        region:HookScript('OnHide',function()if E.motion and not E.Importing() then E.motion.Stop() end end)
-        region:HookScript('OnShow',function()if E.motion and E.state and not E.Importing() then E.motion.Reconcile() end end)
+    -- Hook each root region once: roots can switch between the combined and
+    -- standalone Core/class groups, and re-hooking would stack handlers.
+    for _,region in ipairs(rootRegions()) do
+        if region.HookScript and not E.hookedRoots[region] then
+            E.hookedRoots[region]=true
+            region:HookScript('OnHide',function()if E.motion and not E.Importing() then E.motion.Stop() end end)
+            region:HookScript('OnShow',function()if E.motion and E.state and not E.Importing() then E.motion.Reconcile() end end)
+        end
     end
 end
 function E.Bind()
@@ -265,6 +323,15 @@ end
 -- update tags), or an update when the installed tag's build is older. FA runs
 -- the import and shows its window first; nothing here writes aura data.
 local function bundleFor(class) return class and E.bundledImports and E.bundledImports[class] end
+-- The bundles this character needs, Core first: class displays sit on top of it.
+local function bundlesFor(class)
+    local list={}
+    if not bundleFor(class) then return list end
+    if bundleFor('CORE') then list[#list+1]=bundleFor('CORE') end
+    list[#list+1]=bundleFor(class)
+    return list
+end
+E.BundlesFor=bundlesFor
 local function companionEntry(bundle)
     return {name=bundle.rootID..' '..bundle.version, author='ForeverHUD', encoded=bundle.encoded, wagoVersion=bundle.build,
         versionNote=E.L('Bundled with ForeverHUD. ForeverAuras shows its import window before changing anything.')}
@@ -292,20 +359,40 @@ local function warnDetached(rootID,count)
     print('ForeverHUD: '..E.L('%d displays of "%s" are outside their group because an earlier import stopped part way. In /fa, delete every top-level "%s" entry, then run /fhud install.'):format(count,rootID,rootID))
 end
 function E.RegisterBundledImport()
-    local bundle,api=bundleFor(E.class),E.API()
-    if E.bundleRegistered or not bundle or not api or not api.AddCompanionData then return end
+    local bundles,api=bundlesFor(E.class),E.API()
+    if E.bundleRegistered or #bundles==0 or not api or not api.AddCompanionData then return end
     E.bundleRegistered=true
-    api.AddCompanionData({slugs={[bundle.slug]=companionEntry(bundle)}})
-    local installed=E.InstalledBuild(bundle.rootID)
-    -- FA's import window matches an existing group by UID and offers Update.
-    if not installed or installed==0 then api.AddCompanionData({stash={[bundle.rootID]=companionEntry(bundle)}}) end
+    for _,bundle in ipairs(bundles) do
+        api.AddCompanionData({slugs={[bundle.slug]=companionEntry(bundle)}})
+        local installed=E.InstalledBuild(bundle.rootID)
+        -- FA's import window matches an existing group by UID and offers Update.
+        if not installed or installed==0 then api.AddCompanionData({stash={[bundle.rootID]=companionEntry(bundle)}}) end
+    end
 end
 function E.CheckDetached()
-    local bundle=bundleFor(E.class)
-    if E.detachedChecked or not bundle then return end
+    if E.detachedChecked then return end
+    local bundles=bundlesFor(E.class)
+    if #bundles==0 then return end
     E.detachedChecked=true
-    local count=E.DetachedDisplays(bundle.rootID)
-    if count>0 then warnDetached(bundle.rootID,count) end
+    for _,bundle in ipairs(bundles) do
+        local count=E.DetachedDisplays(bundle.rootID)
+        if count>0 then warnDetached(bundle.rootID,count) end
+    end
+end
+-- A class group from 0.4 or earlier still carries the displays that moved to
+-- Core in 0.5.0; with both installed they would draw twice. Read-only check.
+function E.OldClassLayout()
+    local api,classID=E.API(),E.ClassID()
+    if not api or not api.GetData or not classID then return false end
+    local ok,data=pcall(api.GetData,classID..' | Health')
+    return ok and type(data)=='table'
+end
+function E.CheckOldLayout()
+    if E.oldLayoutChecked or not E.class then return end
+    E.oldLayoutChecked=true
+    if E.OldClassLayout() then
+        print('ForeverHUD: '..E.L('"%s" is from ForeverHUD 0.4 or earlier. In /fa, delete that group, then run /fhud install to add the Core and the new class group.'):format(E.ClassID()))
+    end
 end
 -- Before 0.4.0 this addon was EclipseHUD with "Eclipse | <Class>" auras. New
 -- names mean new UIDs, so nothing is migrated: warn once so both get removed.
@@ -330,13 +417,30 @@ function E.CheckLegacy()
         print('ForeverHUD: '..E.L('%d old "Eclipse | ..." displays are still in /fa. ForeverHUD does not use them; delete every "Eclipse | ..." group.'):format(count))
     end
 end
+-- FA runs one import window at a time, so /fhud install opens the first
+-- bundle that is missing or older (Core before class) and says what is next.
+function E.NextBundle()
+    local bundles=bundlesFor(E.class)
+    for index,bundle in ipairs(bundles) do
+        local installed=E.InstalledBuild(bundle.rootID)
+        if not installed or installed<bundle.build then return bundle,bundles[index+1] end
+    end
+    return bundles[#bundles],nil
+end
 function E.InstallBundled(force)
-    local bundle,api=bundleFor(E.class),E.API()
+    local api=E.API()
+    local bundle,later=E.NextBundle()
     if not bundle or not api or not api.Import then print('ForeverHUD: '..E.L('No bundled import is available for this class.'));return end
-    local count=E.DetachedDisplays(bundle.rootID)
-    -- An import over detached displays meets their old UIDs outside the group.
-    if count>0 and not force then warnDetached(bundle.rootID,count);return end
+    if E.OldClassLayout() and not force then E.oldLayoutChecked=false;E.CheckOldLayout();return end
+    for _,item in ipairs(bundlesFor(E.class)) do
+        local count=E.DetachedDisplays(item.rootID)
+        -- An import over detached displays meets their old UIDs outside the group.
+        if count>0 and not force then warnDetached(item.rootID,count);return end
+    end
     api.Import(bundle.encoded)
+    if later then
+        print('ForeverHUD: '..E.L('After "%s" is installed, run /fhud install again for "%s".'):format(bundle.rootID,later.rootID))
+    end
 end
 local hoverTimer
 local function stopHover()
@@ -422,6 +526,8 @@ function E.Shutdown()
             for _, module in ipairs(E.modules) do api.SetLoadFlag("FOREVERHUD_"..class.."_"..module[1], false) end
             api.SetLoadFlag('FOREVERHUD_'..class..'_fx_power',false)
         end
+        api.SetLoadFlag("FOREVERHUD_CORE_base", false)
+        for _, module in ipairs(E.modules) do api.SetLoadFlag("FOREVERHUD_CORE_"..module[1], false) end
     end
 end
 events:RegisterEvent("ADDON_LOADED")
@@ -457,7 +563,7 @@ events:SetScript("OnEvent", function(_, event, addon)
         E.InitDB(); E.ApplyLayout()
         if E.discovery then E.discovery.Start() end
         if E.state then E.state.Start() end
-        if event == "PLAYER_ENTERING_WORLD" then E.RegisterBundledImport(); E.CheckDetached(); E.CheckLegacy() end
+        if event == "PLAYER_ENTERING_WORLD" then E.RegisterBundledImport(); E.CheckDetached(); E.CheckLegacy(); E.CheckOldLayout() end
     end
     E.Notify()
 end)

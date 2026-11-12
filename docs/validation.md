@@ -1,6 +1,39 @@
-# Validation for 0.4.1
+# Validation for 0.5.0
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.5.0 (prerelease) — shared Core plus class groups
+
+Automated only; nothing here is game-client evidence.
+
+- `tests/test_pack.py` (15 tests) checks:
+  - Core displays load for all nine classes behind `FOREVERHUD_CORE_` flags.
+  - The Core and each class import are exactly their root's subtree, and the subtrees are disjoint.
+  - Every standalone root follows `ForeverHUDAnchor`.
+  - Shared displays exist only in Core.
+  - Every texture is class art in the LOW strata, and every other display inherits its strata.
+  - Update tags use `forever-hud-core` and `forever-hud-<class>`.
+- `tests/bundle.lua` checks:
+  - The Core bundle is byte-identical to `ForeverHUD-Core.txt`.
+  - Core and class registration states.
+  - Install order: Core first, an older Core before a current class, and the message naming the next step.
+  - Root resolution for standalone and combined installs.
+  - Detached Core displays.
+  - The once-per-session warning about a 0.4 class group, and the install refusal over it.
+  - Core load flags mirror the current class; shutdown clears them.
+  - The cast-bar tint.
+  - The new Chinese strings.
+- `tests/selection.lua` and `tests/motion.lua` now look up the native rows and the Health and Resource bars in Core, and the wings and chassis in the class group.
+- `tests/native-schema.lua` ran against the installed ForeverAuras 1.3.9 source, and the combined import, the Core and all nine class files pass. Each file is checked only for the displays it carries:
+  - Core has the shared Resource colour conditions and the one tracked-bar renderer.
+  - Class files have their auras, the FX curve and the custom-sorted wings.
+- Source review of `ForeverAuras.lua` `FixGroupChildrenOrderForGroup`: frame levels start at 0 for every root. This is why class art uses strata rather than levels to stay below the Core bars.
+- Not verified in game:
+  - the two-step install from `/fa` or `/fhud install`;
+  - Core bars drawing above the class chassis;
+  - Core displays loading per class and per module;
+  - the cast-bar tint;
+  - the 0.4 class-group warning.
 
 ## 0.4.1 (prerelease) — import fix for group Init actions
 

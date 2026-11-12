@@ -91,7 +91,7 @@ function C.CastEvent(event,unit,guid)
 end
 function E.RefreshCasting()
     local p,api=E.Profile(),E.API()
-    local id=E.class and ('ForeverHUD | '..E.classNames[E.class]..' | Cast')
+    local id=E.class and E.DisplayID('Cast')
     local imported=api and api.GetData and id and api.GetData(id)
     local loaded=api and id and (api.IsAuraLoaded and E.Call(api.IsAuraLoaded,id)==true
         or not api.IsAuraLoaded and api.GetRegion and api.GetRegion(id)~=nil)

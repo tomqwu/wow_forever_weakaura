@@ -60,7 +60,12 @@ for _,d in ipairs(data.c)do
         end
     end
 end
-assert(count>(arg[2] and 0 or 50),"No native aura coverage")
+-- The Core import holds only bars and native CDM rows; class files and the
+-- combined import carry the modern aura displays.
+local isCore=data.d.id=='ForeverHUD | Core'
+local combined=not arg[2]
+if isCore then assert(count==0,'Core must not carry class auras')
+else assert(count>(combined and 50 or 0),"No native aura coverage") end
 print("ForeverAuras' native schema validator passed: "..count.." modern displays")
 load('Conditions')
 local power=P.ExecEnv.PowerCurve
@@ -82,14 +87,17 @@ for _,d in ipairs(data.c)do
         break
     end
 end
+if isCore then assert(#ops==0,'Class FX stays out of Core') else
 assert(#ops==3,'Resource intensity has native curve conditions')
 assert(rawequal(power.Evaluate(ctx,power.Pieces(0,ops)),secret),'Native curve result must pass through without inspection')
 print('Actual ForeverAuras resource-curve path accepted restricted state')
+end
 
 -- Compile and run the actual FA condition code for a form-changing bar.
 -- Trigger/property metadata is a fixture; condition evaluation is FA's code.
-local resource=saved['ForeverHUD | Druid | Resource']
-if not resource then for id,d in pairs(saved)do if id:match(' | Resource$')then resource=d;break end end end
+-- The one shared Resource bar lives in Core (and the combined import).
+local resource=saved['ForeverHUD | Core | Resource']
+assert(resource or not (isCore or combined),'Core carries the shared Resource bar')
 P.regionTypes={aurabar={properties={barColor={type='color',setter='Color'}}}}
 P.GetTriggerConditions=function()return {[1]={powertype={type='select'}}}end
 P.GetGlobalConditions=function()return {}end
@@ -102,6 +110,7 @@ P.LoadFunction=function(code)
     setfenv(fn,setmetatable({Private=P},{__index=_G}))
     return fn()
 end
+if resource then
 P.LoadConditionFunction(resource)
 local condition=P.memoryRootAccessors['Conditions: checkConditions']()[resource.uid]
 assert(condition,'No compiled native color conditions')
@@ -118,6 +127,7 @@ region.states[1].powertype=secret
 condition(region,false)
 for i=1,4 do assert(math.abs(region.color[i]-resource.barColor[i])<1e-12,'Restricted resource identity must restore neutral color')end
 print('Actual ForeverAuras color conditions passed mana/energy/rage transitions with restricted amounts')
+end
 
 -- Execute the native dynamic-group sort wrapper on ordinary clone identities.
 -- WoW's xpcall forwards arguments; stock Lua 5.1 needs that API shim.
@@ -147,11 +157,13 @@ P.GetErrorHandlerId=function()return error end
 P.regionPrototype={AddAlphaToDefault=noop}
 P.RegisterRegionType=noop
 load('RegionTypes/DynamicGroup')
-local E={version='0.3.2',importAPI=1,discovery={cdmRank={[5]=1,[3]=2}},Readable=function(v)return not issecretvalue(v)end}
+-- importAPI must match the generated guards (build.IMPORT_API).
+local E={version='0.3.2',importAPI=2,discovery={cdmRank={[5]=1,[3]=2}},Readable=function(v)return not issecretvalue(v)end}
 assert(loadfile('src/ForeverHUD/Selection.lua'))('ForeverHUD',E)
 ForeverHUD=E
-local sortData=saved['ForeverHUD | Warlock | Native cooldowns']
-if not sortData then for id,d in pairs(saved)do if id:match(' | Native cooldowns$')then sortData=d;break end end end
+-- Core has the native rows; a class file has its Primary wings.
+local sortData=saved['ForeverHUD | Core | Native cooldowns'] or saved['ForeverHUD | Warlock | Primary | Native left']
+if not sortData then for id,d in pairs(saved)do if d.regionType=='dynamicgroup' and d.sort=='custom' then sortData=d;break end end end
 local nativeSort=WeakAuras.SortFunctions.custom(sortData)
 assert(nativeSort({cloneId='5',region=secret},{cloneId='3',region=secret})==true)
 assert(nativeSort({cloneId='3',region=secret},{cloneId='5',region=secret})==false)
@@ -173,5 +185,5 @@ for id,d in pairs(saved)do
         bars=bars+1
     end
 end
-assert(bars==(arg[2] and 1 or 9))
+assert(bars==((isCore or combined) and 1 or 0),'One shared tracked-bar renderer, in Core')
 print('Native CDM aura progress accepts tracked-bar renderers: '..bars)
