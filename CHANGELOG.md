@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.6 — 2026-11-13 (prerelease)
+## 0.9.6 — 2026-11-12 (prerelease)
 
 - **Suggestions on the damage side** (user: "recommendation can be on the left? a bit lower, right above normal dps spell"). The spell suggestion row moves from above the seal to the left, centred over Health at y=74, 4 px above the DoT row.
   - When the left cooldown wing is showing (Essential cooldowns or class-plan attacks), the companion lifts the row to y=120, just above the wing, so they never overlap.
