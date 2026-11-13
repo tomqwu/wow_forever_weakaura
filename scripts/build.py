@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.0"
+VERSION = "0.13.1"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -192,6 +192,13 @@ TRAY_RING_COLOR = [0.04, 0.03, 0.06, 1]
 TRAY_FRAME_OUTSET = 3
 TRAY_SPACING = 8
 TRAY_ROW1_Y = -74
+# 0.13.1: a missing upkeep buff breathes, so it catches the eye without
+# flashing. ForeverAuras' native Pulse (Aura Main) fades the icon to 40% and
+# back in a loop; the Missing look plays it whenever the icon is shown.
+BREATHE = dict(type='pulse', duration=2.4)
+def breathe(d):
+    d['blizzardAuraDisplay']['auraMain'] = dict(BREATHE)
+    return d
 CENTRED_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='CENTER_HORIZONTAL', blizzardFlowSpacing=2)
 # Class-plan secondary rows by side: damage left, support right.
 ROLE_X = {'Offense':-160,'Control':0,'Defense':160}
@@ -574,8 +581,9 @@ def generate():
                 reminder=copy.deepcopy(upkeep)
                 reminder.update(secretShowOn='showOnActive' if expiring else 'showOnMissing',
                     secretUseRem=expiring,secretRem=15,secretRemOperator='<=')
-                icon(p,prefix+' | Upkeep reminder | '+name+(' expiring' if expiring else ' missing'),maintenance,cls,'maintenance',
+                d=icon(p,prefix+' | Upkeep reminder | '+name+(' expiring' if expiring else ' missing'),maintenance,cls,'maintenance',
                     reminder,24,modern=True)
+                if not expiring: breathe(d)
         for i,(seeds,name,missing) in enumerate(UPKEEP.get(cls,[])):
             if missing:
                 # Reminders cover it: no "it's up" icon (0.8.1).
@@ -670,7 +678,7 @@ def generate():
         if cls=='WARLOCK': upkeeps.append(([687,706,28176],'Demon armor'))
         for seeds,name in upkeeps:
             trigger=aura_trigger(seeds);trigger.update(nativeFilters={},secretShowOn='showOnMissing')
-            icon(p,f'{row} | Upkeep reminder | {name} missing',row,cls,'tray',trigger,TRAY_ICON,modern=True)
+            breathe(icon(p,f'{row} | Upkeep reminder | {name} missing',row,cls,'tray',trigger,TRAY_ICON,modern=True))
         for name in ('Food','Drink','Well Fed'):
             # Aura names expand natively to every spell ID with that name
             # (ForeverAuras BlizzardAuraDisplay GetSpellIDs), so no ID list.

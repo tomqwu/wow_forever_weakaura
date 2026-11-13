@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.1 — 2026-11-13 (prerelease)
+
+- **A missing buff breathes** (user, with a screenshot of the folded tray: "if armor is not on, the reminder here should flash? not crazy flash"; "like breathing").
+  - Missing upkeep reminders, in the tray and on the HUD, play ForeverAuras' native **Pulse** (Aura Main) over 2.4 seconds: the icon fades to 40% and back, in a loop, while it's shown.
+  - This covers Demon Armor, Arcane Intellect, Fortitude and Mark of the Wild. The "expiring" reminders and every other icon stay still.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.0 — 2026-11-13 (prerelease)
 
 - **See your shield** (user: "for mage ice shield left over amount we should have visualization to show?"; "can you check if foreveraura supports this type?"; "Yes, build it").
