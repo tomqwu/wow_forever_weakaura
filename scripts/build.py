@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.10.0"
+VERSION = "0.11.0"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -67,8 +67,24 @@ SUGGEST_SIZE = 32
 SUGGEST_Y = DOT_ROW_Y + DOT_SIZE // 2 + 4 + SUGGEST_SIZE // 2
 WING_LIFT = SUGGEST_Y + SUGGEST_SIZE // 2 + 4 + 40 // 2 - PRIMARY_Y
 SUGGEST_STEP = 36
-# A list holds at most five, so the row stays over the Health bar (x -228..-48).
+# 0.11: the rotation row is a Modern Aura Group growing LEFT from the seal:
+# whatever shows closes up with no gaps, and the slot nearest the seal is
+# always the top action. ForeverAuras starts a LEFT row at the first
+# display's right edge, so the group sits half an icon in from that edge.
+SUGGEST_LEAD_EDGE = -52          # 4 px outside the Health bar's inner end (-48)
+SUGGEST_SPACING = 4
+SUGGEST_ROW_X = SUGGEST_LEAD_EDGE - SUGGEST_SIZE // 2
+SUGGEST_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='LEFT', blizzardFlowSpacing=SUGGEST_SPACING)
+# Five actions fill the Health bar exactly (5*32 + 4*4 = 176 of 180 px).
 SUGGEST_MAX = 5
+# Threshold cues can't join the row (they're shown at zero opacity until the
+# curve fires, so they'd hold a slot). They sit beside the bar they're about:
+# mana under the Mana bar's outer end, pet under the Pet bar's, and a target
+# execute cue in a fixed slot at the far end of the rotation row.
+CUE_SIZE = 22
+MANA_CUE = (218, -28)
+PET_CUE = (-218, -28)
+EXECUTE_CUE = (-228 + SUGGEST_SIZE // 2, SUGGEST_Y)
 # 0.10: one priority list per spec (the companion's detected or chosen
 # school), plus 'Leveling' for no talent points. Highest priority first.
 # Rule kinds, each a single native check:
@@ -637,19 +653,28 @@ def generate():
         # combined natively, so each rule tests a single value.
         specs=SUGGESTIONS.get(cls,{})
         if specs:
-            suggest=prefix+' | Suggest'; p.group(suggest,prefix,cls,'suggest',x=-BAR_X,y=SUGGEST_Y)
+            # 0.11: actions chain in the rotation row; threshold cues sit by their bar.
+            suggest=prefix+' | Suggest'; p.group(suggest,prefix,cls,'suggest',x=SUGGEST_ROW_X,y=SUGGEST_Y).update(SUGGEST_FLOW)
+            cues=prefix+' | Suggest cues'
+            # No empty groups: only classes with a threshold cue get one.
+            if any(r['kind']=='curve' for rules in specs.values() for r in rules): p.group(cues,prefix,cls,'suggest')
             in_target=f'function() return ForeverHUD and ForeverHUD.Gate("suggest","{cls}") and ForeverHUD.SuggestTarget() or false end'
             for spec,rules in specs.items():
-                assert len(rules)<=SUGGEST_MAX,(cls,spec)
+                actions=[r for r in rules if r['kind']!='curve']
+                spots=[{'player':MANA_CUE,'pet':PET_CUE,'target':EXECUTE_CUE}[r['unit']] for r in rules if r['kind']=='curve']
+                assert len(set(spots))==len(spots),(cls,spec,'one cue per spot')
+                # The execute slot is the row's fifth place, so it leaves four for actions.
+                assert len(actions)<=SUGGEST_MAX-(EXECUTE_CUE in spots),(cls,spec)
                 # Leveling keeps the 0.9 display IDs; each spec has its own.
                 base=suggest if spec=='Leveling' else f'{suggest} | {spec}'
-                for i,rule in enumerate(rules):
-                    x=(i-(len(rules)-1)/2)*SUGGEST_STEP
+                for rule in rules:
                     name=f"{base} | {rule['name']}"
                     if rule['kind']=='curve':
                         t=dict(type='unit',event=rule['event'],unit=rule['unit'],use_unit=True)
                         if rule.get('powertype') is not None: t.update(use_powertype=True,powertype=rule['powertype'])
-                        d=icon(p,name,suggest,cls,'suggest',t,SUGGEST_SIZE,x=x,known=rule['known'])
+                        (cx,cy)={'player':MANA_CUE,'pet':PET_CUE,'target':EXECUTE_CUE}[rule['unit']]
+                        size=SUGGEST_SIZE if rule['unit']=='target' else CUE_SIZE
+                        d=icon(p,name,cues,cls,'suggest',t,size,x=cx,y=cy,known=rule['known'])
                         d.update(iconSource=0,displayIcon='Interface\\Icons\\'+rule['icon'],alpha=0)
                         d['subRegions'][2]['text_visible']=False;d['subRegions'][3]['text_visible']=False
                         # Hidden unless the native curve says the value is at or under the threshold.
@@ -661,16 +686,16 @@ def generate():
                         # Own buffs (Slice and Dice, Shadowform...) only come from
                         # the player, so the default cast-by-you filter stays.
                         t=aura_trigger([rule['seed']],'target' if target else 'player',target);t['secretShowOn']='showOnMissing'
-                        d=icon(p,name,suggest,cls,'suggest',t,SUGGEST_SIZE,x=x,modern=True)
+                        d=icon(p,name,suggest,cls,'suggest',t,SUGGEST_SIZE,modern=True)
                         d['triggers'][2]['trigger']['custom']=in_target
                     elif rule['kind']=='ready':
                         d=icon(p,name,suggest,cls,'suggest',dict(type='spell',event='Action Usable',spellName=rule['seed'],
                             use_spellName=True,use_exact_spellName=False,use_ignoreSpellCooldown=False,use_targetRequired=True),
-                            SUGGEST_SIZE,x=x,known=rule['seed'])
+                            SUGGEST_SIZE,known=rule['seed'])
                         d['subRegions'][2]['text_visible']=False;d['subRegions'][3]['text_visible']=False
                         d['triggers'][2]['trigger']['custom']=in_target
                     else:
-                        d=icon(p,name,suggest,cls,'suggest',aura_trigger([rule['seed']]),SUGGEST_SIZE,x=x,modern=True)
+                        d=icon(p,name,suggest,cls,'suggest',aura_trigger([rule['seed']]),SUGGEST_SIZE,modern=True)
                         if rule.get('talent'): p.eligibility[d['id']].update(seeds=rule['talent'])
                     # The companion loads only the list for the current spec.
                     p.eligibility[d['id']].update(spec=spec)
