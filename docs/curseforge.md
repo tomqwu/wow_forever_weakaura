@@ -1,6 +1,6 @@
 # CurseForge listing kit
 
-Everything needed to create the ForeverHUD project on CurseForge. Creating the project, signing in and uploading need the owner's CurseForge account, so those steps are manual.
+Everything for the ForeverHUD project on CurseForge, project ID **1801711** ([author dashboard](https://authors.curseforge.com/#/projects/1801711/)). Uploads go through CI (see *Uploading a file*).
 
 ## Check first
 
@@ -20,7 +20,7 @@ Everything needed to create the ForeverHUD project on CurseForge. Creating the p
 | Source | https://github.com/tomqwu/wow_forever_weakaura |
 | Issues | https://github.com/tomqwu/wow_forever_weakaura/issues |
 
-Regenerate the logo with `python scripts/curseforge_logo.py`. It's a 3×3 grid of all nine painted class seals (`src/ForeverHUD/Media/crest-<class>.png`), Warlock in the centre, because ForeverHUD supports every class. No new art is generated.
+The GitHub social preview, [`assets/curseforge/social-preview.png`](../assets/curseforge/social-preview.png) (1280×640), is built from the logo by `python scripts/social_preview.py`. Upload it by hand under **Settings → General → Social preview**. Regenerate the logo with `python scripts/curseforge_logo.py`. It's a 3×3 grid of all nine painted class seals (`src/ForeverHUD/Media/crest-<class>.png`), Warlock in the centre, because ForeverHUD supports every class. No new art is generated.
 
 ## Description
 
@@ -31,16 +31,24 @@ Paste this as the project description; it's a shortened form of the README *Feat
 > - **One Core plus your class:** health, resource, cast bar and native cooldown rows are shared, and your class adds its spells, effects and art.
 > - **Damage left, everything else right:** DoTs and damage cooldowns over Health; your buffs, utility cooldowns and upkeep over Mana. Rows are centred on each bar and stay centred in combat.
 > - **Native and combat-safe:** auras, cooldowns, resources and casts come from ForeverAuras' own triggers. No combat-log guessing.
-> - **Retracted seal and tray:** out of combat it folds to a seal with Soul Shards, missing buffs and food. Hover to peek, click to open.
+> - **Retracted seal and tray:** out of combat it folds to a seal with your class counter, missing buffs and food. Hover to peek, click to open.
 > - **Reminders and suggestions:** a missing or expiring Demon Armor (and other upkeep), plus Warlock spell suggestions such as Life Tap at low mana.
 > - **Install check, settings per class (`/fhud`), English and Simplified Chinese.**
+>
+> All nine classes are supported.
 
 Screenshots: `docs/images/game-0.7.0-warlock-hud.png` (in game) and the gallery in `preview/classes/` (illustrative, labelled as such).
 
 ## Uploading a file
 
-1. Download `ForeverHUD-vX.Y.Z.zip` from the matching [GitHub release](https://github.com/tomqwu/wow_forever_weakaura/releases). Its SHA-256 is in the `.sha256` asset.
-2. On the project's **Files** tab, choose **Upload file**, select the ZIP, set the release type (**Beta** for prereleases), and paste the changelog section for that version from [`CHANGELOG.md`](../CHANGELOG.md).
-3. Game version: pick the closest available client version, and say in the file notes that it's for WoW Forever (interface 16001).
+The **Publish ForeverHUD to CurseForge** workflow (`.github/workflows/curseforge.yml`, script `scripts/curseforge.py`) uploads an existing GitHub release. It's run by hand:
 
-Automated uploads (a GitHub Action with a CurseForge API token) can come later. That needs the owner to create a token and add it as a repository secret.
+1. One-time setup: the repository secret `CURSE_FORGE` holds a CurseForge API token (create it at https://legacy.curseforge.com/account/api-tokens), and the repository variable `CURSEFORGE_PROJECT_ID` is `1801711`.
+2. Run it with the release tag and **dry run** on (the default). That downloads `ForeverHUD-vX.Y.Z.zip`, checks the TOC version against the tag and the interface (1.60 family), and finds exactly one CurseForge game version named after the interface (`16001` → `1.60.1`). Nothing is uploaded.
+3. Run it again with **dry run** off. It uploads as **Beta**, named `ForeverHUD X.Y.Z`, with the GitHub release notes as the changelog.
+
+```bash
+gh workflow run curseforge.yml -f tag=v0.9.5 -f dry_run=true
+```
+
+The release ZIP also has `imports/`, `docs/`, `preview/` and the README for GitHub users. The CurseForge app would unpack those into `Interface/AddOns`, so the upload is a repacked ZIP holding only `ForeverHUD/`. After an upload, the script stores `curseforge-vX.Y.Z.json` on the GitHub release. A rerun sees that receipt and skips, so a file is never uploaded twice. The upload itself isn't retried. If a run fails after the upload started, check the project's **Files** tab before running it again. CurseForge may hold the file for review. Archive older files on the dashboard once a new one is approved.
