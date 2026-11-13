@@ -68,7 +68,7 @@ with zipfile.ZipFile(archive) as z:
     for folder in ('docs/images','preview/classes','preview/states','preview/casting'):
         for path in (ROOT/folder).glob('*.png'):
             assert z.read(path.relative_to(ROOT).as_posix())==path.read_bytes(),str(path)
-    assert len([name for name in names if name.endswith('.tga')])==23
+    assert len([name for name in names if name.endswith('.tga')])==24  # 0.12 adds the drawn groove
     assert not any('Guos' in name or name.startswith('vendor/') for name in names)
     for path in (ROOT/'src/ForeverHUD').rglob('*'):
         if path.suffix in ('.toc','.lua','.tga','.wav'):

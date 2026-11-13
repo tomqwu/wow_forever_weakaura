@@ -136,7 +136,7 @@ class PackTests(unittest.TestCase):
             self.assertNotIn(forbidden,code)
     def test_wow_texture_format(self):
         files=list((ROOT/'src/ForeverHUD/Media').glob('*.tga'))
-        self.assertEqual(len(files),23)
+        self.assertEqual(len(files),24,'0.12 adds the drawn groove')
         for path in files:
             header=path.read_bytes()[:18]
             self.assertEqual(header[2],2,'Uncompressed true-color TGA')
@@ -241,12 +241,13 @@ class PackTests(unittest.TestCase):
                 # Upkeep is not damage: right of the resource bar, growing outward.
                 self.assertGreater(by_id[prefix+' | Maintenance']['xOffset'],250)
                 self.assertEqual(by_id[prefix+' | Maintenance']['grow'],'RIGHT')
-            # 0.7: the DoT and buff rails are ForeverAuras Modern Aura Groups,
-            # centred on their bars; the client chains and centres the icons.
-            for name,x in (('Target effects',-138),('Player effects',138)):
+            # 0.7: the DoT and buff rails are ForeverAuras Modern Aura Groups.
+            # 0.12: one spine; they grow outward from the seal, the first icon's
+            # inner edge at x=±52 (a 28 px icon centred at ±66).
+            for name,x,growth in (('Target effects',-66,'LEFT'),('Player effects',66,'RIGHT')):
                 rail=by_id[f'{prefix} | {name}']
                 self.assertEqual((rail['xOffset'],rail['yOffset']),(x,40),rail['id'])
-                self.assertEqual((rail['regionType'],rail['blizzardFlow'],rail['blizzardFlowGrowth']),('group',True,'CENTER_HORIZONTAL'))
+                self.assertEqual((rail['regionType'],rail['blizzardFlow'],rail['blizzardFlowGrowth']),('group',True,growth))
                 for child in rail['controlledChildren']:
                     d=by_id[child]
                     self.assertEqual((d['xOffset'],d['yOffset']),(0,0),'Members take their place from the chain')
@@ -261,7 +262,21 @@ class PackTests(unittest.TestCase):
         self.assertLess(by_id[CORE_ID+' | Native tracked bars']['xOffset'],-250,'Duration bars sit on the damage side')
         # 0.7.1: the native buff row mirrors the DoT row on the right rim.
         native=by_id[CORE_ID+' | Native player effects']
-        self.assertEqual((native['xOffset'],native['yOffset'],native['grow'],native['align']),(138,40,'HORIZONTAL','CENTER'))
+        # 0.12: grows right from the seal; a dynamic group centres its first icon on the origin.
+        self.assertEqual((native['xOffset'],native['yOffset'],native['grow'],native['align']),(66,40,'RIGHT','CENTER'))
+        # 0.12: drawn grooves in the frame under the spine rows, hidden while folded.
+        for c in CLASSES.values():
+            frame=f"ForeverHUD | {c['name']} | Frame"
+            kids=by_id[frame]['controlledChildren']
+            chassis=kids.index(f"ForeverHUD | {c['name']} | Chassis")
+            for name,x,y in (('Left rim',-142,40),('Right rim',142,40),('Suggestions',-142,74)):
+                g=by_id[f"ForeverHUD | {c['name']} | Groove | {name}"]
+                self.assertEqual((g['xOffset'],g['yOffset'],g['width']),(x,y,184),g['id'])
+                self.assertTrue(g['texture'].endswith('groove.tga'))
+                self.assertGreater(kids.index(g['id']),chassis,'Drawn over the chassis')
+                self.assertIn('not ForeverHUD.Retracted()',g['triggers'][2]['trigger']['custom'])
+        for side,growth in (('left','LEFT'),('right','RIGHT')):
+            self.assertEqual(by_id[f'ForeverHUD | Warlock | Primary | Native {side}']['grow'],growth,'Wings grow out from the seal')
         self.assertEqual(by_id[CORE_ID+' | Native player effects | Entries']['width'],by_id['ForeverHUD | Warlock | Target effects | Immolate']['width'],'Same icon size as the DoT row')
         effects=[e for id,e in self.eligibility.items() if ' | Player effects | ' in id and not id.endswith('Demon armor')]
         self.assertTrue(effects and all(e.get('effect') for e in effects),'Curated class buffs give way to the native row in Forever mode')

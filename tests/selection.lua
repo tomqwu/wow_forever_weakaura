@@ -58,10 +58,15 @@ do
     loadout('WARLOCK',{'Shadow Bolt','Corruption','Immolate','Drain Life','Drain Soul','Life Tap','Fear','Health Funnel'})
 end
 do
-    -- 0.7: each side is centred on its bar (x=±138) and grows both ways.
-    local sums,counts={0,0},{0,0}
-    for _,pos in pairs(S.positions) do sums[pos.side]=sums[pos.side]+pos.x;counts[pos.side]=counts[pos.side]+1 end
-    check(math.abs(sums[1]/counts[1]-138)<1e-9 and math.abs(sums[2]/counts[2]+138)<1e-9,'Class-plan rows are centred on their bars')
+    -- 0.12: one spine; each side grows outward from the seal, rank 1's inner
+    -- edge at x=±52 (40 px icons, 47 px steps).
+    local nearest={}
+    for _,pos in pairs(S.positions) do
+        local d=math.abs(pos.x)
+        if not nearest[pos.side] or d<nearest[pos.side] then nearest[pos.side]=d end
+        check((d-72)%47==0,'Slots step outward from the seal')
+    end
+    check(nearest[1]==72 and nearest[2]==72,'Both sides start at the seal edge')
 end
 for id,entry in pairs(E.catalog) do
     if entry.cls=='WARLOCK' and entry.prep then check(not S.Allowed(id,entry),'Preparation excluded') end
