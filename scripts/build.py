@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.1"
+VERSION = "0.13.2"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -186,7 +186,8 @@ SUGGESTIONS = {
     },
 }
 # 0.8 retracted mode: larger seal and the tray under it.
-RETRACTED_SEAL = 132
+# 0.13.2: 10% smaller (was 132), user request with a folded screenshot.
+RETRACTED_SEAL = 118
 TRAY_ICON = 34
 # The native aura buttons' dark inner ring, copied on the ordinary tray icon.
 TRAY_RING = 3
@@ -195,7 +196,8 @@ TRAY_RING_COLOR = [0.04, 0.03, 0.06, 1]
 # and the tray row's gap so neighbouring frames don't overlap.
 TRAY_FRAME_OUTSET = 3
 TRAY_SPACING = 8
-TRAY_ROW1_Y = -74
+# Keeps the 4 px gap under the folded seal (centre y=13): 13-59-4-17.
+TRAY_ROW1_Y = 13 - RETRACTED_SEAL // 2 - 4 - TRAY_ICON // 2
 # 0.13.1: a missing upkeep buff breathes, so it catches the eye without
 # flashing. ForeverAuras' native Pulse (Aura Main) fades the icon to 40% and
 # back in a loop; the Missing look plays it whenever the icon is shown.
