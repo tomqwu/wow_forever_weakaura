@@ -1,6 +1,13 @@
-# Validation for 0.9.2
+# Validation for 0.9.3
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.9.3 (prerelease) — matching tray icons
+
+- **Game evidence (user screenshot, 0.9.2):** the Soul Shards counter and the Demon Armor missing reminder sit side by side in one row. This confirms that an ordinary display chains into the Modern Aura Group. The two icons looked different: the reminder's art was inset inside a dark ring.
+- **Source review:** a missing Modern aura is a stand-in copy of the native button (`CreateSampleNative`, `MissingLayout` in `SecretAuraSingle.lua`). `blizzardAuraDisplay` has no option for its inset or ring, though zoom does apply. So the counter copies the ring instead.
+- **`tests/test_pack.py`:** the counter has a 3 px subborder at offset 0 below the frame subtexture, and one visible count (`%s`).
+- **Not verified in game:** how closely the copied ring matches.
 
 ## 0.9.2 (prerelease) — one-row tray
 

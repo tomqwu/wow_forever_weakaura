@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.3 — unreleased (prerelease)
+
+- **Matching tray icons** (user, 0.9.2 screenshot: "why they look different?"; chose to make the counter match). Out of combat, ForeverAuras draws a missing Modern aura (such as Demon Armor) as a stand-in copy of the game's own aura button. Its art sits inset inside a dark ring that no ForeverAuras option restyles. The ordinary Soul Shards icon now copies that ring: a 3 px dark border inside the icon edge, under the ornate frame.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.9.2 — 2026-11-12 (prerelease)
 
 - **One-row tray, one style** (user, with a 0.9.0 in-game screenshot: "bottom spells should be horizontal", "style should be the same too"). The Soul Shards counter now leads the centred tray row instead of sitting in its own row above it. ForeverAuras chains ordinary displays into a screen-mode Modern Aura Group. Every tray icon is 34 px, and Soul Shards show a single count in the corner instead of a large centre number plus a corner number.
