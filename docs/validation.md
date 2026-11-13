@@ -9,7 +9,9 @@ Sections below 0.4.0 describe releases made under the Eclipse name and keep the 
   - The ghost lasts through the leave grace, then folds immediately at full opacity, with no close timer.
   - Clicking the ghost opens the HUD for real at full opacity, and a second click folds it.
   - Combat start drops the ghost to full opacity, and there's no peek in combat.
-- **Not verified in game:** the fade and motion, and the alpha of native aura children under the root.
+- **Game evidence (user, 0.9.4):** "hover works". Hovering the folded seal shows the ghost HUD in the client.
+- **Not verified in game:** whether every native aura child dims with the root.
+- **Tray ring follow-up:** the user's "not working" screenshot was taken while the saved Warlock auras still carried build 902 (0.9.2, no ring). After the user updated, the saved data shows build 904 with the 3 px `subborder` on Soul Shards. Measured: `icon-frame.png`'s opening starts about 2.9 px outside the icon edge, so the frame doesn't hide the ring. Its look after the update isn't confirmed yet.
 - **Published 2026-11-12:** all 14 downloaded release assets match the build, and the 38 runtime files match the source. Installed over 0.9.3, with all 38 files verified (4 changed). The 0.9.3 folder was backed up and verified first, and SavedVariables were not touched. This is file evidence, not game-client evidence.
 
 ## 0.9.3 (prerelease) — matching tray icons
