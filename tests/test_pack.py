@@ -374,6 +374,10 @@ class PackTests(unittest.TestCase):
         self.assertLess(kinds.index('subborder'),kinds.index('subtexture'),'Ring under the ornate frame')
         ring=shards['subRegions'][kinds.index('subborder')]
         self.assertEqual((ring['border_size'],ring['border_offset']),(3,0))
+        # 0.9.5: tight frame like the native buttons, and a wider tray gap.
+        frame=shards['subRegions'][kinds.index('subtexture')]
+        self.assertEqual((frame['xOffset'],frame['yOffset']),(3,3))
+        self.assertEqual(by_id['ForeverHUD | Warlock | Tray | Row']['blizzardFlowSpacing'],8)
         self.assertIn('ForeverHUD | Warlock | Tray | Row | Upkeep reminder | Demon armor missing',by_id)
         self.assertNotIn('ForeverHUD | Warlock | Tray | Row | Food',self.eligibility,'Name-matched icons skip spell discovery')
 

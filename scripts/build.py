@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.9.4"
+VERSION = "0.9.5"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -77,6 +77,10 @@ TRAY_ICON = 34
 # The native aura buttons' dark inner ring, copied on the ordinary tray icon.
 TRAY_RING = 3
 TRAY_RING_COLOR = [0.04, 0.03, 0.06, 1]
+# Frame outset on the tray counter, matching the native buttons' tight frame,
+# and the tray row's gap so neighbouring frames don't overlap.
+TRAY_FRAME_OUTSET = 3
+TRAY_SPACING = 8
 TRAY_ROW1_Y = -74
 CENTRED_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='CENTER_HORIZONTAL', blizzardFlowSpacing=2)
 # Class-plan secondary rows by side: damage left, support right.
@@ -511,7 +515,7 @@ def generate():
         # 0.9.2: one centred horizontal row under the seal, every icon in the
         # same style. The counter is an ordinary display, which ForeverAuras
         # chains into a screen-mode Modern Aura Group like the aura icons.
-        row=tray+' | Row'; p.group(row,tray,cls,'tray',y=TRAY_ROW1_Y).update(CENTRED_FLOW)
+        row=tray+' | Row'; p.group(row,tray,cls,'tray',y=TRAY_ROW1_Y).update(CENTRED_FLOW,blizzardFlowSpacing=TRAY_SPACING)
         if c.get('extra')=='shards':
             # The carried reagent count on its own item icon (native Item Count).
             shards=icon(p,row+' | Soul Shards',row,cls,'tray',dict(type='item',event='Item Count',itemName=6265,
@@ -526,6 +530,11 @@ def generate():
             # the frame, above the art).
             shards['subRegions'].insert(1,dict(type='subborder',border_visible=True,border_color=TRAY_RING_COLOR,
                 border_edge='Square Full White',border_size=TRAY_RING,border_offset=0))
+            # 0.9.5: the native buttons carry our frame tight around the art
+            # (measured in game: ~43 px against ~56 px for the 8 px outset),
+            # so this ordinary icon uses the same tight frame.
+            for sub in shards['subRegions']:
+                if sub.get('type')=='subtexture': sub.update(xOffset=TRAY_FRAME_OUTSET,yOffset=TRAY_FRAME_OUTSET)
         upkeeps=[(seeds,name) for seeds,name,missing in UPKEEP.get(cls,[]) if missing]
         if cls=='WARLOCK': upkeeps.append(([687,706,28176],'Demon armor'))
         for seeds,name in upkeeps:

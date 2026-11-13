@@ -1,6 +1,16 @@
-# Validation for 0.9.4
+# Validation for 0.9.5
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.9.5 (prerelease) — tray icons match
+
+- **Game evidence (user screenshot, auras at build 904):** the icons still differed, so the 0.9.3 claim that the ring would match them was wrong. Zooming the screenshot ×4 showed the Soul Shards art with its dark ring.
+  - **Frame sizes:** about 56 px (Soul Shards) against about 43 px (Demon Armor). The native button carries our frame without the 8 px outset.
+  - **Art sizes:** about 38 against 36 px, much closer.
+  - **Spacing:** the two frames overlapped at a spacing of 2.
+- **Change:** the counter's frame outset is now 3 px, and the tray spacing is 8.
+- **`tests/test_pack.py`:** asserts the outset and the spacing.
+- **Not verified in game:** this match is inferred from the measurement; it needs a screenshot to confirm.
 
 ## 0.9.4 (prerelease) — hover to peek
 
