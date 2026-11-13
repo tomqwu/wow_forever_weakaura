@@ -394,7 +394,10 @@ class PackTests(unittest.TestCase):
         self.assertEqual(row['xOffset'],-138)
         self.assertEqual(row['yOffset']-16,dots['yOffset']+14+4,'4 px above the 28 px DoT row')
         selection=open('src/ForeverHUD/Selection.lua',encoding='utf-8').read()
-        self.assertIn(f"S.SUGGEST_Y,S.SUGGEST_LIFTED_Y={row['yOffset']},{80+20+4+16}",selection,'Companion lift matches the generator')
+        # 0.9.7: the left wing (40 px at y=80) rises 4 px clear of the suggestions.
+        lift=row['yOffset']+16+4+20-80
+        self.assertEqual(lift,34)
+        self.assertIn(f"S.WING_LIFT={lift}",selection,'Companion wing lift matches the generator')
         tap=by_id['ForeverHUD | Warlock | Suggest | Life Tap']
         self.assertEqual(tap['alpha'],0)
         self.assertEqual(tap['triggers'][1]['trigger']['event'],'Power')

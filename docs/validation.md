@@ -1,6 +1,14 @@
-# Validation for 0.9.6
+# Validation for 0.9.7
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.9.7 (prerelease) — suggestions stay above the DoTs
+
+- **Game evidence (user screenshot, 0.9.6):** the two suggestions showed well above the DoT icon, with an empty gap. The 0.9.6 lift had fired because the left wing had entries, but none were visible: native Essential cooldowns can show only while on cooldown.
+- **Change:** the Suggest group stays at its imported spot (-138, 74). `Selection.LeftLift` gives left-side primary positions a y offset of 34 when the class has suggestions and they're on, so 40 px wing icons centre at y=114. Their bottom is 94, 4 px above the suggestions' top (90).
+- **`tests/test_pack.py`:** asserts the lift against the generator geometry.
+- **`tests/selection.lua`:** asserts the left wing lift, the unmoved right wing, the untouched suggestion row, and no lift with suggestions off.
+- **Not yet checked in game.**
 
 ## 0.9.6 (prerelease) — suggestions on the damage side
 
