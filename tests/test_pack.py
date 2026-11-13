@@ -412,6 +412,26 @@ class PackTests(unittest.TestCase):
         self.assertIn('ForeverHUD | Warlock | Tray | Row | Upkeep reminder | Demon armor missing',by_id)
         self.assertNotIn('ForeverHUD | Warlock | Tray | Row | Food',self.eligibility,'Name-matched icons skip spell discovery')
 
+    def test_missing_upkeep_breathes(self):
+        # 0.13.1: missing upkeep reminders (tray and HUD) play the native
+        # Pulse slowly; nothing else does, and no Gained flash suppresses it.
+        breathing=[d for d in self.regions if (d.get('blizzardAuraDisplay') or {}).get('auraMain',{}).get('type')=='pulse'
+            and 'Upkeep reminder' in d['id']]
+        ids={d['id'] for d in breathing}
+        for cls in ('Warlock','Mage','Priest','Druid'):
+            self.assertIn(f'ForeverHUD | {cls} | Tray | Row | Upkeep reminder | '+{'Warlock':'Demon armor','Mage':'Arcane Intellect',
+                'Priest':'Fortitude','Druid':'Mark of the Wild'}[cls]+' missing',ids)
+        self.assertIn('ForeverHUD | Warlock | Upkeep reminder | Demon armor missing',ids)
+        for d in breathing:
+            self.assertTrue(d['id'].endswith(' missing'),d['id'])
+            self.assertEqual(d['blizzardAuraDisplay']['auraMain'],dict(type='pulse',duration=2.4))
+            trigger=d['triggers'][1]['trigger']
+            self.assertEqual(trigger['secretShowOn'],'showOnMissing',d['id'])
+            self.assertFalse(trigger.get('secretGained'),d['id'])
+        for d in self.regions:
+            if d['id'].endswith(' expiring'):
+                self.assertNotIn('auraMain',d.get('blizzardAuraDisplay') or {},d['id'])
+
     def test_warlock_spell_suggestions(self):
         by_id={d['id']:d for d in self.regions}
         row=by_id['ForeverHUD | Warlock | Suggest']

@@ -1,6 +1,17 @@
-# Validation for 0.13.0
+# Validation for 0.13.1
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.1 (prerelease) — missing upkeep breathes
+
+- **Game evidence (user screenshot, 0.13.0, folded):** the tray's missing Demon Armor icon sits beside the Soul Shard count, as still as the count.
+- **ForeverAuras source (installed addon, read only):**
+  - `BlizzardAuraDisplay.lua:1816`: Aura Main types include `pulse`; `:1870` builds it as a looping alpha 1 → 0.4 → 1 over the set duration.
+  - `:1825`: a Gained flash suppresses Pulse; `GainedSeconds` (`:1747`) is 0 for Show On Missing, so it plays.
+  - `SecretAuraSingle.lua:1010` and `:584`: the Missing look is a sample button styled by `Display.StyleNative`, which adds the Main animation; `SecretAuraPreview.lua:43` plays it at once and again on show.
+- **Change:** `blizzardAuraDisplay.auraMain = {type="pulse", duration=2.4}` on every `… Upkeep reminder | <name> missing` display (tray and HUD).
+- **`tests/test_pack.py`:** the four missing reminders in the tray and Warlock's HUD reminder breathe; only Show On Missing displays without a Gained flash do; expiring reminders don't.
+- **Not yet checked in game.**
 
 ## 0.13.0 (prerelease) — absorb overlay on the Health bar
 
