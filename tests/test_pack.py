@@ -308,6 +308,15 @@ class PackTests(unittest.TestCase):
         # One shared pair serves every class; the power type picks the colour.
         health=by_id[CORE_ID+' | Health']
         self.assertEqual(health['barColor'],rgba(HEALTH_COLOR))
+        # 0.13: native absorb overlay (secret-safe in ForeverAuras), attached at
+        # the full end and growing back, clipped to the bar, one translucent colour.
+        t=health['triggers'][1]['trigger']
+        self.assertEqual((t['use_showAbsorb'],t['absorbMode']),(True,'OVERLAY_FROM_END_REVERSE'))
+        self.assertNotIn('use_showHealAbsorb',t)
+        self.assertTrue(health['overlayclip'])
+        self.assertEqual(len(health['overlays']),1)
+        self.assertLess(health['overlays'][0][3],1,'Translucent over the health fill')
+        self.assertFalse(any(d['triggers'][1]['trigger'].get('use_showAbsorb') for d in self.regions if d['id']!=health['id']),'Only the player Health bar')
         power=by_id[CORE_ID+' | Resource']
         self.assertEqual(power['barColor'],rgba(UNKNOWN_RESOURCE_COLOR))
         self.assertFalse(power['triggers'][1]['trigger'].get('use_powertype',False))

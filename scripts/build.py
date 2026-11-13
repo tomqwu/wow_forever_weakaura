@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.12.1"
+VERSION = "0.13.0"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -67,6 +67,8 @@ SPINE_RIGHT = dict(blizzardFlow=True, blizzardFlowGrowth='RIGHT', blizzardFlowSp
 # wing), bright at the seal and fading outward, shown only in combat.
 GROOVE_W = 184
 GROOVE_X = SEAL_EDGE - 2 + GROOVE_W // 2
+# Pale ice-white, translucent so the health fill under a shield still reads.
+ABSORB_COLOR = (0.82, 0.93, 1.0, 0.6)
 SHELF_Y = 54   # its 8 px box tops out at 58, the suggestion row's bottom edge
 # ForeverAuras Modern Aura Group: a normal group whose Aura (Modern) children
 # are chained by the client and kept centred with half-size shadows, so the
@@ -375,8 +377,15 @@ def generate():
     core['groupIcon']=MEDIA+'crest-warlock.tga'
     resources=CORE_ID+' | Resources'; p.group(resources,CORE_ID,CORE,'base')
     # Measured channel interiors in the packaged AI-painted frame.
-    bar(p,CORE_ID+" | Health",resources,CORE,"resources",dict(type="unit",event="Health",unit="player",use_unit=True),
+    # 0.13: the remaining shield (Ice Barrier, Power Word: Shield, Mana Shield,
+    # Shadow Ward...) as a native ForeverAuras absorb overlay. The client's
+    # total absorb is a secret value the bar draws without Lua reading it.
+    # "Attach to End, backwards" sits at the bar's full end and grows back
+    # over the fill, so a shield still shows at full health; clipped to the bar.
+    health=bar(p,CORE_ID+" | Health",resources,CORE,"resources",dict(type="unit",event="Health",unit="player",use_unit=True,
+        use_showAbsorb=True,absorbMode='OVERLAY_FROM_END_REVERSE'),
         x=-138,y=13,width=180,height=13,color=rgba(HEALTH_COLOR),label='Health')
+    health.update(overlays=[list(ABSORB_COLOR)],overlayclip=True)
     # No explicit powertype: Druid forms, Warrior rage and Rogue energy
     # follow the client's current resource automatically.
     bar(p,CORE_ID+" | Resource",resources,CORE,"resources",dict(type="unit",event="Power",unit="player",use_unit=True),

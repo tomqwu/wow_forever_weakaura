@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.13.0 — 2026-11-13 (prerelease)
+
+- **See your shield** (user: "for mage ice shield left over amount we should have visualization to show?"; "can you check if foreveraura supports this type?"; "Yes, build it").
+  - The Core Health bar uses ForeverAuras' native **Fetch Absorb**. Your remaining absorb (Ice Barrier, Mana Shield, Power Word: Shield, Shadow Ward and the like) is a pale ice-white segment at the bar's full end, growing back over the fill. It shows at full health and shrinks as the shield is hit.
+  - It's checked in the installed ForeverAuras source:
+    - The option is offered only when the client has `UnitGetTotalAbsorbs`.
+    - The overlay passes the hidden combat value straight to the client's status bars.
+    - A ForeverAuras fix records the absorb overlay as already seen in game.
+  - There's no number. Hiding a "0" when no shield is up would need a comparison the client doesn't allow in combat.
+  - Whether this server counts each shield toward the total absorb is still to be confirmed in game. If it doesn't, nothing shows and nothing breaks.
+- Update the Core in `/fa`, choosing **Update Auras**.
+
 ## 0.12.1 — 2026-11-13 (prerelease)
 
 - **Shelf lines instead of grey boxes** (user screenshot on 0.12.0: "bugged?"; fix chosen: "Yes, fix it").
