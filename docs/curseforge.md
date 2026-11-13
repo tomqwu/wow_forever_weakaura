@@ -15,12 +15,12 @@ Everything needed to create the ForeverHUD project on CurseForge. Creating the p
 | Summary (≤ 255 characters) | A class combat HUD for WoW Forever: one shared Core plus your class, damage left and everything else right, native combat-safe tracking, a retracted seal and tray, and spell suggestions. |
 | Logo | [`assets/curseforge/logo-400.png`](../assets/curseforge/logo-400.png) (400×400). A 256 px copy is alongside it. |
 | Primary category | Combat |
-| Other categories | Buffs & Debuffs; HUDs; Class: Warlock (and the other classes); Unit Frames |
+| Other categories | Buffs & Debuffs; HUDs; Unit Frames; every class category (all nine classes are supported) |
 | License | As in [`LICENSE`](../LICENSE) |
 | Source | https://github.com/tomqwu/wow_forever_weakaura |
 | Issues | https://github.com/tomqwu/wow_forever_weakaura/issues |
 
-Regenerate the logo with `python scripts/curseforge_logo.py`. It's composed from the painted seal master `assets/ai/warlock-seal.png`; no new art is generated.
+Regenerate the logo with `python scripts/curseforge_logo.py`. It's a 3×3 grid of all nine painted class seals (`src/ForeverHUD/Media/crest-<class>.png`), Warlock in the centre, because ForeverHUD supports every class. No new art is generated.
 
 ## Description
 
