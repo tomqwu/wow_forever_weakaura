@@ -1,5 +1,7 @@
 # ForeverHUD · Class Combat HUD
 
+<p align="center"><img src="assets/curseforge/logo-256.png" width="160" alt="ForeverHUD logo: the nine class seals"></p>
+
 ## English
 
 **Version 0.9.5 — tray icons really match (prerelease).** The Soul Shards tray icon now uses the same tight frame as the reminder icons beside it, so the frames no longer differ in size or overlap. The tray row also has a little more spacing. Update your class in `/fa`, choosing **Update Auras**. **0.9.4 — hover to peek.** Hovering the folded seal out of combat shows the whole HUD as a faint ghost, inviting a click. Click to open it fully; move away and it folds straight back. Entering combat drops the ghost to full opacity. **0.9.3 — matching tray icons.** Soul Shards now has the same dark inner ring as the reminder icons beside it, so every tray icon looks alike. ForeverAuras draws reminders with the game's own aura button, which can't be restyled. Update your class in `/fa`, choosing **Update Auras**. **0.9.2 — one-row tray.** The retracted tray is a single centred horizontal row under the seal, with every icon in the same style. Soul Shards show one count in the corner, like the other icons. **0.9.1:** the tray no longer shows health % and mana %. It keeps only Soul Shards, missing upkeep buffs and food, drink or Well Fed. Update your class in `/fa`, choosing **Update Auras**. **0.9.0 — spell suggestions.** Warlocks get a row of suggestions above the seal, in priority order from left to right:
