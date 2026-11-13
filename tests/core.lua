@@ -30,7 +30,7 @@ function Frame:GetChecked()return self.checked end
 function Frame:SetValue(value)self.valueNumber=value;if self.scripts.OnValueChanged then self.scripts.OnValueChanged(self,value)end end
 function Frame:GetCenter()return self.x or 1000,self.y or 600 end
 function Frame:StopMovingOrSizing()self.stopped=true end
-for _,key in ipairs({"RegisterForClicks","RegisterForDrag","SetFrameStrata","SetAllPoints","SetColorTexture","SetMovable","SetClampedToScreen","SetBackdrop","SetBackdropColor","SetBackdropBorderColor","StartMoving","SetFont","SetTextColor","SetWidth","SetJustifyH","EnableMouse","SetMinMaxValues","SetValueStep","SetObeyStepOnDrag"})do Frame[key]=function()end end
+for _,key in ipairs({"RegisterForClicks","RegisterForDrag","SetFrameStrata","SetAllPoints","SetColorTexture","SetMovable","SetClampedToScreen","SetBackdrop","SetBackdropColor","SetBackdropBorderColor","StartMoving","SetFont","SetTextColor","SetWidth","SetJustifyH","EnableMouse","SetMinMaxValues","SetValueStep","SetObeyStepOnDrag","SetTexture","SetTexCoord"})do Frame[key]=function()end end
 function CreateFrame(_,name,parent,template)
     local frame=setmetatable({scripts={},events={},parent=parent},Frame)
     if template=="UICheckButtonTemplate" then frame.Text=frame:CreateFontString()end
@@ -153,7 +153,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.2','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.3','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return ForeverHUD and ForeverHUD.version=="0.3.2" and ForeverHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true
@@ -175,4 +175,28 @@ check(E.bindTimer and E.bindAttempts==1201,'A long import keeps a slow bind retr
 E.Shutdown();importing=false
 ForeverAuras.IsImporting=nil
 ForeverAuras.GetData=nil;ForeverAuras.GetRegion=previousGetRegion
+-- 0.13.3 install cue: shown folded and out of combat while an aura group is
+-- missing or older; clicking it imports; it goes once both are current.
+local builds={['ForeverHUD | Core']=50,['ForeverHUD | Warlock']=40}
+E.bundledImports={
+    CORE={rootID='ForeverHUD | Core',build=50,version='0.13.3',encoded='core',slug='forever-hud-core'},
+    WARLOCK={rootID='ForeverHUD | Warlock',build=50,version='0.13.3',encoded='warlock',slug='forever-hud-warlock'}}
+ForeverAuras.GetData=function(id)return builds[id] and {url='https://wago.io/x/'..builds[id]} or nil end
+local imported
+ForeverAuras.Import=function(encoded)imported=encoded end
+class='WARLOCK';E.InitDB();E.Reset();E.state=nil
+E.RefreshInstallCue(true)
+check(E.installCue.shown and #E.cueProblems==1 and E.cueProblems[1]:find('Warlock'),'An older class group shows the install cue with its reason')
+check(E.installCue.point[5]==E.Profile().y+E.INSTALL_CUE.y and E.INSTALL_CUE.y==-109,'The cue sits on its own line under the tray')
+local cueTimer=timers[#timers]
+E.installCue.scripts.OnClick(E.installCue)
+check(imported=='warlock','Clicking the cue opens the next import')
+InCombatLockdown=function()return true end;E.Notify();check(not E.installCue.shown,'The cue hides in combat')
+InCombatLockdown=function()return false end;E.Notify();check(E.installCue.shown,'The cue returns after combat')
+builds['ForeverHUD | Warlock']=50;cueTimer.callback()
+check(not E.installCue.shown and #E.cueProblems==0,'A finished update clears the cue on the next look')
+builds['ForeverHUD | Core']=nil;E.RefreshInstallCue(true)
+check(E.installCue.shown and E.cueProblems[1]:find('Core'),'A missing Core shows the cue')
+E.Shutdown();check(not E.installCue.shown,'World leave hides the cue')
+E.bundledImports=nil;ForeverAuras.GetData=nil;ForeverAuras.Import=nil;E.cueProblems=nil
 print("Companion behaviour checks passed: "..checks)

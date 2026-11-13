@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.3 — 2026-11-13 (prerelease)
+
+- **An install icon under the folded seal** (user: "the class icon should have an additional icon along side of other missing spells if aura needs to be installed/updated").
+  - While the Core or class group is missing, older than the addon, or left detached by a stopped import, a gear icon sits on its own line under the tray. It's shown only out of combat, while the HUD is folded (or when no ForeverHUD group is installed yet).
+  - It has the tray icons' ring and frame and breathes like a missing buff (2.4 s, 40%). Hover for the same reasons `/fhud` lists; click to run `/fhud install`.
+  - The companion draws it, since an aura can't show that it is itself missing or old. It checks the installed builds again every 3 seconds while shown and after every import, so it goes away once both groups are current.
+- `/reload` is enough. The icon needs no aura update; update the Core and your class when it asks.
+
 ## 0.13.2 — 2026-11-13 (prerelease)
 
 - **A smaller folded seal** (user, with a screenshot of the folded seal and tray: "smaller 10%"; "the class icon"). The retracted class seal is 118 px, down from 132. The tray row moved from y=-74 to y=-67, so it keeps its 4 px gap under the seal.

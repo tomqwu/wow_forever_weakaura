@@ -1,6 +1,12 @@
-# Validation for 0.13.2
+# Validation for 0.13.3
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.3 (prerelease) — install icon under the folded seal
+
+- **Change (companion, `Core.lua`):** a plain `Button` on `UIParent`, not in any native aura ancestry. It's shown when `E.AuraProblems()` is non-empty, the profile is enabled, the world is live, out of combat, and the HUD is folded or no root is installed. It sits at the anchor's x and y − 109 (tray row −67, 34 px icon, 8 px gap), scaled with the profile. Dark ring, `Trade_Engineering` icon, `Media/icon-frame` (an existing texture, so no restart), and a looping alpha 1 → 0.4 → 1 over 2.4 s. A click runs `E.InstallBundled()` out of combat. The installed builds are read again on entering the world, after each import (`finishBind`) and every 3 s while shown.
+- **`tests/core.lua`:** shown with its reason for an older class group, its position, the click import, hidden in combat and back after, cleared once current, a missing Core, and hidden on world leave.
+- **Not yet checked in game.**
 
 ## 0.13.2 (prerelease) — smaller folded seal
 

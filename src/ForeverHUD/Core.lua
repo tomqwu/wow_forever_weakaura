@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.13.2"
+E.releaseVersion = "0.13.3"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -221,6 +221,7 @@ function E.Notify()
     if E.RefreshFX then E.RefreshFX(false) end
     if E.RefreshAlerts then E.RefreshAlerts() end
     handle:SetShown(#rootRegions() > 0 and E.Gate("base", E.class) and (p.art or not p.locked))
+    if E.RefreshInstallCue then E.RefreshInstallCue(false) end
     if api and api.ScanEvents then api.ScanEvents("FOREVERHUD_UPDATE") end
 end
 function E.ApplyLayout()
@@ -269,6 +270,8 @@ local function finishBind()
     E.ApplyLayout()
     if E.discovery then E.discovery.Schedule() end
     if E.RefreshFX then E.RefreshFX(true) end
+    -- An import just finished: it may have installed or updated a group.
+    if E.RefreshInstallCue then E.RefreshInstallCue(true) end
     -- Hook each root region once: roots can switch between the combined and
     -- standalone Core/class groups, and re-hooking would stack handlers.
     for _,region in ipairs(rootRegions()) do
@@ -492,6 +495,73 @@ function E.InstallBundled(force)
         print('ForeverHUD: '..E.L('After "%s" is installed, run /fhud install again for "%s".'):format(bundle.rootID,later.rootID))
     end
 end
+-- 0.13.3 install cue. While the HUD is folded out of combat, an icon on a
+-- second line under the tray says this character's auras are missing, older
+-- than the addon or left detached. The companion draws it: an aura cannot
+-- show that it is itself missing or old. It uses the tray icons' look (dark
+-- ring, ornate frame) and breathes like a missing buff. A click runs
+-- /fhud install. Offsets follow the folded seal (centre y=13, 118 px), the
+-- tray row (y=-67, 34 px icons) and the row gap (8 px).
+E.INSTALL_CUE = {size=34, y=-67-34-8, icon="Interface\\Icons\\Trade_Engineering", breath=2.4}
+local cue = CreateFrame("Button", nil, UIParent)
+cue:SetSize(E.INSTALL_CUE.size, E.INSTALL_CUE.size)
+cue:RegisterForClicks("LeftButtonUp")
+cue:SetFrameStrata("MEDIUM")
+cue:Hide()
+E.installCue = cue
+local cueRing = cue:CreateTexture(nil, "BACKGROUND")
+cueRing:SetAllPoints(); cueRing:SetColorTexture(0.04, 0.03, 0.06, 1)
+local cueArt = cue:CreateTexture(nil, "ARTWORK")
+cueArt:SetPoint("TOPLEFT", 3, -3); cueArt:SetPoint("BOTTOMRIGHT", -3, 3)
+cueArt:SetTexture(E.INSTALL_CUE.icon); cueArt:SetTexCoord(0.09, 0.91, 0.09, 0.91)
+local cueFrame = cue:CreateTexture(nil, "OVERLAY")
+cueFrame:SetPoint("TOPLEFT", -3, 3); cueFrame:SetPoint("BOTTOMRIGHT", 3, -3)
+cueFrame:SetTexture("Interface\\AddOns\\ForeverHUD\\Media\\icon-frame")
+if cue.CreateAnimationGroup then
+    local breath = cue:CreateAnimationGroup(); breath:SetLooping("REPEAT")
+    for order, from in ipairs({1, 0.4}) do
+        local step = breath:CreateAnimation("Alpha")
+        step:SetFromAlpha(from); step:SetToAlpha(from == 1 and 0.4 or 1)
+        step:SetDuration(E.INSTALL_CUE.breath / 2); step:SetOrder(order)
+    end
+    cue:SetScript("OnShow", function() breath:Play() end)
+    cue:SetScript("OnHide", function() breath:Stop() end)
+end
+local cueTimer
+-- recheck: read the installed builds again (cheap otherwise, so Notify can call it).
+function E.RefreshInstallCue(recheck)
+    if recheck or E.cueProblems == nil then E.cueProblems = E.AuraProblems() end
+    local p = E.Profile()
+    local folded = E.state == nil or (E.state.world == true and not E.state.Visible())
+    local show = p ~= nil and p.enabled and #E.cueProblems > 0 and E.LiveWorld() and not E.InCombat()
+        and (folded or #rootRegions() == 0)
+    if show then
+        cue:SetScale(p.scale); cue:ClearAllPoints()
+        cue:SetPoint("CENTER", UIParent, "CENTER", p.x/p.scale, p.y/p.scale + E.INSTALL_CUE.y)
+    end
+    cue:SetShown(show == true)
+    -- While shown, look again every few seconds, so an import made in /fa clears it.
+    if show and not cueTimer and C_Timer and C_Timer.NewTimer then
+        cueTimer = C_Timer.NewTimer(3, function() cueTimer = nil; E.RefreshInstallCue(true) end)
+    end
+end
+function E.StopInstallCue()
+    if cueTimer then cueTimer:Cancel(); cueTimer = nil end
+    cue:Hide()
+end
+cue:SetScript("OnClick", function()
+    if E.InCombat() then return end
+    E.InstallBundled()
+    E.RefreshInstallCue(true)
+end)
+cue:SetScript("OnEnter", function()
+    GameTooltip:SetOwner(cue, "ANCHOR_RIGHT")
+    GameTooltip:SetText(E.L("ForeverHUD auras need installing or updating"))
+    for _, line in ipairs(E.cueProblems or {}) do GameTooltip:AddLine(line, 1, 0.82, 0, true) end
+    GameTooltip:AddLine(E.L("Click to install or update. In the window, choose Update Auras."), 0.6, 0.9, 0.6, true)
+    GameTooltip:Show()
+end)
+cue:SetScript("OnLeave", function() GameTooltip:Hide() end)
 local hoverTimer
 local function stopHover()
     if hoverTimer then hoverTimer:Cancel(); hoverTimer = nil end
@@ -596,6 +666,7 @@ function E.Shutdown()
     if E.StopAlerts then E.StopAlerts() end
     E.hovering, E.utilityPinned = false, false
     handle:Hide()
+    E.StopInstallCue()
     local api = E.API()
     if api and api.SetLoadFlag then
         api.SetLoadFlag('FOREVERHUD_WARRIOR_pet_offhand',false)
@@ -644,7 +715,7 @@ events:SetScript("OnEvent", function(_, event, addon)
         E.InitDB(); E.ApplyLayout()
         if E.discovery then E.discovery.Start() end
         if E.state then E.state.Start() end
-        if event == "PLAYER_ENTERING_WORLD" then E.RegisterBundledImport(); E.CheckDetached(); E.CheckLegacy(); E.CheckOldLayout(); E.CheckAuras() end
+        if event == "PLAYER_ENTERING_WORLD" then E.RegisterBundledImport(); E.CheckDetached(); E.CheckLegacy(); E.CheckOldLayout(); E.CheckAuras(); E.cueProblems = nil end
     end
     E.Notify()
 end)
