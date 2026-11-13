@@ -77,5 +77,36 @@ combat=false;S.events.scripts.OnEvent(nil,'PLAYER_REGEN_ENABLED');exists=false;S
 S.Inspect();local inspection=S.inspectTimer
 E.handle.scripts.OnClick(E.handle,'LeftButton')
 check(inspection.cancelled and not S.inspectTimer and not S.open,'Click can cancel slash-command temporary inspection')
+-- 0.9.4 hover peek: the folded seal shows a faint ghost of the whole HUD.
+do
+    local alphas={}
+    local root={SetRegionAlpha=function(_,a)alphas[#alphas+1]=a end}
+    local oldRegion,oldData=ForeverAuras.GetRegion,ForeverAuras.GetData
+    ForeverAuras.GetRegion=function()return root end
+    ForeverAuras.GetData=function()return nil end
+    combat=false;exists=false;S.inspected=false;S.manualFold=false;S.Update(true)
+    local opacity=E.Profile().opacity
+    check(not S.open,'Folded before hovering')
+    E.Hover(true)
+    check(E.peeking and S.open and math.abs(alphas[#alphas]-opacity*E.PEEK_ALPHA)<1e-9,'Hovering the folded seal opens a faint ghost')
+    -- Leaving starts a short grace timer; its end ends the peek (SetPeek(false)).
+    E.Hover(false)
+    check(E.peeking,'The ghost stays during the short leave grace')
+    E.SetPeek(false)
+    check(not E.peeking and not S.open and not S.closeTimer and alphas[#alphas]==opacity,'Leaving folds straight back at full opacity')
+    E.Hover(true)
+    E.handle.scripts.OnClick(E.handle,'LeftButton')
+    check(not E.peeking and S.open and S.inspected and alphas[#alphas]==opacity,'Clicking the ghost opens the HUD for real')
+    E.handle.scripts.OnClick(E.handle,'LeftButton');E.Hover(false);E.SetPeek(false)
+    check(not S.open,'A second click folds it again')
+    E.Hover(true)
+    E.events.scripts.OnEvent(nil,'PLAYER_REGEN_DISABLED')
+    check(not E.peeking and alphas[#alphas]==opacity,'Combat start drops the ghost to full opacity')
+    combat=true;E.SetPeek(false);E.Hover(false)
+    E.SetPeek(true)
+    check(not E.peeking,'No peek in combat')
+    combat=false
+    ForeverAuras.GetRegion,ForeverAuras.GetData=oldRegion,oldData
+end
 S.Stop()
 print('HUD state checks passed: '..checks)

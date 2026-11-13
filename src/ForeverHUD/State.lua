@@ -43,6 +43,7 @@ function S.Update(silent,combatExit)
     if combat==nil then combat=E.InCombat() end
     local want=preview or (p.expandCombat and combat)
         or (not S.manualFold and (S.inspected or E.inspectingSettings or S.HostileTarget()))
+        or E.peeking == true
     if want then cancel('closeTimer'); S.Goal(true,silent)
     elseif combatExit then cancel('closeTimer');S.Goal(false,silent)
     elseif S.open and not silent then
