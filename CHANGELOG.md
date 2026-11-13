@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.5 — unreleased (prerelease)
+
+- **Tray icons really match** (user: "you never fixed", with a screenshot after updating to 0.9.4). The 0.9.3 ring wasn't the visible difference. Measured in game, ForeverAuras puts our frame tight around a native button's art (about 43 px on screen). The ordinary Soul Shards icon drew it 8 px outside the art (about 56 px), so it looked bigger and overlapped its neighbour.
+  - The counter's frame outset is now 3 px, like the native buttons.
+  - The tray row's spacing goes from 2 to 8, so frames don't overlap.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.9.4 — 2026-11-12 (prerelease)
 
 - **Hover to peek** (user: "when mouseover to the foldable class image, can you have an effect where the whole bar in a faded out? so it will encourage/invite people to click?"). Hovering the folded seal out of combat opens the HUD as a ghost at 35% of your opacity setting.
