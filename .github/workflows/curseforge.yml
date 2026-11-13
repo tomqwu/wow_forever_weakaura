@@ -18,6 +18,9 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # The token lives in this environment, which only main may use, so a run
+    # from an unreviewed branch never receives it.
+    environment: curseforge
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Test publisher

@@ -43,7 +43,7 @@ Screenshots: `docs/images/game-0.7.0-warlock-hud.png` (in game) and the gallery 
 
 The **Publish ForeverHUD to CurseForge** workflow (`.github/workflows/curseforge.yml`, script `scripts/curseforge.py`) uploads an existing GitHub release. It's run by hand:
 
-1. One-time setup: the repository secret `CURSE_FORGE` holds a CurseForge API token (create it at https://legacy.curseforge.com/account/api-tokens), and the repository variable `CURSEFORGE_PROJECT_ID` is `1801711`.
+1. One-time setup: the GitHub environment **curseforge** (Settings → Environments) holds the secret `CURSE_FORGE`, a CurseForge API token from https://legacy.curseforge.com/account/api-tokens, and the variable `CURSEFORGE_PROJECT_ID` = `1801711`. Only `main` may use the environment, so a run from an unreviewed branch never gets the token. Rotate the token there.
 2. Run it with the release tag and **dry run** on (the default). That downloads `ForeverHUD-vX.Y.Z.zip`, checks the TOC version against the tag and the interface (1.60 family), and finds exactly one CurseForge game version named after the interface (`16001` → `1.60.1`). Nothing is uploaded.
 3. Run it again with **dry run** off. It uploads as **Beta**, named `ForeverHUD X.Y.Z`, with the GitHub release notes as the changelog.
 
