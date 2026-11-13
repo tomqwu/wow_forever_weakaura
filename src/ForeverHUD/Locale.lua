@@ -76,6 +76,8 @@ local strings = {
     ['"%s" is older than this addon (%s).'] = "“%s”比插件旧（%s）。",
     ["Your ForeverHUD auras are missing or older than the addon. Type /fhud install (or open /fa) and choose Update Auras."] = "你的 ForeverHUD 光环缺失或比插件旧。请输入 /fhud install（或打开 /fa），并选择 Update Auras（更新光环）。",
     ["Auras up to date"] = "光环已是最新",
+    ["ForeverHUD auras need installing or updating"] = "ForeverHUD 光环需要安装或更新",
+    ["Click to install or update. In the window, choose Update Auras."] = "点击安装或更新。在弹出的窗口中选择 Update Auras（更新光环）。",
     ["Install / update auras"] = "安装/更新光环",
     ["Warlock"] = "术士", ["Warrior"] = "战士", ["Mage"] = "法师",
     ["Priest"] = "牧师", ["Rogue"] = "盗贼", ["Druid"] = "德鲁伊",
