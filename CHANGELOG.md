@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.7 — 2026-11-12 (prerelease)
+
+- **Suggestions stay right above your DoTs** (user screenshot on 0.9.6: the suggestions had jumped up, leaving a gap; "just above the dps spell is fine").
+  - In 0.9.6 the row moved above the left cooldown wing whenever that wing had entries. Native Essential cooldowns can show only while on cooldown, so the gap was usually empty.
+  - The suggestions now stay at y=74. For a class with suggestions turned on, the left wing rises 34 px instead, above the suggestions. The right wing doesn't move.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.9.6 — 2026-11-12 (prerelease)
 
 - **Suggestions on the damage side** (user: "recommendation can be on the left? a bit lower, right above normal dps spell"). The spell suggestion row moves from above the seal to the left, centred over Health at y=74, 4 px above the DoT row.

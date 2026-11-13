@@ -34,18 +34,15 @@ check(selected('Drain Life') and not selected('Drain Soul'),'Learned slot fallba
 check(selected('Health Funnel').x-selected('Fear').x==47,'Unlearned priority slots compact without gaps or reordered learned skills')
 check(selected('Shadow Bolt').x<0 and selected('Life Tap').x>0,'Class plans put attacks left over Health and support right')
 do
-    -- 0.9.6: suggestions sit over Health; a shown left wing lifts them above it.
-    local row=ForeverAuras.GetRegion('ForeverHUD | Warlock | Suggest')
-    check(row.x==-138 and row.y==120 and S.suggestLifted,'Suggestions rise above a shown left (attack) wing')
-    loadout('WARLOCK',{'Life Tap','Fear','Health Funnel'})
-    check(row.x==-138 and row.y==74 and not S.suggestLifted,'Without a left wing, suggestions sit right above the DoT row')
-    local inCombat=E.InCombat
-    E.InCombat=function()return true end
-    loadout('WARLOCK',{'Shadow Bolt','Corruption','Life Tap'})
-    check(row.y==74,'The suggestion row never moves in combat')
-    E.InCombat=inCombat
-    S.Refresh()
-    check(row.y==120,'After combat the lift applies')
+    -- 0.9.7: suggestions stay right above the DoT row; the left (attack)
+    -- wing rises above them, the right wing stays put.
+    local function region(name)return ForeverAuras.GetRegion('ForeverHUD | Warlock | Primary | '..name)end
+    check(region('Shadow Bolt').y==34 and region('Life Tap').y==0,'Left wing lifts above the suggestions; right wing unchanged')
+    check(not frames['ForeverHUD | Warlock | Suggest'],'The suggestion row itself is never moved')
+    E.Profile().suggest=false;S.Refresh()
+    check(region('Shadow Bolt').y==0,'With suggestions off, the left wing stays at its normal height')
+    E.Profile().suggest=true;S.Refresh()
+    check(region('Shadow Bolt').y==34,'Turning suggestions back on lifts it again')
 end
 do
     -- 0.7: each side is centred on its bar (x=±138) and grows both ways.

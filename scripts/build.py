@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.9.6"
+VERSION = "0.9.7"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -58,13 +58,14 @@ BAR_X = 138
 # ForeverAuras Modern Aura Group: a normal group whose Aura (Modern) children
 # are chained by the client and kept centred with half-size shadows, so the
 # row re-centres in combat without any Lua reading aura state.
-# 0.9 spell suggestions, highest priority first. 0.9.6: they sit on the
+# 0.9 spell suggestions, highest priority first. Since 0.9.6 they sit on the
 # damage side, centred over Health, directly above the DoT row (top y=54).
-# When the left cooldown wing (40 px icons at PRIMARY_Y, y 60..100) has
-# entries, the companion lifts the row above it (Selection.lua, SUGGEST_*).
+# 0.9.7: they stay there; for classes with suggestions the companion lifts
+# the left cooldown wing (40 px icons at PRIMARY_Y) by WING_LIFT so it
+# clears them (Selection.lua, S.WING_LIFT).
 SUGGEST_SIZE = 32
 SUGGEST_Y = DOT_ROW_Y + DOT_SIZE // 2 + 4 + SUGGEST_SIZE // 2
-SUGGEST_LIFTED_Y = PRIMARY_Y + 40 // 2 + 4 + SUGGEST_SIZE // 2
+WING_LIFT = SUGGEST_Y + SUGGEST_SIZE // 2 + 4 + 40 // 2 - PRIMARY_Y
 SUGGEST_STEP = 36
 SUGGESTIONS = {
     'WARLOCK': [
