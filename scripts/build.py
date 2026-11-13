@@ -67,7 +67,7 @@ SPINE_RIGHT = dict(blizzardFlow=True, blizzardFlowGrowth='RIGHT', blizzardFlowSp
 # wing), bright at the seal and fading outward, shown only in combat.
 GROOVE_W = 184
 GROOVE_X = SEAL_EDGE - 2 + GROOVE_W // 2
-SHELF_Y = 55
+SHELF_Y = 54   # its 8 px box tops out at 58, the suggestion row's bottom edge
 # ForeverAuras Modern Aura Group: a normal group whose Aura (Modern) children
 # are chained by the client and kept centred with half-size shadows, so the
 # row re-centres in combat without any Lua reading aura state.

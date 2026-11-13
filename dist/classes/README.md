@@ -17,7 +17,7 @@ Use the combined import for a fresh nine-class installation or to update an exis
 | Priest | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 12,458 | 108 |
 | Rogue | [ForeverHUD-Rogue.txt](ForeverHUD-Rogue.txt) | 12,684 | 106 |
 | Druid | [ForeverHUD-Druid.txt](ForeverHUD-Druid.txt) | 13,724 | 121 |
-| Hunter | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 13,717 | 117 |
+| Hunter | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 13,718 | 117 |
 | Shaman | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 12,080 | 101 |
 | Paladin | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 12,104 | 104 |
 
@@ -38,6 +38,6 @@ Use the combined import for a fresh nine-class installation or to update an exis
 | 牧师 | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 12,458 | 108 |
 | 盗贼 | [ForeverHUD-Rogue.txt](ForeverHUD-Rogue.txt) | 12,684 | 106 |
 | 德鲁伊 | [ForeverHUD-Druid.txt](ForeverHUD-Druid.txt) | 13,724 | 121 |
-| 猎人 | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 13,717 | 117 |
+| 猎人 | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 13,718 | 117 |
 | 萨满祭司 | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 12,080 | 101 |
 | 圣骑士 | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 12,104 | 104 |

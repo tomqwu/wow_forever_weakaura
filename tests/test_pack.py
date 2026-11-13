@@ -273,13 +273,13 @@ class PackTests(unittest.TestCase):
             self.assertFalse(any(' | Groove | ' in k for k in kids),'No groove slabs')
             for name,x,mirror in (('Left',-142,True),('Right',142,False)):
                 g=by_id[f"ForeverHUD | {c['name']} | Shelf | {name}"]
-                self.assertEqual((g['xOffset'],g['yOffset'],g['width'],g['height'],g['mirror']),(x,55,184,8,mirror),g['id'])
+                self.assertEqual((g['xOffset'],g['yOffset'],g['width'],g['height'],g['mirror']),(x,54,184,8,mirror),g['id'])
                 self.assertTrue(g['texture'].endswith('shelf.tga'))
                 self.assertGreater(kids.index(g['id']),chassis,'Drawn over the chassis')
                 gate=g['triggers'][2]['trigger']['custom']
                 self.assertIn('ForeverHUD.InCombat()',gate)
                 self.assertIn('not ForeverHUD.Retracted()',gate)
-        self.assertLess(55+4,74-16,'Left shelf sits under the suggestion row')
+        self.assertLessEqual(54+4,74-16,'Left shelf sits under the suggestion row')
         for side,growth in (('left','LEFT'),('right','RIGHT')):
             self.assertEqual(by_id[f'ForeverHUD | Warlock | Primary | Native {side}']['grow'],growth,'Wings grow out from the seal')
         self.assertEqual(by_id[CORE_ID+' | Native player effects | Entries']['width'],by_id['ForeverHUD | Warlock | Target effects | Immolate']['width'],'Same icon size as the DoT row')
