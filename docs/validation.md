@@ -10,6 +10,7 @@ Sections below 0.4.0 describe releases made under the Eclipse name and keep the 
   - Clicking the ghost opens the HUD for real at full opacity, and a second click folds it.
   - Combat start drops the ghost to full opacity, and there's no peek in combat.
 - **Not verified in game:** the fade and motion, and the alpha of native aura children under the root.
+- **Published 2026-11-12:** all 14 downloaded release assets match the build, and the 38 runtime files match the source. Installed over 0.9.3, with all 38 files verified (4 changed). The 0.9.3 folder was backed up and verified first, and SavedVariables were not touched. This is file evidence, not game-client evidence.
 
 ## 0.9.3 (prerelease) — matching tray icons
 
