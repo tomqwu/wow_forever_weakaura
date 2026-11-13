@@ -367,8 +367,13 @@ class PackTests(unittest.TestCase):
             self.assertEqual(len(sizes),1,'Same icon size across the row')
         shards=by_id['ForeverHUD | Warlock | Tray | Row | Soul Shards']
         self.assertEqual(by_id['ForeverHUD | Warlock | Tray | Row']['controlledChildren'][0],shards['id'],'The counter leads the row')
-        self.assertFalse(shards['subRegions'][2]['text_visible'],'One count, in the corner')
-        self.assertTrue(shards['subRegions'][3]['text_visible'])
+        texts={s['text_text']:s['text_visible'] for s in shards['subRegions'] if s['type']=='subtext'}
+        self.assertEqual(texts,{'%p':False,'%s':True},'One count, in the corner')
+        # 0.9.3: the native buttons' dark inner ring, under the frame.
+        kinds=[s['type'] for s in shards['subRegions']]
+        self.assertLess(kinds.index('subborder'),kinds.index('subtexture'),'Ring under the ornate frame')
+        ring=shards['subRegions'][kinds.index('subborder')]
+        self.assertEqual((ring['border_size'],ring['border_offset']),(3,0))
         self.assertIn('ForeverHUD | Warlock | Tray | Row | Upkeep reminder | Demon armor missing',by_id)
         self.assertNotIn('ForeverHUD | Warlock | Tray | Row | Food',self.eligibility,'Name-matched icons skip spell discovery')
 

@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.9.2"
+VERSION = "0.9.3"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -74,6 +74,9 @@ SUGGESTIONS = {
 # 0.8 retracted mode: larger seal and the tray under it.
 RETRACTED_SEAL = 132
 TRAY_ICON = 34
+# The native aura buttons' dark inner ring, copied on the ordinary tray icon.
+TRAY_RING = 3
+TRAY_RING_COLOR = [0.04, 0.03, 0.06, 1]
 TRAY_ROW1_Y = -74
 CENTRED_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='CENTER_HORIZONTAL', blizzardFlowSpacing=2)
 # Class-plan secondary rows by side: damage left, support right.
@@ -515,7 +518,14 @@ def generate():
                 use_itemName=True,use_exact_itemName=True,use_includeBank=False,use_includeWarBandBank=False,use_includeCharges=False),
                 TRAY_ICON)
             # One count, in the corner like the other tray icons' stacks.
-            shards['subRegions'][2]['text_visible']=False
+            for sub in shards['subRegions']:
+                if sub.get('type')=='subtext' and sub.get('text_text')=='%p': sub['text_visible']=False
+            # Same look as the Modern aura icons beside it: ForeverAuras draws
+            # those as native aura buttons, art inset inside a dark ring that
+            # cannot be restyled, so this ordinary icon copies the ring (under
+            # the frame, above the art).
+            shards['subRegions'].insert(1,dict(type='subborder',border_visible=True,border_color=TRAY_RING_COLOR,
+                border_edge='Square Full White',border_size=TRAY_RING,border_offset=0))
         upkeeps=[(seeds,name) for seeds,name,missing in UPKEEP.get(cls,[]) if missing]
         if cls=='WARLOCK': upkeeps.append(([687,706,28176],'Demon armor'))
         for seeds,name in upkeeps:
