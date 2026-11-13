@@ -15,7 +15,7 @@ from build import rgba
 def sections(c):
     """Class sections in draw order; Resources only for a pet or class extra."""
     return (['Frame']+(['Resources'] if c.get('pet') or c.get('extra') else [])+['Primary','Utility','Auras','Nameplates','Tray']
-        +(['Suggest'] if c['name']=='Warlock' else [])+['Alerts'])
+        +['Suggest','Alerts'])
 CORE_SECTIONS=['Resources','Native rows','Native auras']
 
 def subtree(by_id,root):
@@ -384,16 +384,33 @@ class PackTests(unittest.TestCase):
     def test_warlock_spell_suggestions(self):
         by_id={d['id']:d for d in self.regions}
         row=by_id['ForeverHUD | Warlock | Suggest']
-        names=[id.split(' | ')[-1] for id in row['controlledChildren']]
-        self.assertEqual(names,['Life Tap','Corruption','Immolate','Shadow Trance','Health Funnel'],'Priority order, left to right')
-        xs=[by_id[id]['xOffset'] for id in row['controlledChildren']]
-        self.assertEqual(sum(xs),0,'Centred within the row')
+        # 0.10: one list per spec; Leveling keeps the 0.9 display IDs.
+        lists={}
+        for id in row['controlledChildren']:
+            lists.setdefault(self.eligibility[id]['spec'],[]).append(id)
+        self.assertEqual(set(lists),{'Leveling','Affliction','Demonology','Destruction'})
+        names=lambda spec:[id.split(' | ')[-1] for id in lists[spec]]
+        self.assertEqual(names('Leveling'),['Life Tap','Corruption','Immolate','Shadow Trance','Health Funnel'],'Priority order, left to right')
+        self.assertTrue(all(id.count(' | ')==3 for id in lists['Leveling']),'Leveling keeps the 0.9 IDs')
+        self.assertEqual(names('Affliction'),['Life Tap','Corruption','Bane of Agony','Siphon Life','Shadow Trance'])
+        self.assertEqual(names('Demonology'),['Life Tap','Corruption','Immolate','Bane of Agony','Health Funnel'])
+        self.assertEqual(names('Destruction'),['Life Tap','Immolate','Conflagrate','Backlash','Shadowburn'])
+        for spec,ids in lists.items():
+            xs=[by_id[id]['xOffset'] for id in ids]
+            self.assertEqual(sum(xs),0,f'{spec} list centred within the row')
+            self.assertLessEqual(len(ids),5,'Stays over the Health bar')
+        conflag=by_id['ForeverHUD | Warlock | Suggest | Destruction | Conflagrate']
+        self.assertEqual((conflag['triggers'][1]['trigger']['event'],conflag['triggers'][1]['trigger']['spellName']),('Action Usable',1293817))
+        self.assertIn('ForeverHUD.SuggestTarget()',conflag['triggers'][2]['trigger']['custom'])
+        burn=by_id['ForeverHUD | Warlock | Suggest | Destruction | Shadowburn']
+        self.assertEqual((burn['triggers'][1]['trigger']['unit'],burn['conditions'][0]['check']),('target',dict(trigger=1,variable='percenthealth',op='<=',value=25)))
+        self.assertIn('ForeverHUD.SuggestTarget()',burn['triggers'][2]['trigger']['custom'],'Execute cue only in combat on a hostile target')
         # 0.9.6: on the damage side, centred over Health, right above the DoT row.
         dots=by_id['ForeverHUD | Warlock | Target effects']
         self.assertEqual(row['xOffset'],dots['xOffset'])
         self.assertEqual(row['xOffset'],-138)
         self.assertEqual(row['yOffset']-16,dots['yOffset']+14+4,'4 px above the 28 px DoT row')
-        selection=open('src/ForeverHUD/Selection.lua',encoding='utf-8').read()
+        selection=(ROOT/'src/ForeverHUD/Selection.lua').read_text(encoding='utf-8')
         # 0.9.7: the left wing (40 px at y=80) rises 4 px clear of the suggestions.
         lift=row['yOffset']+16+4+20-80
         self.assertEqual(lift,34)
@@ -411,8 +428,26 @@ class PackTests(unittest.TestCase):
         self.assertEqual(self.eligibility['ForeverHUD | Warlock | Suggest | Shadow Trance']['seeds'],[18094,18095],'Shown once Nightfall is learned')
         self.assertEqual(self.eligibility['ForeverHUD | Warlock | Suggest | Life Tap']['seeds'],[1454])
         for d in self.regions:
-            if ' | Suggest | ' in d['id']:
+            if d['id'].startswith('ForeverHUD | Warlock | Suggest | '):
                 self.assertTrue(d['load']['loadFlag'].startswith('FOREVERHUD_WARLOCK_suggest'),d['id'])
+
+    def test_every_class_has_spec_suggestions(self):
+        from build import SUGGESTIONS
+        from catalog import SCHOOLS
+        by_id={d['id']:d for d in self.regions}
+        for cls,c in CLASSES.items():
+            self.assertTrue(set(SCHOOLS[cls])<=set(SUGGESTIONS[cls]),f'{cls}: a list for every spec')
+            row=by_id[f"ForeverHUD | {c['name']} | Suggest"]
+            for id in row['controlledChildren']:
+                entry=self.eligibility[id]
+                self.assertEqual((entry['cls'],entry['module']),(cls,'suggest'),id)
+                self.assertIn(entry['spec'],SUGGESTIONS[cls],id)
+                self.assertTrue(entry['seeds'],f'{id}: loads only once learned')
+                self.assertTrue(by_id[id]['load']['loadFlag'].startswith(f'FOREVERHUD_{cls}_suggest_'),id)
+        innervate=by_id['ForeverHUD | Druid | Suggest | Balance | Innervate']['triggers'][1]['trigger']
+        self.assertEqual((innervate.get('use_powertype'),innervate.get('powertype')),(True,0),'Innervate tests mana, not form energy')
+        sdn=by_id['ForeverHUD | Rogue | Suggest | Combat | Slice and Dice']['triggers'][1]['trigger']
+        self.assertEqual((sdn['unit'],sdn['secretShowOn'],sdn['nativeFilters']),('player','showOnMissing',{'PLAYER':True}),'Own buff missing')
 
     def test_class_art_draws_below_core(self):
         # Core and class roots get independent frame levels, so strata keeps

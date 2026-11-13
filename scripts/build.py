@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.9.7"
+VERSION = "0.10.0"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -67,14 +67,88 @@ SUGGEST_SIZE = 32
 SUGGEST_Y = DOT_ROW_Y + DOT_SIZE // 2 + 4 + SUGGEST_SIZE // 2
 WING_LIFT = SUGGEST_Y + SUGGEST_SIZE // 2 + 4 + 40 // 2 - PRIMARY_Y
 SUGGEST_STEP = 36
+# A list holds at most five, so the row stays over the Health bar (x -228..-48).
+SUGGEST_MAX = 5
+# 0.10: one priority list per spec (the companion's detected or chosen
+# school), plus 'Leveling' for no talent points. Highest priority first.
+# Rule kinds, each a single native check:
+#   curve   - a player/pet/target health or power curve at or under a value
+#   missing - your debuff is missing from the hostile target
+#   buff    - your own buff is missing (in combat with a hostile target)
+#   active  - a proc/buff aura of yours is up
+#   ready   - the spell is usable now (native Action Usable)
+# Every rule loads only once its spell (or talent) is learned, so an ID the
+# client doesn't know never shows. IDs come from src/catalog.py where listed.
+def curve(name,known,icon,at,unit='player',event='Power',powertype=None):
+    variable='percentpower' if event=='Power' else 'percenthealth'
+    return dict(kind='curve',name=name,event=event,unit=unit,variable=variable,at=at,known=known,icon=icon,powertype=powertype)
+def missing(name,seed): return dict(kind='missing',name=name,seed=seed)
+def buff(name,seed): return dict(kind='buff',name=name,seed=seed)
+def active(name,seed,talent=None): return dict(kind='active',name=name,seed=seed,talent=talent)
+def ready(name,seed): return dict(kind='ready',name=name,seed=seed)
+LIFE_TAP=curve('Life Tap',1454,'Spell_Shadow_BurningSpirit',30)
+HEALTH_FUNNEL=curve('Health Funnel',755,'Spell_Shadow_LifeDrain',35,'pet','Health')
+EVOCATION=curve('Evocation',12051,'Spell_Nature_Purge',20)
+# Druids shapeshift into energy/rage forms, so Innervate tests mana explicitly.
+INNERVATE=curve('Innervate',29166,'Spell_Nature_Lightning',30,powertype=0)
+MEND_PET=curve('Mend Pet',136,'Ability_Hunter_MendPet',40,'pet','Health')
+HUNTERS=[missing("Hunter's Mark",1130),missing('Serpent Sting',1978)]
 SUGGESTIONS = {
-    'WARLOCK': [
-        dict(kind='curve',name='Life Tap',event='Power',unit='player',variable='percentpower',at=30,known=1454,icon='Spell_Shadow_BurningSpirit'),
-        dict(kind='missing',name='Corruption',seed=172),
-        dict(kind='missing',name='Immolate',seed=348),
-        dict(kind='active',name='Shadow Trance',seed=17941,talent=[18094,18095]),
-        dict(kind='curve',name='Health Funnel',event='Health',unit='pet',variable='percenthealth',at=35,known=755,icon='Spell_Shadow_LifeDrain'),
-    ],
+    'WARLOCK': {
+        # 0.9 list, kept with its display IDs for characters without talents.
+        'Leveling':[LIFE_TAP,missing('Corruption',172),missing('Immolate',348),
+            active('Shadow Trance',17941,[18094,18095]),HEALTH_FUNNEL],
+        'Affliction':[LIFE_TAP,missing('Corruption',172),missing('Bane of Agony',980),
+            missing('Siphon Life',18265),active('Shadow Trance',17941,[18094,18095])],
+        'Demonology':[LIFE_TAP,missing('Corruption',172),missing('Immolate',348),
+            missing('Bane of Agony',980),HEALTH_FUNNEL],
+        'Destruction':[LIFE_TAP,missing('Immolate',348),ready('Conflagrate',1293817),
+            active('Backlash',34936),curve('Shadowburn',17877,'Spell_Shadow_ScourgeBuild',25,'target','Health')],
+    },
+    'MAGE': {
+        'Arcane':[EVOCATION,active('Missile Barrage',44401)],
+        'Fire':[EVOCATION,missing('Improved Scorch',22959),active('Hot Streak',44445)],
+        'Frost':[EVOCATION,active('Fingers of Frost',44544)],
+    },
+    'PRIEST': {
+        'Discipline':[active('Surge of Light',33151),ready('Penance',402174)],
+        'Holy':[active('Surge of Light',33151),ready('Prayer of Mending',401859)],
+        'Shadow':[buff('Shadowform',15473),missing('Shadow Word: Pain',589),missing('Vampiric Embrace',15286),
+            missing('Devouring Plague',2944),ready('Mind Blast',8092)],
+    },
+    'ROGUE': {
+        'Assassination':[buff('Slice and Dice',5171),missing('Rupture',1943)],
+        'Combat':[buff('Slice and Dice',5171),missing('Rupture',1943)],
+        'Subtlety':[buff('Slice and Dice',5171),missing('Hemorrhage',16511)],
+    },
+    'DRUID': {
+        'Balance':[INNERVATE,missing('Moonfire',8921),missing('Faerie Fire',770),active('Clearcasting',16870)],
+        'Feral':[missing('Faerie Fire',770),missing('Rake',1822),missing('Rip',1079),active('Clearcasting',16870)],
+        'Restoration':[INNERVATE,active('Clearcasting',16870)],
+    },
+    'HUNTER': {
+        'Beast Mastery':HUNTERS+[MEND_PET],
+        'Marksmanship':HUNTERS+[MEND_PET],
+        'Survival':HUNTERS+[ready('Counterattack',19306),ready('Mongoose Bite',1495),MEND_PET],
+    },
+    'SHAMAN': {
+        'Elemental':[missing('Flame Shock',8050),buff('Lightning Shield',324)],
+        'Enhancement':[buff('Lightning Shield',324),active('Maelstrom Weapon',53817),ready('Stormstrike',17364),missing('Flame Shock',8050)],
+        'Restoration':[curve('Mana Tide Totem',16190,'Spell_Frost_SummonWaterElemental',30),ready('Riptide',408521)],
+    },
+    'PALADIN': {
+        'Holy':[ready('Holy Shock',1311606)],
+        'Protection':[buff('Holy Shield',20925),ready('Consecration',26573),ready('Judgement',20271)],
+        'Retribution':[ready('Hammer of Wrath',24275),ready('Judgement',20271),ready('Consecration',26573)],
+    },
+    # Warrior procs (Overpower, Revenge, Execute, Victory Rush) and the Rend /
+    # Battle Shout reminders already have their own rows; suggestions add
+    # each spec's main strike.
+    'WARRIOR': {
+        'Arms':[ready('Mortal Strike',12294)],
+        'Fury':[ready('Bloodthirst',23881),ready('Whirlwind',1680)],
+        'Protection':[ready('Shield Slam',23922)],
+    },
 }
 # 0.8 retracted mode: larger seal and the tray under it.
 RETRACTED_SEAL = 132
@@ -561,26 +635,45 @@ def generate():
         # native check (power/health curve, Show On Missing, aura active);
         # nothing is inferred in Lua. Protected percentages cannot be
         # combined natively, so each rule tests a single value.
-        rules=SUGGESTIONS.get(cls,[])
-        if rules:
+        specs=SUGGESTIONS.get(cls,{})
+        if specs:
             suggest=prefix+' | Suggest'; p.group(suggest,prefix,cls,'suggest',x=-BAR_X,y=SUGGEST_Y)
-            for i,rule in enumerate(rules):
-                x=(i-(len(rules)-1)/2)*SUGGEST_STEP
-                if rule['kind']=='curve':
-                    d=icon(p,f"{suggest} | {rule['name']}",suggest,cls,'suggest',dict(type='unit',event=rule['event'],unit=rule['unit'],use_unit=True),
-                        SUGGEST_SIZE,x=x,known=rule['known'])
-                    d.update(iconSource=0,displayIcon='Interface\\Icons\\'+rule['icon'],alpha=0)
-                    d['subRegions'][2]['text_visible']=False;d['subRegions'][3]['text_visible']=False
-                    # Hidden unless the native curve says the value is at or under the threshold.
-                    d['conditions']=[dict(check=dict(trigger=1,variable=rule['variable'],op='<=',value=rule['at']),
-                        changes=[dict(property='alpha',value=1)])]
-                elif rule['kind']=='missing':
-                    t=aura_trigger([rule['seed']],'target',True);t['secretShowOn']='showOnMissing'
-                    d=icon(p,f"{suggest} | {rule['name']}",suggest,cls,'suggest',t,SUGGEST_SIZE,x=x,modern=True)
-                    d['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("suggest","{cls}") and ForeverHUD.SuggestTarget() or false end'
-                else:
-                    d=icon(p,f"{suggest} | {rule['name']}",suggest,cls,'suggest',aura_trigger([rule['seed']]),SUGGEST_SIZE,x=x,modern=True)
-                    if rule.get('talent'): p.eligibility[d['id']].update(seeds=rule['talent'])
+            in_target=f'function() return ForeverHUD and ForeverHUD.Gate("suggest","{cls}") and ForeverHUD.SuggestTarget() or false end'
+            for spec,rules in specs.items():
+                assert len(rules)<=SUGGEST_MAX,(cls,spec)
+                # Leveling keeps the 0.9 display IDs; each spec has its own.
+                base=suggest if spec=='Leveling' else f'{suggest} | {spec}'
+                for i,rule in enumerate(rules):
+                    x=(i-(len(rules)-1)/2)*SUGGEST_STEP
+                    name=f"{base} | {rule['name']}"
+                    if rule['kind']=='curve':
+                        t=dict(type='unit',event=rule['event'],unit=rule['unit'],use_unit=True)
+                        if rule.get('powertype') is not None: t.update(use_powertype=True,powertype=rule['powertype'])
+                        d=icon(p,name,suggest,cls,'suggest',t,SUGGEST_SIZE,x=x,known=rule['known'])
+                        d.update(iconSource=0,displayIcon='Interface\\Icons\\'+rule['icon'],alpha=0)
+                        d['subRegions'][2]['text_visible']=False;d['subRegions'][3]['text_visible']=False
+                        # Hidden unless the native curve says the value is at or under the threshold.
+                        d['conditions']=[dict(check=dict(trigger=1,variable=rule['variable'],op='<=',value=rule['at']),
+                            changes=[dict(property='alpha',value=1)])]
+                        if rule['unit']=='target': d['triggers'][2]['trigger']['custom']=in_target
+                    elif rule['kind'] in ('missing','buff'):
+                        target=rule['kind']=='missing'
+                        # Own buffs (Slice and Dice, Shadowform...) only come from
+                        # the player, so the default cast-by-you filter stays.
+                        t=aura_trigger([rule['seed']],'target' if target else 'player',target);t['secretShowOn']='showOnMissing'
+                        d=icon(p,name,suggest,cls,'suggest',t,SUGGEST_SIZE,x=x,modern=True)
+                        d['triggers'][2]['trigger']['custom']=in_target
+                    elif rule['kind']=='ready':
+                        d=icon(p,name,suggest,cls,'suggest',dict(type='spell',event='Action Usable',spellName=rule['seed'],
+                            use_spellName=True,use_exact_spellName=False,use_ignoreSpellCooldown=False,use_targetRequired=True),
+                            SUGGEST_SIZE,x=x,known=rule['seed'])
+                        d['subRegions'][2]['text_visible']=False;d['subRegions'][3]['text_visible']=False
+                        d['triggers'][2]['trigger']['custom']=in_target
+                    else:
+                        d=icon(p,name,suggest,cls,'suggest',aura_trigger([rule['seed']]),SUGGEST_SIZE,x=x,modern=True)
+                        if rule.get('talent'): p.eligibility[d['id']].update(seeds=rule['talent'])
+                    # The companion loads only the list for the current spec.
+                    p.eligibility[d['id']].update(spec=spec)
         alerts=prefix+' | Alerts'; p.group(alerts,prefix,cls,'base')
         for seed,priority in ALERTS[cls]:
             alert=p.add(prefix+f' | Ready alert | {seed}','empty',alerts,cls,'alerts',width=1,height=1)
