@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.4 — unreleased (prerelease)
+
+- **Hover to peek** (user: "when mouseover to the foldable class image, can you have an effect where the whole bar in a faded out? so it will encourage/invite people to click?"). Hovering the folded seal out of combat opens the HUD as a ghost at 35% of your opacity setting.
+  - **Leaving:** folds straight back after the existing 0.7 s grace, with no 5 s hold.
+  - **Clicking:** the ghost opens for real at full opacity.
+  - **Combat starting** (`PLAYER_REGEN_DISABLED`, before lockdown) restores full opacity.
+  - Only the companion root's alpha changes, out of combat.
+
 ## 0.9.3 — 2026-11-12 (prerelease)
 
 - **Matching tray icons** (user, 0.9.2 screenshot: "why they look different?"; chose to make the counter match). Out of combat, ForeverAuras draws a missing Modern aura (such as Demon Armor) as a stand-in copy of the game's own aura button. Its art sits inset inside a dark ring that no ForeverAuras option restyles. The ordinary Soul Shards icon now copies that ring: a 3 px dark border inside the icon edge, under the ornate frame.

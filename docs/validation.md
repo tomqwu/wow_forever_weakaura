@@ -1,6 +1,15 @@
-# Validation for 0.9.3
+# Validation for 0.9.4
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.9.4 (prerelease) — hover to peek
+
+- **`tests/state.lua`** (8 new checks, 41 in total), using the real Core and State code:
+  - Hovering the folded seal opens the HUD with root alpha at opacity × 0.35.
+  - The ghost lasts through the leave grace, then folds immediately at full opacity, with no close timer.
+  - Clicking the ghost opens the HUD for real at full opacity, and a second click folds it.
+  - Combat start drops the ghost to full opacity, and there's no peek in combat.
+- **Not verified in game:** the fade and motion, and the alpha of native aura children under the root.
 
 ## 0.9.3 (prerelease) — matching tray icons
 

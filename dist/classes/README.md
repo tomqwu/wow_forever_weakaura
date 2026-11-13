@@ -10,7 +10,7 @@ Use the combined import for a fresh nine-class installation or to update an exis
 
 | Group | Import | Characters | Displays |
 | --- | --- | ---: | ---: |
-| Core | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 5,880 | 17 |
+| Core | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 5,878 | 17 |
 | Warlock | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 14,593 | 127 |
 | Warrior | [ForeverHUD-Warrior.txt](ForeverHUD-Warrior.txt) | 16,780 | 160 |
 | Mage | [ForeverHUD-Mage.txt](ForeverHUD-Mage.txt) | 11,484 | 96 |
@@ -19,7 +19,7 @@ Use the combined import for a fresh nine-class installation or to update an exis
 | Druid | [ForeverHUD-Druid.txt](ForeverHUD-Druid.txt) | 12,725 | 107 |
 | Hunter | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 12,520 | 102 |
 | Shaman | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 10,992 | 89 |
-| Paladin | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 11,245 | 94 |
+| Paladin | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 11,246 | 94 |
 
 ## 简体中文
 
@@ -31,7 +31,7 @@ Use the combined import for a fresh nine-class installation or to update an exis
 
 | 分组 | 导入文件 | 字符数 | 显示数量 |
 | --- | --- | ---: | ---: |
-| 核心 | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 5,880 | 17 |
+| 核心 | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 5,878 | 17 |
 | 术士 | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 14,593 | 127 |
 | 战士 | [ForeverHUD-Warrior.txt](ForeverHUD-Warrior.txt) | 16,780 | 160 |
 | 法师 | [ForeverHUD-Mage.txt](ForeverHUD-Mage.txt) | 11,484 | 96 |
@@ -40,4 +40,4 @@ Use the combined import for a fresh nine-class installation or to update an exis
 | 德鲁伊 | [ForeverHUD-Druid.txt](ForeverHUD-Druid.txt) | 12,725 | 107 |
 | 猎人 | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 12,520 | 102 |
 | 萨满祭司 | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 10,992 | 89 |
-| 圣骑士 | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 11,245 | 94 |
+| 圣骑士 | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 11,246 | 94 |

@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.9.3"
+E.releaseVersion = "0.9.4"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -243,7 +243,7 @@ function E.ApplyLayout()
         if region.SetOffset then region:SetOffset(0,0) end
         -- Scale the group, keeping the screen position in UIParent units.
         region:SetScale(p.scale)
-        if region.SetRegionAlpha then region:SetRegionAlpha(p.opacity) end
+        if region.SetRegionAlpha then region:SetRegionAlpha(p.opacity * (E.peeking and E.PEEK_ALPHA or 1)) end
     end
     handle:SetScale(p.scale)
     handle:ClearAllPoints()
@@ -495,21 +495,43 @@ local hoverTimer
 local function stopHover()
     if hoverTimer then hoverTimer:Cancel(); hoverTimer = nil end
 end
+-- 0.9.4 hover peek: hovering the folded seal out of combat shows the whole
+-- HUD as a faint ghost, inviting a click; leaving folds it straight back.
+-- Only the companion's root alpha changes, outside combat lockdown.
+E.PEEK_ALPHA = 0.35
+local function rootAlpha()
+    local p = E.Profile()
+    if not p then return end
+    local alpha = p.opacity * (E.peeking and E.PEEK_ALPHA or 1)
+    for _, region in ipairs(rootRegions()) do
+        if region.SetRegionAlpha then region:SetRegionAlpha(alpha) end
+    end
+end
+function E.SetPeek(on)
+    on = on == true
+    if on == (E.peeking == true) then return end
+    if on and (E.InCombat() or not E.state or E.state.open or not E.state.world) then return end
+    E.peeking = on or nil
+    rootAlpha()
+    -- Peek opens like an inspection; leaving closes at once (no 5 s hold).
+    if E.state then E.state.Update(false, not on) end
+end
 function E.Hover(value)
     stopHover()
     local p=E.Profile()
-    if not p or not p.enabled or (E.state and not E.state.world) then E.hovering=false;return end
+    if not p or not p.enabled or (E.state and not E.state.world) then E.hovering=false;E.SetPeek(false);return end
     if value then
-        E.hovering = true; E.Notify()
+        E.hovering = true; E.SetPeek(true); E.Notify()
     elseif C_Timer and C_Timer.NewTimer then
         -- A short grace period lets the cursor move from the seal to its row.
         hoverTimer = C_Timer.NewTimer(0.7, function()
-            E.hovering = false; hoverTimer = nil; E.Notify()
+            E.hovering = false; hoverTimer = nil; E.SetPeek(false); E.Notify()
         end)
-    else E.hovering = false; E.Notify() end
+    else E.hovering = false; E.SetPeek(false); E.Notify() end
 end
 function E.ClearInteraction()
     stopHover();E.StopDrag(false);E.hovering,E.utilityPinned=false,false
+    E.SetPeek(false)
 end
 handle:SetScript("OnEnter", function()
     E.Hover(true)
@@ -525,7 +547,13 @@ handle:SetScript("OnClick", function(_, button)
     if button == "RightButton" then
         if E.ToggleOptions then E.ToggleOptions() end
     else
-        local opened=E.state and E.state.ToggleInspect()
+        local opened
+        if E.peeking and E.state then
+            -- Clicking the ghost opens the HUD for real, at full opacity.
+            E.peeking = nil; rootAlpha()
+            E.state.manualFold = false; E.state.inspected = true; E.state.Update(false)
+            opened = true
+        else opened=E.state and E.state.ToggleInspect() end
         if opened==nil then E.utilityPinned=not E.utilityPinned else E.utilityPinned=opened end
         E.Notify()
     end
@@ -592,7 +620,10 @@ events:SetScript("OnEvent", function(_, event, addon)
         -- Before FA's login announcement, so /fa lists the bundled import.
         E.RegisterBundledImport()
     elseif event == "PLAYER_LEAVING_WORLD" then E.Shutdown(); return
-    elseif event == "PLAYER_REGEN_DISABLED" then E.StopDrag(false)
+    elseif event == "PLAYER_REGEN_DISABLED" then
+        E.StopDrag(false)
+        -- Combat starts just before lockdown: drop a ghost to full opacity now.
+        if E.peeking then E.peeking = nil; rootAlpha() end
     elseif event == "PLAYER_REGEN_ENABLED" then
         local p = E.Profile()
         if p and E.queued then
