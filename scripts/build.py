@@ -92,6 +92,10 @@ SUGGEST_ROW_X = SUGGEST_LEAD_EDGE - SUGGEST_SIZE // 2
 SUGGEST_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='LEFT', blizzardFlowSpacing=SUGGEST_SPACING)
 # Five actions fill the Health bar exactly (5*32 + 4*4 = 176 of 180 px).
 SUGGEST_MAX = 5
+# 0.13.1: the rotation row over the DoTs (and the execute cue at its end) is
+# drawn at 70% opacity, so it reads as advice and doesn't cover the frame.
+# The mana and pet cues under their bars stay fully opaque.
+SUGGEST_ALPHA = 0.7
 # Threshold cues can't join the row (they're shown at zero opacity until the
 # curve fires, so they'd hold a slot). They sit beside the bar they're about:
 # mana under the Mana bar's outer end, pet under the Pet bar's, and a target
@@ -723,7 +727,7 @@ def generate():
                         d['subRegions'][2]['text_visible']=False;d['subRegions'][3]['text_visible']=False
                         # Hidden unless the native curve says the value is at or under the threshold.
                         d['conditions']=[dict(check=dict(trigger=1,variable=rule['variable'],op='<=',value=rule['at']),
-                            changes=[dict(property='alpha',value=1)])]
+                            changes=[dict(property='alpha',value=SUGGEST_ALPHA if rule['unit']=='target' else 1)])]
                         if rule['unit']=='target': d['triggers'][2]['trigger']['custom']=in_target
                     elif rule['kind'] in ('missing','buff'):
                         target=rule['kind']=='missing'
@@ -741,6 +745,7 @@ def generate():
                     else:
                         d=icon(p,name,suggest,cls,'suggest',aura_trigger([rule['seed']]),SUGGEST_SIZE,modern=True)
                         if rule.get('talent'): p.eligibility[d['id']].update(seeds=rule['talent'])
+                    if rule['kind']!='curve': d['alpha']=SUGGEST_ALPHA
                     # The companion loads only the list for the current spec.
                     p.eligibility[d['id']].update(spec=spec)
         alerts=prefix+' | Alerts'; p.group(alerts,prefix,cls,'base')

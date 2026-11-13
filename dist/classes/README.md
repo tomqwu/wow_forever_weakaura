@@ -11,15 +11,15 @@ Use the combined import for a fresh nine-class installation or to update an exis
 | Group | Import | Characters | Displays |
 | --- | --- | ---: | ---: |
 | Core | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 5,985 | 17 |
-| Warlock | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 15,832 | 145 |
-| Warrior | [ForeverHUD-Warrior.txt](ForeverHUD-Warrior.txt) | 17,402 | 167 |
-| Mage | [ForeverHUD-Mage.txt](ForeverHUD-Mage.txt) | 12,346 | 107 |
-| Priest | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 12,484 | 108 |
-| Rogue | [ForeverHUD-Rogue.txt](ForeverHUD-Rogue.txt) | 12,684 | 106 |
-| Druid | [ForeverHUD-Druid.txt](ForeverHUD-Druid.txt) | 13,750 | 121 |
-| Hunter | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 13,717 | 117 |
-| Shaman | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 12,080 | 101 |
-| Paladin | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 12,104 | 104 |
+| Warlock | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 15,848 | 145 |
+| Warrior | [ForeverHUD-Warrior.txt](ForeverHUD-Warrior.txt) | 17,410 | 167 |
+| Mage | [ForeverHUD-Mage.txt](ForeverHUD-Mage.txt) | 12,358 | 107 |
+| Priest | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 12,496 | 108 |
+| Rogue | [ForeverHUD-Rogue.txt](ForeverHUD-Rogue.txt) | 12,694 | 106 |
+| Druid | [ForeverHUD-Druid.txt](ForeverHUD-Druid.txt) | 13,758 | 121 |
+| Hunter | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 13,729 | 117 |
+| Shaman | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 12,097 | 101 |
+| Paladin | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 12,114 | 104 |
 
 ## 简体中文
 
@@ -32,12 +32,12 @@ Use the combined import for a fresh nine-class installation or to update an exis
 | 分组 | 导入文件 | 字符数 | 显示数量 |
 | --- | --- | ---: | ---: |
 | 核心 | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 5,985 | 17 |
-| 术士 | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 15,832 | 145 |
-| 战士 | [ForeverHUD-Warrior.txt](ForeverHUD-Warrior.txt) | 17,402 | 167 |
-| 法师 | [ForeverHUD-Mage.txt](ForeverHUD-Mage.txt) | 12,346 | 107 |
-| 牧师 | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 12,484 | 108 |
-| 盗贼 | [ForeverHUD-Rogue.txt](ForeverHUD-Rogue.txt) | 12,684 | 106 |
-| 德鲁伊 | [ForeverHUD-Druid.txt](ForeverHUD-Druid.txt) | 13,750 | 121 |
-| 猎人 | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 13,717 | 117 |
-| 萨满祭司 | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 12,080 | 101 |
-| 圣骑士 | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 12,104 | 104 |
+| 术士 | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 15,848 | 145 |
+| 战士 | [ForeverHUD-Warrior.txt](ForeverHUD-Warrior.txt) | 17,410 | 167 |
+| 法师 | [ForeverHUD-Mage.txt](ForeverHUD-Mage.txt) | 12,358 | 107 |
+| 牧师 | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 12,496 | 108 |
+| 盗贼 | [ForeverHUD-Rogue.txt](ForeverHUD-Rogue.txt) | 12,694 | 106 |
+| 德鲁伊 | [ForeverHUD-Druid.txt](ForeverHUD-Druid.txt) | 13,758 | 121 |
+| 猎人 | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 13,729 | 117 |
+| 萨满祭司 | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 12,097 | 101 |
+| 圣骑士 | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 12,114 | 104 |
