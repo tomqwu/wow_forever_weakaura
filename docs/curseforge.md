@@ -24,18 +24,9 @@ The GitHub social preview, [`assets/curseforge/social-preview.png`](../assets/cu
 
 ## Description
 
-Paste this as the project description; it's a shortened form of the README *Features* section.
+The project description is [`assets/curseforge/description.md`](../assets/curseforge/description.md): features, then how to install, update, use and configure the addon, plus troubleshooting. It's a shortened form of the README's *Features*, *Install or update*, *Expand, fold and move* and cooldown sections, so update it with them.
 
-> **ForeverHUD** is a class combat HUD for WoW Forever, built on **ForeverAuras** (required). The addon carries its own auras, so `/fa` offers them for install. No import string to paste.
->
-> - **One Core plus your class:** health, resource, cast bar and native cooldown rows are shared, and your class adds its spells, effects and art.
-> - **Damage left, everything else right:** DoTs and damage cooldowns over Health; your buffs, utility cooldowns and upkeep over Mana. Rows are centred on each bar and stay centred in combat.
-> - **Native and combat-safe:** auras, cooldowns, resources and casts come from ForeverAuras' own triggers. No combat-log guessing.
-> - **Retracted seal and tray:** out of combat it folds to a seal with your class counter, missing buffs and food. Hover to peek, click to open.
-> - **Reminders and suggestions:** a missing or expiring Demon Armor (and other upkeep), plus Warlock spell suggestions such as Life Tap at low mana.
-> - **Install check, settings per class (`/fhud`), English and Simplified Chinese.**
->
-> All nine classes are supported.
+The upload API can't change the project description, so paste it by hand: on the author dashboard, open the project's description. If the editor offers Markdown, choose it and paste the file's contents. Otherwise paste the rendered text from the file's GitHub page.
 
 Screenshots: `docs/images/game-0.7.0-warlock-hud.png` (in game) and the gallery in `preview/classes/` (illustrative, labelled as such).
 
