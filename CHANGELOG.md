@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.3 — unreleased (prerelease)
+## 0.9.3 — 2026-11-12 (prerelease)
 
 - **Matching tray icons** (user, 0.9.2 screenshot: "why they look different?"; chose to make the counter match). Out of combat, ForeverAuras draws a missing Modern aura (such as Demon Armor) as a stand-in copy of the game's own aura button. Its art sits inset inside a dark ring that no ForeverAuras option restyles. The ordinary Soul Shards icon now copies that ring: a 3 px dark border inside the icon edge, under the ornate frame.
 - Update your class in `/fa`, choosing **Update Auras**.
