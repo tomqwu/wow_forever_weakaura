@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.12.0"
+VERSION = "0.12.1"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -60,11 +60,14 @@ BAR_X = 138
 SEAL_EDGE = 52
 SPINE_LEFT = dict(blizzardFlow=True, blizzardFlowGrowth='LEFT', blizzardFlowSpacing=2)
 SPINE_RIGHT = dict(blizzardFlow=True, blizzardFlowGrowth='RIGHT', blizzardFlowSpacing=2)
-# Drawn grooves (media 'groove', a stand-in for the painted rail-groove art):
-# a recessed channel under each rim row and under the suggestion row, from
-# the seal edge to past the bar's outer end, tinted with the class colour.
+# 0.12.1: drawn shelves (media 'shelf', a stand-in for the painted
+# rail-groove art). 0.12.0's dark groove slabs showed even over empty rows
+# and covered the rim art; now a thin class-coloured line runs under each
+# row that floats above the frame (left: suggestions, right: the utility
+# wing), bright at the seal and fading outward, shown only in combat.
 GROOVE_W = 184
 GROOVE_X = SEAL_EDGE - 2 + GROOVE_W // 2
+SHELF_Y = 54   # its 8 px box tops out at 58, the suggestion row's bottom edge
 # ForeverAuras Modern Aura Group: a normal group whose Aura (Modern) children
 # are chained by the client and kept centred with half-size shadows, so the
 # row re-centres in combat without any Lua reading aura state.
@@ -440,16 +443,15 @@ def generate():
         if c.get('pet') or c.get('extra'): p.group(resources,prefix,cls,'base')
         chassis=texture(p,prefix+" | Chassis",frame,cls,"art","chassis-"+cls.lower(),512,128,y=20)
         chassis['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() or false end'
-        # 0.12: drawn grooves seat the rows in the frame, drawn over the chassis
-        # and under every icon: one in the rim under each spine row, and a
-        # cradle under the suggestion row. Hidden while folded.
-        open_art=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() and not ForeverHUD.Retracted() or false end'
-        for name,x,y,h,gate in (('Groove | Left rim',-GROOVE_X,DOT_ROW_Y,32,open_art),
-                ('Groove | Right rim',GROOVE_X,DOT_ROW_Y,32,open_art),
-                ('Groove | Suggestions',-GROOVE_X,SUGGEST_Y,36,
-                    f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.Gate("suggest","{cls}") and ForeverHUD.LayoutVisible() and not ForeverHUD.Retracted() or false end')):
-            groove=texture(p,f'{prefix} | {name}',frame,cls,'art','groove',GROOVE_W,h,x=x,y=y,color=rgba(c['color'],.9))
-            groove['triggers'][2]['trigger']['custom']=gate
+        # 0.12.1: shelf lines under the rows that float above the frame, drawn
+        # over the chassis and under every icon; only in combat, when the
+        # rows are in use, and never while folded. The texture is bright at
+        # its left end, so the left shelf is mirrored to start at the seal.
+        in_combat=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() and ForeverHUD.InCombat() and not ForeverHUD.Retracted() or false end'
+        for name,x,mirror in (('Shelf | Left',-GROOVE_X,True),('Shelf | Right',GROOVE_X,False)):
+            shelf=texture(p,f'{prefix} | {name}',frame,cls,'art','shelf',GROOVE_W,8,x=x,y=SHELF_Y,color=rgba(c['color'],.85))
+            shelf['mirror']=mirror
+            shelf['triggers'][2]['trigger']['custom']=in_combat
         rune=texture(p,prefix+" | Living runes",frame,cls,"motion","runes",112,112,y=13,color=rgba(c['color'],.18))
         rune["animation"]["main"]=dict(type="custom",duration_type="seconds",duration=45,use_rotate=True,rotate=360,
             rotateType="straight",easeType="none",easeStrength=3)
