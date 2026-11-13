@@ -1,6 +1,21 @@
-# Validation for 0.11.0
+# Validation for 0.12.0
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.12.0 (prerelease) — one spine from the seal
+
+- **Game evidence (user screenshot, 0.11.0):** the DoT icon sat centred over Health while the suggestions started at the seal. Both floated over the frame art.
+- **ForeverAuras source (installed addon, read only):** `RegionTypes/DynamicGroup.lua` grows `LEFT`/`RIGHT` from x=0 with the children's `selfPoint` (CENTER), so the first icon is centred on the group origin. `SecretAuraFlow.lua` starts LEFT and RIGHT rows at the first display's inner corner.
+- **Change:**
+  - The DoT and buff rows grow `LEFT`/`RIGHT` from ±66 (inner edge ±52), and the Core native buff row grows `RIGHT` from 66.
+  - The wings grow out from ±72, and class-plan slots use `Selection.FromSeal`.
+  - Three drawn `groove` textures sit in each class Frame.
+- **Tests:**
+  - `tests/test_pack.py`: rail positions and growth, the native buff row, groove placement and draw order, the hidden-while-folded gate, and wing growth.
+  - `tests/selection.lua`: both sides start at the seal edge, and slots step 47 px outward.
+  - `scripts/check.py`: 24 textures.
+  - `tests/native-schema.lua` against the installed ForeverAuras: 253 modern displays.
+- **Not yet checked in game:** how the grooves sit on the frame art, and the wing alignment with live cooldowns.
 
 ## 0.11.0 (prerelease) — clearer suggestion row
 

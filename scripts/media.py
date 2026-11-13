@@ -52,6 +52,12 @@ def build(directory,classes):
     # Geometry-only animation accents remain code-native.
     ticks=''.join(f'<path d="m61 7 3-3 3 3-3 3Zm3 4v3" transform="rotate({i*45} 64 64)"/>' for i in range(8))
     vector(directory,'runes','<g fill="none" stroke="#ffffff" stroke-width="1.3"><circle cx="64" cy="64" r="59" stroke-dasharray="34 12 2 12"/><circle cx="64" cy="64" r="56" stroke-dasharray="1 12"/>'+ticks+'</g>',128,128)
+    # 0.12: a recessed channel behind an icon row (drawn stand-in for the
+    # painted rail-groove master in assets/ai). Neutral tones, tinted in game.
+    vector(directory,'groove','<rect x="1" y="2" width="254" height="28" rx="6" fill="#000" fill-opacity=".55"/>'
+        '<rect x="3" y="3" width="250" height="5" rx="3" fill="#000" fill-opacity=".45"/>'
+        '<rect x="1.5" y="2.5" width="253" height="27" rx="6" fill="none" stroke="#fff" stroke-opacity=".2"/>'
+        '<path d="M8 29.5h240" stroke="#fff" stroke-opacity=".6" stroke-width="1"/>',256,32)
     vector(directory,'divider','<path d="M0 16h232l24-8 24 8h232m-280 0 24 8 24-8" stroke="#bb93df" stroke-width="1" fill="none"/>',512,32)
     # Small original geometric flow accent. Native FlipBook playback supplies
     # the clock; this SVG is a 480-frame, 32-column atlas with transparent gaps.

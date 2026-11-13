@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0 — 2026-11-12 (prerelease)
+
+- **One spine from the seal** (user screenshot on 0.11.0: "help me design how better incorporate dps cdm into the frame itself, still raw". Chosen: one spine from the seal, with code-drawn grooves now and painted art later).
+  - **Left (damage):** the DoT row, the suggestion row and the cooldown wing all start at the seal (inner edge x=-52) and grow left. In 0.11.0 the DoT row was centred on Health while the suggestions started at the seal, so they never lined up.
+  - **Right:** your buffs, the tracked-buff row and the utility wing mirror the left side. Class-plan ability slots step outward from the seal too.
+  - **Grooves:** a recessed channel tinted with the class colour now sits in the rim under the DoT and buff rows, with a cradle under the suggestions. They're drawn by code (`media.py`) and hidden while folded; the painted rail-groove, cradle and socket-bezel art is still to be generated from the prompts in `assets/ai/`.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.11.0 — 2026-11-12 (prerelease)
 
 - **A clearer suggestion row** (user screenshot on 0.10.0: "can you design something make it better for recommendation?"; the design was approved before building).

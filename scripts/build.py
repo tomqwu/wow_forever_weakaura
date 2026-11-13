@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.11.0"
+VERSION = "0.12.0"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -55,6 +55,16 @@ DOT_ROW_END = -60
 BUFF_ROW_START = 60
 # 0.7: rows are centred on their own bar and grow both ways. Bars sit at x=±138.
 BAR_X = 138
+# 0.12: one spine. Every row starts at the seal and grows outward: left rows
+# end 4 px outside the Health bar's inner end (-48), right rows mirror it.
+SEAL_EDGE = 52
+SPINE_LEFT = dict(blizzardFlow=True, blizzardFlowGrowth='LEFT', blizzardFlowSpacing=2)
+SPINE_RIGHT = dict(blizzardFlow=True, blizzardFlowGrowth='RIGHT', blizzardFlowSpacing=2)
+# Drawn grooves (media 'groove', a stand-in for the painted rail-groove art):
+# a recessed channel under each rim row and under the suggestion row, from
+# the seal edge to past the bar's outer end, tinted with the class colour.
+GROOVE_W = 184
+GROOVE_X = SEAL_EDGE - 2 + GROOVE_W // 2
 # ForeverAuras Modern Aura Group: a normal group whose Aura (Modern) children
 # are chained by the client and kept centred with half-size shadows, so the
 # row re-centres in combat without any Lua reading aura state.
@@ -71,7 +81,7 @@ SUGGEST_STEP = 36
 # whatever shows closes up with no gaps, and the slot nearest the seal is
 # always the top action. ForeverAuras starts a LEFT row at the first
 # display's right edge, so the group sits half an icon in from that edge.
-SUGGEST_LEAD_EDGE = -52          # 4 px outside the Health bar's inner end (-48)
+SUGGEST_LEAD_EDGE = -SEAL_EDGE   # 4 px outside the Health bar's inner end (-48)
 SUGGEST_SPACING = 4
 SUGGEST_ROW_X = SUGGEST_LEAD_EDGE - SUGGEST_SIZE // 2
 SUGGEST_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='LEFT', blizzardFlowSpacing=SUGGEST_SPACING)
@@ -391,7 +401,9 @@ def generate():
     # bar, centred, same size and spacing. In Cooldown Manager mode they
     # replace the class buff rail at the same spot (Selection.Allowed), so the
     # two rows never share it.
-    p.group(native_effects,native_auras,CORE,'buffs',x=BAR_X,y=DOT_ROW_Y,dynamic=True).update(grow='HORIZONTAL',align='CENTER',space=2)
+    # 0.12: grows right from the seal like the class buff row (a dynamic
+    # group centres its first icon on the origin).
+    p.group(native_effects,native_auras,CORE,'buffs',x=SEAL_EDGE+DOT_SIZE//2,y=DOT_ROW_Y,dynamic=True).update(grow='RIGHT',align='CENTER',space=2)
     icon(p,native_effects+' | Entries',native_effects,CORE,'buffs',dict(type='cdm',event='Blizzard CDM Buff',
         cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
         use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),DOT_SIZE)
@@ -428,6 +440,16 @@ def generate():
         if c.get('pet') or c.get('extra'): p.group(resources,prefix,cls,'base')
         chassis=texture(p,prefix+" | Chassis",frame,cls,"art","chassis-"+cls.lower(),512,128,y=20)
         chassis['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() or false end'
+        # 0.12: drawn grooves seat the rows in the frame, drawn over the chassis
+        # and under every icon: one in the rim under each spine row, and a
+        # cradle under the suggestion row. Hidden while folded.
+        open_art=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() and not ForeverHUD.Retracted() or false end'
+        for name,x,y,h,gate in (('Groove | Left rim',-GROOVE_X,DOT_ROW_Y,32,open_art),
+                ('Groove | Right rim',GROOVE_X,DOT_ROW_Y,32,open_art),
+                ('Groove | Suggestions',-GROOVE_X,SUGGEST_Y,36,
+                    f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.Gate("suggest","{cls}") and ForeverHUD.LayoutVisible() and not ForeverHUD.Retracted() or false end')):
+            groove=texture(p,f'{prefix} | {name}',frame,cls,'art','groove',GROOVE_W,h,x=x,y=y,color=rgba(c['color'],.9))
+            groove['triggers'][2]['trigger']['custom']=gate
         rune=texture(p,prefix+" | Living runes",frame,cls,"motion","runes",112,112,y=13,color=rgba(c['color'],.18))
         rune["animation"]["main"]=dict(type="custom",duration_type="seconds",duration=45,use_rotate=True,rotate=360,
             rotateType="straight",easeType="none",easeStrength=3)
@@ -446,12 +468,13 @@ def generate():
             automaticWidth="Auto",fixedWidth=200,wordWrap="WordWrap",shadowColor=[0,0,0,1],shadowXOffset=0,shadowYOffset=0)
         name_text['actions']['init']=dict(do_custom=True,custom="if ForeverHUD then ForeverHUD.Bind() end")
         primary=prefix+" | Primary"; p.group(primary,prefix,cls,"primary",y=PRIMARY_Y)
-        # Cradles: each wing is centred on its bar (the companion places it at
-        # x=±138) and grows evenly both ways.
+        # Cradles: 0.12 one spine, so each wing grows away from the seal. A
+        # dynamic group puts its first icon's centre on the group origin; the
+        # companion places the origin at x=±72 (inner edge ±52, SEAL_EDGE).
         for side in ('left','right'):
             wing_id=primary+' | Native '+side
             wing=p.group(wing_id,primary,cls,'primary',dynamic=True)
-            wing.update(grow='HORIZONTAL',align='CENTER',space=7,animate=True,sort='custom',sortOn='index',
+            wing.update(grow='LEFT' if side=='left' else 'RIGHT',align='CENTER',space=7,animate=True,sort='custom',sortOn='index',
                 customSort='function(a,b) return ForeverHUD and ForeverHUD.SortCDM(a,b) or false end')
         for slot in range(1,9):
             # Entry IDs/UIDs are stable since v0.3.2. Their former empty
@@ -505,7 +528,9 @@ def generate():
         # Damage sits on the left: the player's DoTs form a fixed row seated
         # on the frame over the Health bar, below the left (Essential) wing.
         # Fixed slots, never a combat reflow of modern aura buttons.
-        dots=prefix+" | Target effects"; p.group(dots,auras,cls,"dots",x=-BAR_X,y=DOT_ROW_Y).update(CENTRED_FLOW)
+        # 0.12: the row grows left from the seal (one spine); ForeverAuras starts
+        # a LEFT row at the first display's right edge.
+        dots=prefix+" | Target effects"; p.group(dots,auras,cls,"dots",x=-SEAL_EDGE-DOT_SIZE//2,y=DOT_ROW_Y).update(SPINE_LEFT)
         count=len(c['dots'])
         for i,(seed,name) in enumerate(c['dots']):
             icon(p,dots+" | "+name,dots,cls,"dots",aura_trigger([seed],"target",True),DOT_SIZE,modern=True)
@@ -520,7 +545,7 @@ def generate():
             p.group(maintenance,auras,cls,'maintenance',x=286,y=13,dynamic=True).update(grow='RIGHT',space=6)
         # The player's own buffs are not damage: a fixed row seated over the
         # resource bar, mirroring the DoT row over Health.
-        effects=prefix+" | Player effects";p.group(effects,auras,cls,"buffs",x=BAR_X,y=DOT_ROW_Y).update(CENTRED_FLOW)
+        effects=prefix+" | Player effects";p.group(effects,auras,cls,"buffs",x=SEAL_EDGE+DOT_SIZE//2,y=DOT_ROW_Y).update(SPINE_RIGHT)
         # 0.8.1: an upkeep buff that is up needs no icon; its missing and
         # expiring reminders (below) are the signal. Demon armor has no
         # always-on display any more.

@@ -1,17 +1,19 @@
 local _, E = ...
 local S={primary={},used={},positions={}}
 E.selection=S
--- Ability rows are centred on their bar (x=±138) and grow both ways; rank 1
--- sits nearest the seal. Matches BAR_X in scripts/build.py.
-S.BAR_X,S.STEP=138,47
+-- 0.12: every row grows outward from the seal (one spine). Rank 1 sits
+-- nearest the seal, its inner edge at x=±52; ability icons are 40 px with
+-- 7 px gaps. Matches SEAL_EDGE in scripts/build.py.
+S.SEAL_EDGE,S.ICON,S.STEP=52,40,47
+S.WING_X=S.SEAL_EDGE+S.ICON/2
 -- 0.9.7: spell suggestions always sit right above the DoT row (fixed in the
 -- import). The left (attack) cooldown wing, whose native icons may appear
 -- only while on cooldown, rises above them instead: 40 px icons centred
 -- 34 px higher clear the 32 px suggestion row. Matches WING_LIFT in
 -- scripts/build.py.
 S.WING_LIFT=34
-function S.Centred(sign,rank,count)
-    return sign*(S.BAR_X-((count-1)/2-(rank-1))*S.STEP)
+function S.FromSeal(sign,rank)
+    return sign*(S.WING_X+(rank-1)*S.STEP)
 end
 -- 0.10: suggestions follow the spec. The current school (detected from
 -- talents or chosen in /fhud) picks its own list; without one, 'Leveling'.
@@ -245,8 +247,9 @@ function S.Refresh()
         local wing=api and api.GetData and api.GetData(prefix..' | Primary | Native left')
         S.nativeWings=wing and wing.regionType=='dynamicgroup'
         -- Each wing is a centred dynamic group placed at its bar's centre.
-        if S.nativeWings and #sides[1]>0 then S.positions[prefix..' | Primary | Native left']={x=-S.BAR_X,side=1,slot=1}end
-        if S.nativeWings and #sides[2]>0 then S.positions[prefix..' | Primary | Native right']={x=S.BAR_X,side=2,slot=1}end
+        -- Each wing grows away from the seal; its first icon's centre is the group origin.
+        if S.nativeWings and #sides[1]>0 then S.positions[prefix..' | Primary | Native left']={x=-S.WING_X,side=1,slot=1}end
+        if S.nativeWings and #sides[2]>0 then S.positions[prefix..' | Primary | Native right']={x=S.WING_X,side=2,slot=1}end
         -- Every selected entry is rendered by an unchanged native FA CDM
         -- trigger inside an ordinary slot group. Never move its private widget.
         -- Entries 1-4 sit in the left wing, 5-8 in the right wing.
@@ -256,7 +259,7 @@ function S.Refresh()
                 local id=prefix..' | Primary | Native '..index
                 S.nativeSlots[index]=record.cdmID;S.nativeUsed[record.cdmID]=true
                 S.primary[id]=true
-                if not S.nativeWings then S.positions[id]={x=S.Centred(side==1 and -1 or 1,slot,#records),side=side,slot=slot}end
+                if not S.nativeWings then S.positions[id]={x=S.FromSeal(side==1 and -1 or 1,slot),side=side,slot=slot}end
             end
         end
     else for side,slots in ipairs(scheme) do
@@ -273,9 +276,9 @@ function S.Refresh()
             end
         end
         -- Plan side 1 is cooldown/support, side 2 attack/heal. Damage sits
-        -- left over Health and support right, centred on the bar.
+        -- left over Health and support right, growing out from the seal.
         for rank,item in ipairs(shown) do
-            S.positions[item.id]={x=S.Centred(side==1 and 1 or -1,rank,#shown),side=side,slot=item.slot}
+            S.positions[item.id]={x=S.FromSeal(side==1 and 1 or -1,rank),side=side,slot=item.slot}
         end
     end end
     S.ApplyLayout(); S.SyncCDM()
