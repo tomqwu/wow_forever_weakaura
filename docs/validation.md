@@ -2,7 +2,7 @@
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
 
-## 0.13.1 (prerelease) — missing upkeep breathes
+## 0.13.1 (prerelease) — missing upkeep breathes; suggestion row at 70%
 
 - **Game evidence (user screenshot, 0.13.0, folded):** the tray's missing Demon Armor icon sits beside the Soul Shard count, as still as the count.
 - **ForeverAuras source (installed addon, read only):**
@@ -11,6 +11,7 @@ Sections below 0.4.0 describe releases made under the Eclipse name and keep the 
   - `SecretAuraSingle.lua:1010` and `:584`: the Missing look is a sample button styled by `Display.StyleNative`, which adds the Main animation; `SecretAuraPreview.lua:43` plays it at once and again on show.
 - **Change:** `blizzardAuraDisplay.auraMain = {type="pulse", duration=2.4}` on every `… Upkeep reminder | <name> missing` display (tray and HUD).
 - **`tests/test_pack.py`:** the four missing reminders in the tray and Warlock's HUD reminder breathe; only Show On Missing displays without a Gained flash do; expiring reminders don't.
+- **Suggestion row at 70% (user request, same release):** every display in `<Class> | Suggest` gets `alpha=0.7`; the Shadowburn cue starts at 0 and its threshold condition sets 0.7. ForeverAuras applies a display's `alpha` to Aura (Modern) containers (`BlizzardAuraDisplay.lua:2821`, `instance.baseAlpha = … data.alpha`), and stand-ins in a Modern Aura Group forward `SetAlpha` to their copies (`SecretAuraStand.lua:31`). Covered by `test_suggestion_row_is_translucent`.
 - **Not yet checked in game.**
 
 ## 0.13.0 (prerelease) — absorb overlay on the Health bar

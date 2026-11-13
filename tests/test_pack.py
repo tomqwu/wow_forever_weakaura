@@ -432,6 +432,19 @@ class PackTests(unittest.TestCase):
             if d['id'].endswith(' expiring'):
                 self.assertNotIn('auraMain',d.get('blizzardAuraDisplay') or {},d['id'])
 
+    def test_suggestion_row_is_translucent(self):
+        # 0.13.1: the rotation row and the execute cue at its end at 70%;
+        # mana and pet cues under their bars stay fully opaque.
+        by_id={d['id']:d for d in self.regions}
+        row_icons=[by_id[id] for d in self.regions if d['id'].endswith(' | Suggest') for id in subtree(by_id,d['id'])[1:]
+            if 'controlledChildren' not in by_id[id]]
+        self.assertGreater(len(row_icons),30)
+        for d in row_icons: self.assertEqual(d['alpha'],0.7,d['id'])
+        shadowburn=by_id['ForeverHUD | Warlock | Suggest | Destruction | Shadowburn']
+        self.assertEqual((shadowburn['alpha'],shadowburn['conditions'][0]['changes'][0]['value']),(0,0.7))
+        tap=by_id['ForeverHUD | Warlock | Suggest | Life Tap']
+        self.assertEqual(tap['conditions'][0]['changes'][0]['value'],1)
+
     def test_warlock_spell_suggestions(self):
         by_id={d['id']:d for d in self.regions}
         row=by_id['ForeverHUD | Warlock | Suggest']

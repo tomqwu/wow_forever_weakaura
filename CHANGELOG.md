@@ -5,6 +5,7 @@
 - **A missing buff breathes** (user, with a screenshot of the folded tray: "if armor is not on, the reminder here should flash? not crazy flash"; "like breathing").
   - Missing upkeep reminders, in the tray and on the HUD, play ForeverAuras' native **Pulse** (Aura Main) over 2.4 seconds: the icon fades to 40% and back, in a loop, while it's shown.
   - This covers Demon Armor, Arcane Intellect, Fortitude and Mark of the Wild. The "expiring" reminders and every other icon stay still.
+- **The suggestion row is 70% opaque** (user: "recommended spell on top can be 70% visibility?"). Every icon in the rotation row over the DoTs, and the execute cue (Shadowburn) at its end, is drawn at 70%. The mana and pet cues under their bars stay fully opaque.
 - Update the Core and your class in `/fa`, choosing **Update Auras**.
 
 ## 0.13.0 — 2026-11-13 (prerelease)
