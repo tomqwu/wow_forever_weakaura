@@ -4,8 +4,23 @@ E.selection=S
 -- Ability rows are centred on their bar (x=±138) and grow both ways; rank 1
 -- sits nearest the seal. Matches BAR_X in scripts/build.py.
 S.BAR_X,S.STEP=138,47
+-- Spell suggestions sit over Health, right above the DoT row; with a left
+-- cooldown wing shown they rise above it. Matches SUGGEST_Y and
+-- SUGGEST_LIFTED_Y in scripts/build.py.
+S.SUGGEST_Y,S.SUGGEST_LIFTED_Y=74,120
 function S.Centred(sign,rank,count)
     return sign*(S.BAR_X-((count-1)/2-(rank-1))*S.STEP)
+end
+-- The suggestion row is an ordinary group (no ancestry change), moved only
+-- out of combat so its native children never shift mid-fight.
+function S.PlaceSuggestions(api)
+    if E.InCombat() or not E.class or not E.classNames[E.class] then return end
+    local region=api.GetRegion('ForeverHUD | '..E.classNames[E.class]..' | Suggest')
+    if not region or not region.SetOffset then return end
+    local lifted=false
+    for _,position in pairs(S.positions) do if position.x<0 then lifted=true;break end end
+    S.suggestLifted=lifted
+    region:SetOffset(-S.BAR_X,lifted and S.SUGGEST_LIFTED_Y or S.SUGGEST_Y)
 end
 -- Only purchased, readable ranks contribute. Unavailable data leaves Leveling.
 function S.TalentSchool()
@@ -165,6 +180,7 @@ function S.ApplyLayout()
         -- buttons. Cached form selection can reposition these ordinary icons.
         if region and region.SetOffset then region:SetOffset(position.x,0) end
     end
+    S.PlaceSuggestions(api)
 end
 function S.Refresh()
     local available={}

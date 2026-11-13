@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.6 — 2026-11-13 (prerelease)
+
+- **Suggestions on the damage side** (user: "recommendation can be on the left? a bit lower, right above normal dps spell"). The spell suggestion row moves from above the seal to the left, centred over Health at y=74, 4 px above the DoT row.
+  - When the left cooldown wing is showing (Essential cooldowns or class-plan attacks), the companion lifts the row to y=120, just above the wing, so they never overlap.
+  - The row moves only out of combat. A change during combat applies when it ends.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.9.5 — 2026-11-12 (prerelease)
 
 - **Tray icons really match** (user: "you never fixed", with a screenshot after updating to 0.9.4). The 0.9.3 ring wasn't the visible difference. Measured in game, ForeverAuras puts our frame tight around a native button's art (about 43 px on screen). The ordinary Soul Shards icon drew it 8 px outside the art (about 56 px), so it looked bigger and overlapped its neighbour.

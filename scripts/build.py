@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.9.5"
+VERSION = "0.9.6"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -58,9 +58,13 @@ BAR_X = 138
 # ForeverAuras Modern Aura Group: a normal group whose Aura (Modern) children
 # are chained by the client and kept centred with half-size shadows, so the
 # row re-centres in combat without any Lua reading aura state.
-# 0.9 spell suggestions above the seal, highest priority first.
-SUGGEST_Y = 112
+# 0.9 spell suggestions, highest priority first. 0.9.6: they sit on the
+# damage side, centred over Health, directly above the DoT row (top y=54).
+# When the left cooldown wing (40 px icons at PRIMARY_Y, y 60..100) has
+# entries, the companion lifts the row above it (Selection.lua, SUGGEST_*).
 SUGGEST_SIZE = 32
+SUGGEST_Y = DOT_ROW_Y + DOT_SIZE // 2 + 4 + SUGGEST_SIZE // 2
+SUGGEST_LIFTED_Y = PRIMARY_Y + 40 // 2 + 4 + SUGGEST_SIZE // 2
 SUGGEST_STEP = 36
 SUGGESTIONS = {
     'WARLOCK': [
@@ -552,13 +556,13 @@ def generate():
             if d['id'].startswith(tray+' | ') and entry and any(isinstance(seed,str) for seed in entry['seeds']):
                 p.eligibility.pop(d['id'])
                 d['load']['loadFlag']=f'FOREVERHUD_{cls}_tray'
-        # 0.9 spell suggestions: a fixed row above the seal. Each rule is a
+        # 0.9 spell suggestions: a fixed row over Health. Each rule is a
         # native check (power/health curve, Show On Missing, aura active);
         # nothing is inferred in Lua. Protected percentages cannot be
         # combined natively, so each rule tests a single value.
         rules=SUGGESTIONS.get(cls,[])
         if rules:
-            suggest=prefix+' | Suggest'; p.group(suggest,prefix,cls,'suggest',y=SUGGEST_Y)
+            suggest=prefix+' | Suggest'; p.group(suggest,prefix,cls,'suggest',x=-BAR_X,y=SUGGEST_Y)
             for i,rule in enumerate(rules):
                 x=(i-(len(rules)-1)/2)*SUGGEST_STEP
                 if rule['kind']=='curve':

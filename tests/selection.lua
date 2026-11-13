@@ -34,6 +34,20 @@ check(selected('Drain Life') and not selected('Drain Soul'),'Learned slot fallba
 check(selected('Health Funnel').x-selected('Fear').x==47,'Unlearned priority slots compact without gaps or reordered learned skills')
 check(selected('Shadow Bolt').x<0 and selected('Life Tap').x>0,'Class plans put attacks left over Health and support right')
 do
+    -- 0.9.6: suggestions sit over Health; a shown left wing lifts them above it.
+    local row=ForeverAuras.GetRegion('ForeverHUD | Warlock | Suggest')
+    check(row.x==-138 and row.y==120 and S.suggestLifted,'Suggestions rise above a shown left (attack) wing')
+    loadout('WARLOCK',{'Life Tap','Fear','Health Funnel'})
+    check(row.x==-138 and row.y==74 and not S.suggestLifted,'Without a left wing, suggestions sit right above the DoT row')
+    local inCombat=E.InCombat
+    E.InCombat=function()return true end
+    loadout('WARLOCK',{'Shadow Bolt','Corruption','Life Tap'})
+    check(row.y==74,'The suggestion row never moves in combat')
+    E.InCombat=inCombat
+    S.Refresh()
+    check(row.y==120,'After combat the lift applies')
+end
+do
     -- 0.7: each side is centred on its bar (x=±138) and grows both ways.
     local sums,counts={0,0},{0,0}
     for _,pos in pairs(S.positions) do sums[pos.side]=sums[pos.side]+pos.x;counts[pos.side]=counts[pos.side]+1 end

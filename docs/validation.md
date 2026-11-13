@@ -1,6 +1,14 @@
-# Validation for 0.9.5
+# Validation for 0.9.6
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.9.6 (prerelease) — suggestions on the damage side
+
+- **Request (user screenshot, 0.9.5):** the suggestion icon showed above the seal; the user asked for it on the left, lower, right above the damage icons. In that screenshot the left cooldown wing is empty and the DoT row sits on the Health rim.
+- **Change:** the Suggest group sits at x=-138, y=74, 4 px above the DoT row, which spans y 26–54. `Selection.PlaceSuggestions` moves it to y=120 when the left wing has entries; the wing's 40 px icons at y=80 span 60–100. It runs out of combat only.
+- **`tests/test_pack.py`:** asserts the position against the DoT row and that the companion constants match the generator.
+- **`tests/selection.lua`:** asserts the lift with a left wing, the low position without one, no move in combat, and the lift after combat.
+- **Not yet checked in game:** the new position and the lift.
 
 ## 0.9.5 (prerelease) — tray icons match
 
