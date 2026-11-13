@@ -43,6 +43,19 @@ do
     check(region('Shadow Bolt').y==0,'With suggestions off, the left wing stays at its normal height')
     E.Profile().suggest=true;S.Refresh()
     check(region('Shadow Bolt').y==34,'Turning suggestions back on lifts it again')
+    -- 0.10: the current spec picks its suggestion list; Leveling without talents.
+    local function allowed(id)return S.Allowed(id,E.catalog[id])end
+    local leveling,affliction='ForeverHUD | Warlock | Suggest | Corruption','ForeverHUD | Warlock | Suggest | Affliction | Corruption'
+    check(S.suggestSpec=='Leveling' and allowed(leveling) and not allowed(affliction),'No talents: the Leveling list')
+    E.Profile().school='Affliction';S.Refresh()
+    check(S.suggestSpec=='Affliction' and allowed(affliction) and not allowed(leveling)
+        and not allowed('ForeverHUD | Warlock | Suggest | Destruction | Immolate'),'A spec loads only its own list')
+    E.Profile().school='Auto';S.Refresh()
+    loadout('MAGE',{})
+    check(S.suggestSpec==nil and S.LeftLift()==0,'A class without a Leveling list shows none and keeps its wing down')
+    E.Profile().school='Fire';S.Refresh()
+    check(S.suggestSpec=='Fire' and S.LeftLift()==34,'Mage Fire list loads and lifts the wing')
+    loadout('WARLOCK',{'Shadow Bolt','Corruption','Immolate','Drain Life','Drain Soul','Life Tap','Fear','Health Funnel'})
 end
 do
     -- 0.7: each side is centred on its bar (x=±138) and grows both ways.

@@ -35,7 +35,7 @@ local core,warlock=E.bundledImports.CORE,E.bundledImports.WARLOCK
 installed['ForeverHUD | Core']={id='ForeverHUD | Core',url='https://wago.io/forever-hud-core/'..core.build}
 installed['ForeverHUD | Warlock']={id='ForeverHUD | Warlock',url='https://wago.io/forever-hud-warlock/'..(warlock.build-1)}
 E.RefreshOptions()
-check(E.panel.install.shown and E.panel.auraStatus.text:find('0.9',1,true) and not E.panel.auraStatus.text:find('Core',1,true),'An older class group is reported; a current Core is not')
+check(E.panel.install.shown and E.panel.auraStatus.text:find(warlock.version,1,true) and not E.panel.auraStatus.text:find('Core',1,true),'An older class group is reported; a current Core is not')
 installed['ForeverHUD | Warlock'].url='https://wago.io/forever-hud-warlock/'..warlock.build
 E.RefreshOptions()
 check(not E.panel.install.shown and E.panel.auraStatus.text=='光环已是最新','Current auras: no button, localized all-clear')

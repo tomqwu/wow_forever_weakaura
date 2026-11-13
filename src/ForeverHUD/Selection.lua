@@ -13,14 +13,23 @@ S.WING_LIFT=34
 function S.Centred(sign,rank,count)
     return sign*(S.BAR_X-((count-1)/2-(rank-1))*S.STEP)
 end
--- The lift applies only while this class has suggestions turned on.
+-- 0.10: suggestions follow the spec. The current school (detected from
+-- talents or chosen in /fhud) picks its own list; without one, 'Leveling'.
+function S.SuggestSpec(mode)
+    local fallback
+    for _,entry in pairs(E.catalog or {}) do
+        if entry.cls==E.class and entry.module=='suggest' then
+            if entry.spec==mode then return mode end
+            if entry.spec=='Leveling' then fallback='Leveling' end
+        end
+    end
+    return fallback
+end
+-- The lift applies only while the current list exists and suggestions are on.
 function S.LeftLift()
     local p=E.Profile()
-    if not p or p.suggest==false then return 0 end
-    for _,entry in pairs(E.catalog or {}) do
-        if entry.cls==E.class and entry.module=='suggest' then return S.WING_LIFT end
-    end
-    return 0
+    if not p or p.suggest==false or not S.suggestSpec then return 0 end
+    return S.WING_LIFT
 end
 -- Only purchased, readable ranks contribute. Unavailable data leaves Leveling.
 function S.TalentSchool()
@@ -197,6 +206,7 @@ function S.Refresh()
             or available['Shield Slam'] and 'Protection'
     end
     mode=mode or 'Leveling'
+    S.suggestSpec=S.SuggestSpec(mode)
     local stage=mode
     if E.class=="WARRIOR" then
         if mode=="Arms" and not available['Mortal Strike'] then stage="ArmsEarly" end
@@ -273,6 +283,7 @@ function S.Refresh()
 end
 function S.Allowed(id,entry)
     if entry.prep then return false end
+    if entry.module=='suggest' then return entry.spec==S.suggestSpec end
     -- The right rim shows one buff row: the Cooldown Manager's tracked buffs
     -- in Forever mode, the curated class buffs in Class plan mode.
     if entry.effect then return not S.nativeMode end

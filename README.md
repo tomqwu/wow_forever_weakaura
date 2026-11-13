@@ -4,7 +4,7 @@
 
 ## English
 
-**Version 0.9.7 — suggestions stay right above your DoTs (prerelease).** Spell suggestions no longer jump up when you have left-side (Essential) cooldowns; those cooldowns now sit above the suggestions instead. Update your class in `/fa`, choosing **Update Auras**. **0.9.6 — suggestions on the damage side.** Spell suggestions now sit on the left, centred over Health, right above your DoTs. Update your class in `/fa`, choosing **Update Auras**. **0.9.5 — tray icons really match.** The Soul Shards tray icon now uses the same tight frame as the reminder icons beside it, so the frames no longer differ in size or overlap. The tray row also has a little more spacing. Update your class in `/fa`, choosing **Update Auras**. **0.9.4 — hover to peek.** Hovering the folded seal out of combat shows the whole HUD as a faint ghost, inviting a click. Click to open it fully; move away and it folds straight back. Entering combat drops the ghost to full opacity. **0.9.3 — matching tray icons.** Soul Shards now has the same dark inner ring as the reminder icons beside it, so every tray icon looks alike. ForeverAuras draws reminders with the game's own aura button, which can't be restyled. Update your class in `/fa`, choosing **Update Auras**. **0.9.2 — one-row tray.** The retracted tray is a single centred horizontal row under the seal, with every icon in the same style. Soul Shards show one count in the corner, like the other icons. **0.9.1:** the tray no longer shows health % and mana %. It keeps only Soul Shards, missing upkeep buffs and food, drink or Well Fed. Update your class in `/fa`, choosing **Update Auras**. **0.9.0 — spell suggestions.** Warlocks get a row of suggestions above the seal, in priority order from left to right:
+**Version 0.10.0 — rotation suggestions for every class and spec (prerelease).** Suggestions now follow your spec: each of the nine classes has a list per spec (see *Spell suggestions*), and Warlocks without talents keep the 0.9 list. Update your class in `/fa`, choosing **Update Auras**. **0.9.7 — suggestions stay right above your DoTs.** Spell suggestions no longer jump up when you have left-side (Essential) cooldowns; those cooldowns now sit above the suggestions instead. Update your class in `/fa`, choosing **Update Auras**. **0.9.6 — suggestions on the damage side.** Spell suggestions now sit on the left, centred over Health, right above your DoTs. Update your class in `/fa`, choosing **Update Auras**. **0.9.5 — tray icons really match.** The Soul Shards tray icon now uses the same tight frame as the reminder icons beside it, so the frames no longer differ in size or overlap. The tray row also has a little more spacing. Update your class in `/fa`, choosing **Update Auras**. **0.9.4 — hover to peek.** Hovering the folded seal out of combat shows the whole HUD as a faint ghost, inviting a click. Click to open it fully; move away and it folds straight back. Entering combat drops the ghost to full opacity. **0.9.3 — matching tray icons.** Soul Shards now has the same dark inner ring as the reminder icons beside it, so every tray icon looks alike. ForeverAuras draws reminders with the game's own aura button, which can't be restyled. Update your class in `/fa`, choosing **Update Auras**. **0.9.2 — one-row tray.** The retracted tray is a single centred horizontal row under the seal, with every icon in the same style. Soul Shards show one count in the corner, like the other icons. **0.9.1:** the tray no longer shows health % and mana %. It keeps only Soul Shards, missing upkeep buffs and food, drink or Well Fed. Update your class in `/fa`, choosing **Update Auras**. **0.9.0 — spell suggestions.** Warlocks get a row of suggestions above the seal, in priority order from left to right:
 - **Life Tap** at 30% mana or less;
 - **Corruption** or **Immolate** when missing from your hostile target in combat;
 - **Shadow Trance** when the proc is up (cast Shadow Bolt);
@@ -39,7 +39,33 @@ Install or update both from `/fa`, or with `/fhud install`.
 
 **Upkeep reminders.** Demon Armor, Arcane Intellect, Fortitude and Mark of the Wild show only when missing or in their last 15 seconds.
 
-**Spell suggestions (Warlock).** Shown on the left over Health, right above your DoTs, in priority order. Left-side cooldowns sit above them:
+**Spell suggestions (every class, per spec).** Shown on the left over Health, right above your DoTs. Left-side cooldowns sit above them. Each spec has its own list, highest priority on the left. The list follows your talents, or the spec you pick in `/fhud`. Every rule is a single native ForeverAuras check (missing DoT or buff, proc up, spell usable, or a health/mana threshold), and a rule only loads once you know its spell.
+
+| Class | Spec | Suggestions (left to right) |
+| --- | --- | --- |
+| Warlock | Leveling (no talents) | Life Tap ≤30% mana, Corruption, Immolate, Shadow Trance, Health Funnel (pet ≤35%) |
+| | Affliction | Life Tap, Corruption, Bane of Agony, Siphon Life, Shadow Trance |
+| | Demonology | Life Tap, Corruption, Immolate, Bane of Agony, Health Funnel |
+| | Destruction | Life Tap, Immolate, Conflagrate (usable), Backlash, Shadowburn (target ≤25%) |
+| Mage | Arcane / Fire / Frost | Evocation ≤20% mana; Missile Barrage / Improved Scorch, Hot Streak / Fingers of Frost |
+| Priest | Discipline / Holy | Surge of Light; Penance / Prayer of Mending usable |
+| | Shadow | Shadowform, Shadow Word: Pain, Vampiric Embrace, Devouring Plague, Mind Blast usable |
+| Rogue | all | Slice and Dice; Rupture (Assassination, Combat) or Hemorrhage (Subtlety) |
+| Druid | Balance | Innervate ≤30% mana, Moonfire, Faerie Fire, Clearcasting |
+| | Feral | Faerie Fire, Rake, Rip, Clearcasting |
+| | Restoration | Innervate, Clearcasting |
+| Hunter | all | Hunter's Mark, Serpent Sting, Mend Pet (pet ≤40%); Survival adds Counterattack and Mongoose Bite |
+| Shaman | Elemental | Flame Shock, Lightning Shield |
+| | Enhancement | Lightning Shield, Maelstrom Weapon, Stormstrike usable, Flame Shock |
+| | Restoration | Mana Tide Totem ≤30% mana, Riptide usable |
+| Paladin | Holy | Holy Shock usable |
+| | Protection | Holy Shield, Consecration, Judgement |
+| | Retribution | Hammer of Wrath, Judgement, Consecration |
+| Warrior | Arms / Fury / Protection | Mortal Strike / Bloodthirst, Whirlwind / Shield Slam usable (procs and Rend keep their own rows) |
+
+The client hides combat values from addon code, so the list can't rank rules against each other or pick one "next spell". Every rule that applies shows at once.
+
+The 0.9 Warlock list, still used without talents:
 - Life Tap at 30% mana or less;
 - Corruption or Immolate missing from your target in combat;
 - the Shadow Trance proc;
@@ -226,7 +252,7 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 ## 简体中文
 
-**版本 0.9.7：技能建议始终紧贴 DoT 上方（预发布）。** 有左侧（Essential）冷却技能时，技能建议不再上移；改为由这些冷却技能显示在建议上方。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.6：技能建议移到伤害一侧。** 技能建议现在位于左侧、生命条正上方居中，紧贴在 DoT 图标之上。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.5：托盘图标真正一致。** 灵魂碎片托盘图标现在与旁边的提醒图标使用相同的紧凑边框，不再大小不同或互相重叠；托盘这一行的间距也略微加大。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.4：悬停预览。** 脱离战斗时把鼠标悬停在收起的印记上，整个界面会以淡淡的虚影显示，提示可以点击。点击即可完全展开；移开鼠标则立即收回。进入战斗时虚影会恢复为完全不透明。**0.9.3：托盘图标风格一致。** 灵魂碎片现在与旁边的提醒图标一样带有深色内圈，托盘中所有图标外观一致（ForeverAuras 用游戏自带的光环按钮绘制提醒，无法另行修改样式）。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.2：单行托盘。** 收起时的托盘是印记下方居中的一行横排图标，所有图标风格一致；灵魂碎片与其他图标一样只在角落显示一个数字。**0.9.1：** 托盘不再显示生命与法力百分比，只保留灵魂碎片、缺失的维持类增益以及进食、饮水或进食充分。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.0：技能建议。** 术士在印记上方获得一行建议，从左到右按优先级排列：
+**版本 0.10.0：所有职业与专精的输出建议（预发布）。** 技能建议现在跟随专精：九个职业的每个专精都有自己的列表；没有天赋的术士继续使用 0.9 的列表。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.7：技能建议始终紧贴 DoT 上方。** 有左侧（Essential）冷却技能时，技能建议不再上移；改为由这些冷却技能显示在建议上方。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.6：技能建议移到伤害一侧。** 技能建议现在位于左侧、生命条正上方居中，紧贴在 DoT 图标之上。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.5：托盘图标真正一致。** 灵魂碎片托盘图标现在与旁边的提醒图标使用相同的紧凑边框，不再大小不同或互相重叠；托盘这一行的间距也略微加大。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.4：悬停预览。** 脱离战斗时把鼠标悬停在收起的印记上，整个界面会以淡淡的虚影显示，提示可以点击。点击即可完全展开；移开鼠标则立即收回。进入战斗时虚影会恢复为完全不透明。**0.9.3：托盘图标风格一致。** 灵魂碎片现在与旁边的提醒图标一样带有深色内圈，托盘中所有图标外观一致（ForeverAuras 用游戏自带的光环按钮绘制提醒，无法另行修改样式）。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.2：单行托盘。** 收起时的托盘是印记下方居中的一行横排图标，所有图标风格一致；灵魂碎片与其他图标一样只在角落显示一个数字。**0.9.1：** 托盘不再显示生命与法力百分比，只保留灵魂碎片、缺失的维持类增益以及进食、饮水或进食充分。请在 `/fa` 中更新当前职业，并选择 **Update Auras（更新光环）**。**0.9.0：技能建议。** 术士在印记上方获得一行建议，从左到右按优先级排列：
 - 法力不高于 30% 时建议**生命分流**；
 - 战斗中敌对目标身上缺少你的**腐蚀术**或**献祭**时提示；
 - **暗影冥思**触发时提示（施放暗影箭）；
@@ -261,7 +287,9 @@ Inspired by the supplied Guos Warrior HUD's feature organization. No Guos script
 
 **维持类提醒。** 恶魔护甲、奥术智慧、真言术：韧与野性印记只在缺失或最后 15 秒时显示。
 
-**技能建议（术士）。** 显示在左侧生命条上方、紧贴 DoT 图标，按优先级排列；左侧冷却技能位于其上方：
+**技能建议（所有职业，按专精）。** 显示在左侧生命条上方、紧贴 DoT 图标；左侧冷却技能位于其上方。每个专精都有自己的建议列表，优先级从左到右递减。列表跟随你的天赋，或你在 `/fhud` 中选择的专精。每条规则都是一个 ForeverAuras 原生判断（DoT 或增益缺失、触发效果、技能可用、或生命/法力阈值），并且只有学会对应技能后才会载入。上表（英文部分）列出了全部九个职业的规则。客户端不允许插件读取战斗中的数值，因此无法在规则之间比较并只给出“下一个技能”；所有满足条件的建议会同时显示。
+
+0.9 的术士列表（无天赋时仍使用）：
 - 法力不高于 30% 时建议生命分流；
 - 战斗中目标缺少腐蚀术或献祭时提示；
 - 暗影冥思触发时提示；

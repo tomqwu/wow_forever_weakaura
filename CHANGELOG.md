@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.10.0 — 2026-11-12 (prerelease)
+
+- **Rotation suggestions per class and spec** (user: "recommendation engine should optimize the rotation based on the class->spec" and "review other class").
+  - Each class has one suggestion list per spec. It follows your talents, or the spec chosen in `/fhud`.
+  - **Warlock:** Affliction (Corruption, Bane of Agony, Siphon Life, Shadow Trance), Demonology (Corruption, Immolate, Bane of Agony, Health Funnel) and Destruction (Immolate, Conflagrate, Backlash, Shadowburn under 25%). All three add Life Tap. Without talents the 0.9 list stays, with the same aura IDs.
+  - **The other eight classes** get their first lists: DoTs to keep up, procs, core spells when usable, and resource cues such as Evocation, Innervate and Mana Tide. The full table is in the README.
+  - **New rule types:** *ready* (the spell is usable now) and *buff* (your own buff is missing).
+  - Rules still use one native check each, and load only once you know the spell. Mend Pet (136) is the one ID not already in the catalog.
+- The left cooldown wing lifts above the suggestions only while your spec has a list.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.9.7 — 2026-11-12 (prerelease)
 
 - **Suggestions stay right above your DoTs** (user screenshot on 0.9.6: the suggestions had jumped up, leaving a gap; "just above the dps spell is fine").

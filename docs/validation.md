@@ -1,6 +1,29 @@
-# Validation for 0.9.7
+# Validation for 0.10.0
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.10.0 (prerelease) — rotation suggestions per spec
+
+- **Request:** suggestions should follow class and spec; review every class.
+- **Change:**
+  - `SUGGESTIONS` holds one list per spec for all nine classes, with at most five rules each.
+  - Each display's catalog entry carries `spec`.
+  - `Selection.SuggestSpec` resolves the current school, falling back to `Leveling`.
+  - `Selection.Allowed` gates suggestion flags by that spec.
+  - New rule kinds are `ready` (Action Usable, combat with a hostile target) and `buff` (own buff missing).
+  - Druid Innervate tests mana explicitly (`powertype=0`).
+- **`tests/test_pack.py`:**
+  - The Warlock per-spec lists and their order, and that the Leveling list keeps the 0.9 IDs.
+  - Every list is centred and has at most five rules.
+  - The Conflagrate and Shadowburn triggers and gates.
+  - Every class has a list for each spec, with spec, seeds and suggest load flags.
+  - The Innervate power type, and the own-buff check.
+- **`tests/selection.lua`:**
+  - The Leveling fallback, and that a spec loads only its own list.
+  - A class without a Leveling list shows nothing and keeps its wing down.
+  - The Mage Fire list.
+- **IDs:** all except Mend Pet (136) come from the existing catalog. A rule loads only once the client reports its spell or talent as learned.
+- **Not yet checked in game:** any rule, including whether the target-health curve and Action Usable checks behave in this client.
 
 ## 0.9.7 (prerelease) — suggestions stay above the DoTs
 
