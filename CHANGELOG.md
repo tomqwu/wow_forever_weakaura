@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.1 — 2026-11-13 (prerelease)
+
+- **Shelf lines instead of grey boxes** (user screenshot on 0.12.0: "bugged?"; fix chosen: "Yes, fix it").
+  - The 0.12.0 grooves weren't failing, but they read as three empty grey slabs. They showed over empty rows, covered the frame's rim art, and the class tint turned the dark fill flat grey.
+  - Each is replaced by a thin class-coloured line (media `shelf`) under the rows that float above the frame: the suggestions on the left and the utility cooldowns on the right. The line is bright at the seal and fades outward.
+  - Shelves show only in combat, when the rows are in use, and never while folded. The rim rows sit on the frame's own edge and get no line.
+- Restart the game for the new texture, then update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.12.0 — 2026-11-12 (prerelease)
 
 - **One spine from the seal** (user screenshot on 0.11.0: "help me design how better incorporate dps cdm into the frame itself, still raw". Chosen: one spine from the seal, with code-drawn grooves now and painted art later).

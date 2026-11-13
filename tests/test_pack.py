@@ -136,7 +136,7 @@ class PackTests(unittest.TestCase):
             self.assertNotIn(forbidden,code)
     def test_wow_texture_format(self):
         files=list((ROOT/'src/ForeverHUD/Media').glob('*.tga'))
-        self.assertEqual(len(files),24,'0.12 adds the drawn groove')
+        self.assertEqual(len(files),24,'0.12.1: the drawn shelf (it replaced 0.12.0\'s groove)')
         for path in files:
             header=path.read_bytes()[:18]
             self.assertEqual(header[2],2,'Uncompressed true-color TGA')
@@ -264,17 +264,22 @@ class PackTests(unittest.TestCase):
         native=by_id[CORE_ID+' | Native player effects']
         # 0.12: grows right from the seal; a dynamic group centres its first icon on the origin.
         self.assertEqual((native['xOffset'],native['yOffset'],native['grow'],native['align']),(66,40,'RIGHT','CENTER'))
-        # 0.12: drawn grooves in the frame under the spine rows, hidden while folded.
+        # 0.12.1: thin shelf lines replace 0.12.0's groove slabs: under the rows
+        # floating above the frame, starting at the seal, only in combat.
         for c in CLASSES.values():
             frame=f"ForeverHUD | {c['name']} | Frame"
             kids=by_id[frame]['controlledChildren']
             chassis=kids.index(f"ForeverHUD | {c['name']} | Chassis")
-            for name,x,y in (('Left rim',-142,40),('Right rim',142,40),('Suggestions',-142,74)):
-                g=by_id[f"ForeverHUD | {c['name']} | Groove | {name}"]
-                self.assertEqual((g['xOffset'],g['yOffset'],g['width']),(x,y,184),g['id'])
-                self.assertTrue(g['texture'].endswith('groove.tga'))
+            self.assertFalse(any(' | Groove | ' in k for k in kids),'No groove slabs')
+            for name,x,mirror in (('Left',-142,True),('Right',142,False)):
+                g=by_id[f"ForeverHUD | {c['name']} | Shelf | {name}"]
+                self.assertEqual((g['xOffset'],g['yOffset'],g['width'],g['height'],g['mirror']),(x,55,184,8,mirror),g['id'])
+                self.assertTrue(g['texture'].endswith('shelf.tga'))
                 self.assertGreater(kids.index(g['id']),chassis,'Drawn over the chassis')
-                self.assertIn('not ForeverHUD.Retracted()',g['triggers'][2]['trigger']['custom'])
+                gate=g['triggers'][2]['trigger']['custom']
+                self.assertIn('ForeverHUD.InCombat()',gate)
+                self.assertIn('not ForeverHUD.Retracted()',gate)
+        self.assertLess(55+4,74-16,'Left shelf sits under the suggestion row')
         for side,growth in (('left','LEFT'),('right','RIGHT')):
             self.assertEqual(by_id[f'ForeverHUD | Warlock | Primary | Native {side}']['grow'],growth,'Wings grow out from the seal')
         self.assertEqual(by_id[CORE_ID+' | Native player effects | Entries']['width'],by_id['ForeverHUD | Warlock | Target effects | Immolate']['width'],'Same icon size as the DoT row')

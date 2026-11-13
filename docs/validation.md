@@ -1,6 +1,13 @@
-# Validation for 0.12.0
+# Validation for 0.12.1
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.12.1 (prerelease) — shelf lines
+
+- **Game evidence (user screenshot, 0.12.0, out of combat):** three grey rectangles: over each rim row and over the suggestion row. Nothing was in them, and they covered part of the rim art.
+- **Change:** the `groove` media and displays are removed, and `shelf` (256×8, gradient line) is added. `Shelf | Left` (mirrored) and `Shelf | Right` sit at (±142, 55), 184×8, tinted with the class colour. They're gated on art, layout visible, `InCombat()` and not retracted; the gate trigger already listens for `PLAYER_REGEN_DISABLED` and `PLAYER_REGEN_ENABLED`.
+- **`tests/test_pack.py`:** no groove displays; shelf position, size, mirror, texture, draw order over the chassis, and the combat and folded gate. The texture count stays 24.
+- **Not yet checked in game.**
 
 ## 0.12.0 (prerelease) — one spine from the seal
 
