@@ -15,7 +15,9 @@ from build import rgba
 def sections(c):
     """Class sections in draw order; Resources only for a pet or class extra."""
     return (['Frame']+(['Resources'] if c.get('pet') or c.get('extra') else [])+['Primary','Utility','Auras','Nameplates','Tray']
-        +['Suggest','Alerts'])
+        +['Suggest']+(['Suggest cues'] if c['name'] in CUE_CLASSES else [])+['Alerts'])
+# Classes whose suggestion lists include a threshold cue (mana, pet or execute).
+CUE_CLASSES={'Warlock','Mage','Druid','Hunter','Shaman'}
 CORE_SECTIONS=['Resources','Native rows','Native auras']
 
 def subtree(by_id,root):
@@ -384,9 +386,11 @@ class PackTests(unittest.TestCase):
     def test_warlock_spell_suggestions(self):
         by_id={d['id']:d for d in self.regions}
         row=by_id['ForeverHUD | Warlock | Suggest']
+        cues=by_id['ForeverHUD | Warlock | Suggest cues']
         # 0.10: one list per spec; Leveling keeps the 0.9 display IDs.
+        # 0.11: a list's actions chain in the row; its threshold cues sit by their bar.
         lists={}
-        for id in row['controlledChildren']:
+        for id in [d['id'] for d in self.regions if d['id'].startswith('ForeverHUD | Warlock | Suggest | ')]:
             lists.setdefault(self.eligibility[id]['spec'],[]).append(id)
         self.assertEqual(set(lists),{'Leveling','Affliction','Demonology','Destruction'})
         names=lambda spec:[id.split(' | ')[-1] for id in lists[spec]]
@@ -395,20 +399,34 @@ class PackTests(unittest.TestCase):
         self.assertEqual(names('Affliction'),['Life Tap','Corruption','Bane of Agony','Siphon Life','Shadow Trance'])
         self.assertEqual(names('Demonology'),['Life Tap','Corruption','Immolate','Bane of Agony','Health Funnel'])
         self.assertEqual(names('Destruction'),['Life Tap','Immolate','Conflagrate','Backlash','Shadowburn'])
+        # The row grows left from the seal, its lead slot's right edge 4 px
+        # outside the Health bar's inner end; actions sit at the row origin.
+        self.assertEqual((row['blizzardFlow'],row['blizzardFlowGrowth'],row['blizzardFlowSpacing']),(True,'LEFT',4))
+        self.assertEqual((row['xOffset']+16,row['yOffset']),(-52,74))
         for spec,ids in lists.items():
-            xs=[by_id[id]['xOffset'] for id in ids]
-            self.assertEqual(sum(xs),0,f'{spec} list centred within the row')
-            self.assertLessEqual(len(ids),5,'Stays over the Health bar')
+            actions=[id for id in ids if by_id[id]['parent']==row['id']]
+            self.assertEqual(actions,[id for id in row['controlledChildren'] if id in ids],f'{spec}: row in priority order')
+            self.assertTrue(all((by_id[id]['xOffset'],by_id[id]['yOffset'])==(0,0) for id in actions),spec)
+            self.assertLessEqual(len(actions)*32+(len(actions)-1)*4,180,'Fits over the Health bar')
+            for id in ids:
+                if by_id[id]['parent']==cues['id']:
+                    self.assertEqual(by_id[id]['triggers'][1]['trigger']['type'],'unit','Only threshold cues leave the row')
+        mana=by_id['ForeverHUD | Warlock | Suggest | Life Tap']
+        pet=by_id['ForeverHUD | Warlock | Suggest | Health Funnel']
+        burn=by_id['ForeverHUD | Warlock | Suggest | Destruction | Shadowburn']
+        self.assertEqual((mana['parent'],mana['xOffset'],mana['yOffset'],mana['width']),(cues['id'],218,-28,22),'Life Tap under the Mana bar')
+        self.assertEqual((pet['parent'],pet['xOffset'],pet['yOffset'],pet['width']),(cues['id'],-218,-28,22),'Health Funnel under the Pet bar')
+        self.assertEqual((burn['xOffset']-16,burn['yOffset']),(-228,74),'Execute cue in the row\'s far slot')
+        destruction=[id for id in lists['Destruction'] if by_id[id]['parent']==row['id']]
+        self.assertLessEqual(len(destruction)*32+(len(destruction)-1)*4,180-32-4,'Row never reaches the execute slot')
         conflag=by_id['ForeverHUD | Warlock | Suggest | Destruction | Conflagrate']
         self.assertEqual((conflag['triggers'][1]['trigger']['event'],conflag['triggers'][1]['trigger']['spellName']),('Action Usable',1293817))
         self.assertIn('ForeverHUD.SuggestTarget()',conflag['triggers'][2]['trigger']['custom'])
         burn=by_id['ForeverHUD | Warlock | Suggest | Destruction | Shadowburn']
         self.assertEqual((burn['triggers'][1]['trigger']['unit'],burn['conditions'][0]['check']),('target',dict(trigger=1,variable='percenthealth',op='<=',value=25)))
         self.assertIn('ForeverHUD.SuggestTarget()',burn['triggers'][2]['trigger']['custom'],'Execute cue only in combat on a hostile target')
-        # 0.9.6: on the damage side, centred over Health, right above the DoT row.
+        # 0.9.6: on the damage side, right above the DoT row.
         dots=by_id['ForeverHUD | Warlock | Target effects']
-        self.assertEqual(row['xOffset'],dots['xOffset'])
-        self.assertEqual(row['xOffset'],-138)
         self.assertEqual(row['yOffset']-16,dots['yOffset']+14+4,'4 px above the 28 px DoT row')
         selection=(ROOT/'src/ForeverHUD/Selection.lua').read_text(encoding='utf-8')
         # 0.9.7: the left wing (40 px at y=80) rises 4 px clear of the suggestions.
@@ -438,7 +456,8 @@ class PackTests(unittest.TestCase):
         for cls,c in CLASSES.items():
             self.assertTrue(set(SCHOOLS[cls])<=set(SUGGESTIONS[cls]),f'{cls}: a list for every spec')
             row=by_id[f"ForeverHUD | {c['name']} | Suggest"]
-            for id in row['controlledChildren']:
+            cues=by_id.get(f"ForeverHUD | {c['name']} | Suggest cues",{'controlledChildren':[]})
+            for id in row['controlledChildren']+cues['controlledChildren']:
                 entry=self.eligibility[id]
                 self.assertEqual((entry['cls'],entry['module']),(cls,'suggest'),id)
                 self.assertIn(entry['spec'],SUGGESTIONS[cls],id)

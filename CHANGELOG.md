@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.11.0 — 2026-11-12 (prerelease)
+
+- **A clearer suggestion row** (user screenshot on 0.10.0: "can you design something make it better for recommendation?"; the design was approved before building).
+  - **Rotation row:** actions now form a ForeverAuras Modern Aura Group that grows left from the seal. Whatever shows closes up with no gaps, and the slot next to the seal is always the top action.
+  - **Cues by their bars:** mana cues (Life Tap, Evocation, Innervate, Mana Tide) sit under the Mana bar's outer end, and pet cues (Health Funnel, Mend Pet) under the Pet bar's. A threshold cue can't join the row, because it's shown at zero opacity until it fires.
+  - **Execute slot:** Shadowburn under 25% has a fixed slot at the row's far end, so Destruction's row holds four actions.
+  - **Not done:** an icon's size belongs to its rule, not its slot, so the top slot can't be drawn larger. It's marked by its fixed position.
+- `tests/native-schema.lua` passes against the installed ForeverAuras.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.10.0 — 2026-11-12 (prerelease)
 
 - **Rotation suggestions per class and spec** (user: "recommendation engine should optimize the rotation based on the class->spec" and "review other class").

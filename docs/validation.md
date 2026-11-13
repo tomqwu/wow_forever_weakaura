@@ -1,6 +1,31 @@
-# Validation for 0.10.0
+# Validation for 0.11.0
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.11.0 (prerelease) — clearer suggestion row
+
+- **Game evidence (user screenshot, 0.10.0):** two suggestions sat in fixed slots with gaps, off centre. Health Funnel, a pet cue, was mixed in with the rotation spells.
+- **ForeverAuras source (installed addon, read only):**
+  - `SecretAuraFlow.lua` supports `LEFT` growth, which starts at the first display's top-right corner.
+  - A legacy row starts at its first shown member's own frame.
+  - Only shown members join the row.
+  - Ordinary icons join a row through stand-ins, in group order.
+- **Change:**
+  - The Suggest group is a LEFT Modern Aura Group at (-68, 74) with spacing 4, so the lead edge is at -52.
+  - Every action sits at the group origin.
+  - Threshold cues move to `Suggest cues`: mana at (218, -28), pet at (-218, -28), both 22 px, and execute at (-212, 74).
+  - That group exists only for classes with a cue.
+- **`tests/test_pack.py`:**
+  - The row's flow, growth, spacing and lead edge.
+  - Each spec's actions in priority order at the origin, fitting over the Health bar.
+  - Only curve cues leave the row.
+  - The Life Tap, Health Funnel and Shadowburn positions.
+  - Destruction's row never reaches the execute slot.
+- **`tests/native-schema.lua` against the installed ForeverAuras:** the native schema validator passed 253 modern displays.
+- **Not yet checked in game:**
+  - the live order;
+  - whether `Action Usable` icons keep their list order in the row;
+  - the cue positions against the frame art.
 
 ## 0.10.0 (prerelease) — rotation suggestions per spec
 
