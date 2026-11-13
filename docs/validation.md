@@ -1,6 +1,18 @@
-# Validation for 0.12.1
+# Validation for 0.13.0
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.0 (prerelease) — absorb overlay on the Health bar
+
+- **ForeverAuras source (installed addon, read only):**
+  - `Prototypes.lua:3412`: the Health trigger has `showAbsorb` (hidden when `UnitGetTotalAbsorbs` is nil), `absorbMode` and `absorb = UnitGetTotalAbsorbs(unit)`.
+  - `Prototypes.lua:3614`: the overlay accepts secret values.
+  - `RegionTypes/AuraBar.lua:512`: the `fromMax` overlay sets a secret width on native status bars.
+  - `SecretAuraStand.lua:782`: a fix notes an absorb overlay on a health bar copy "seen in game".
+- **Change:** the Core Health trigger gets `use_showAbsorb=true` and `absorbMode=OVERLAY_FROM_END_REVERSE`. The bar gets one overlay colour (0.82, 0.93, 1.0, 0.6) and `overlayclip=true`.
+- **`tests/test_pack.py`:** the trigger fields, no heal-absorb, clipping, one translucent overlay colour, and only the player Health bar.
+- **`tests/native-schema.lua` against the installed ForeverAuras:** passes.
+- **Not yet checked in game:** whether the server counts Ice Barrier, Mana Shield, Power Word: Shield and Shadow Ward toward `UnitGetTotalAbsorbs`, and how the overlay looks on the frame.
 
 ## 0.12.1 (prerelease) — shelf lines
 
