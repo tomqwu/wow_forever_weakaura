@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.4 — unreleased (prerelease)
+## 0.9.4 — 2026-11-12 (prerelease)
 
 - **Hover to peek** (user: "when mouseover to the foldable class image, can you have an effect where the whole bar in a faded out? so it will encourage/invite people to click?"). Hovering the folded seal out of combat opens the HUD as a ghost at 35% of your opacity setting.
   - **Leaving:** folds straight back after the existing 0.7 s grace, with no 5 s hold.
