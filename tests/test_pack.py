@@ -387,8 +387,14 @@ class PackTests(unittest.TestCase):
         names=[id.split(' | ')[-1] for id in row['controlledChildren']]
         self.assertEqual(names,['Life Tap','Corruption','Immolate','Shadow Trance','Health Funnel'],'Priority order, left to right')
         xs=[by_id[id]['xOffset'] for id in row['controlledChildren']]
-        self.assertEqual(sum(xs),0,'Centred above the seal')
-        self.assertGreater(row['yOffset'],65+16,'Clear of the seal top')
+        self.assertEqual(sum(xs),0,'Centred within the row')
+        # 0.9.6: on the damage side, centred over Health, right above the DoT row.
+        dots=by_id['ForeverHUD | Warlock | Target effects']
+        self.assertEqual(row['xOffset'],dots['xOffset'])
+        self.assertEqual(row['xOffset'],-138)
+        self.assertEqual(row['yOffset']-16,dots['yOffset']+14+4,'4 px above the 28 px DoT row')
+        selection=open('src/ForeverHUD/Selection.lua',encoding='utf-8').read()
+        self.assertIn(f"S.SUGGEST_Y,S.SUGGEST_LIFTED_Y={row['yOffset']},{80+20+4+16}",selection,'Companion lift matches the generator')
         tap=by_id['ForeverHUD | Warlock | Suggest | Life Tap']
         self.assertEqual(tap['alpha'],0)
         self.assertEqual(tap['triggers'][1]['trigger']['event'],'Power')
