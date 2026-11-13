@@ -1,6 +1,14 @@
-# Validation for 0.13.1
+# Validation for 0.13.2
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.2 (prerelease) — smaller folded seal
+
+- **Game evidence (user screenshot, 0.13.1, folded):** the retracted Warlock seal with the Soul Shard count under it; the user asked for the class icon 10% smaller.
+- **Change:** `RETRACTED_SEAL` 132 → 118 (even, so it stays centred on whole pixels). `TRAY_ROW1_Y` is now derived, 13 − 59 − 4 − 17 = −67, keeping the 4 px gap. The 68 px companion click handle is unchanged and still inside the seal.
+- **CDM expiry fade-out, not built:** `BlizzardAuraDisplay.lua:1810–1816` offers only Start (aura assigned) and Main (aura shown) animations, with no hook for an aura ending.
+- **`tests/test_pack.py`:** the seal width, the row offset and the 4 px gap.
+- **Not yet checked in game.**
 
 ## 0.13.1 (prerelease) — missing upkeep breathes; suggestion row at 70%
 

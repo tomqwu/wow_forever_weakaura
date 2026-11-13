@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.2 — 2026-11-13 (prerelease)
+
+- **A smaller folded seal** (user, with a screenshot of the folded seal and tray: "smaller 10%"; "the class icon"). The retracted class seal is 118 px, down from 132. The tray row moved from y=-74 to y=-67, so it keeps its 4 px gap under the seal.
+- Not changed: a fade-out when a Cooldown Manager aura ends (user: "whenever a spell from CDM expires, it should flash fade out?"). ForeverAuras' native aura buttons offer animations only when an aura is assigned and while it's shown (`BlizzardAuraDisplay.lua:1810`: "there is no Finish"), and reading the end time in Lua is not allowed here.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.1 — 2026-11-13 (prerelease)
 
 - **A missing buff breathes** (user, with a screenshot of the folded tray: "if armor is not on, the reminder here should flash? not crazy flash"; "like breathing").
