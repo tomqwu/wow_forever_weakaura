@@ -93,7 +93,15 @@ end
 -- spell among its IDs (spell, override, linked) is a target aura. Spell data
 -- is never secret; cached per spell.
 local harmful={}
+-- 0.13.15 (user: "why you taking off the brand buff from CDM?"): target
+-- debuffs that set up the player's own damage stay in the row. Demonic Brand
+-- (talent 1293695, debuff 1293696) is a Magic debuff on the target that makes
+-- the caster's pet hit harder; the Warlock watches it like a buff.
+S.KEEP_TARGET={[1293695]=true,[1293696]=true}
 function S.TargetAura(entry)
+    for spell in pairs(entry and entry.identities or {}) do
+        if S.KEEP_TARGET[spell] then return false end
+    end
     for spell in pairs(entry and entry.identities or {}) do
         local known=harmful[spell]
         if known==nil then
