@@ -1,6 +1,12 @@
-# Validation for 0.13.12
+# Validation for 0.13.13
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.13 (prerelease) — Well Fed reminder, and the first `/fhud dump`
+
+- **Change:** `test_well_fed_reminder` checks the trigger (name, Show On Missing, no caster filter), the `fedMissing` switch, no discovery entry, the gates and the breath, for every class; `tests/core.lua` the default (off) and turning it on (119 checks).
+- **First dump (Warlock, read only from SavedVariables, 2026-11-14):** client 1.60.1 build 70938, interface 16001, level 32 Demonology. `stackGate = true`: the client has `C_AuraContainerUtil.ProcessCustomAuraButtonApplicationBarOptions`, so ForeverAuras' native Stack Count gate can be used for stack rules. The Cooldown Manager's Tracked Buffs hold Bane of Agony, Curses, Demonic Brand (1293695), Corruption, Fear, Immolate, Banish, Demon Skin, Demon Armor, Detect Invisibility, Shadow Ward, Subjugate Demon and Shatter Curse: target debuffs as well as player buffs, which the right-hand buff row mirrors apart from the DoTs the left row shows. No item buff is in the list.
+- **Not yet checked in game:** the Well Fed reminder showing and clearing.
 
 ## 0.13.12 (prerelease) — pet reminder
 

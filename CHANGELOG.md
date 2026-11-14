@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.13 — 2026-11-14 (prerelease)
+
+User: "you are no longer alerting food status?", then "Yes, opt-in" to a Well Fed missing reminder.
+
+- **Well Fed reminder** (module `fedMissing`, every class, off by default). The native aura trigger by name (`Well Fed`, every ID with that name, any caster) with Show On Missing, in the expanded upkeep row and the folded tray, breathing like the upkeep reminders. The Food, Drink and Well Fed icons shown while those buffs are up are unchanged since 0.8.0.
+- The settings' module rows are a little tighter to fit the extra checkbox.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.12 — 2026-11-14 (prerelease)
 
 User: "pet missing notification too?"

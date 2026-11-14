@@ -102,7 +102,7 @@ class PackTests(unittest.TestCase):
             t=d['triggers'][1]['trigger']
             self.assertEqual(t['auraTracking'],'native')
             self.assertIn(t['secretShowOn'],('showOnActive','showOnMissing'))
-            self.assertEqual(t['nativeFilters'],{} if 'Battle Shout missing' in d['id'] or 'Battle Shout expiring' in d['id'] or ' | Upkeep' in d['id'] else {'PLAYER':True})
+            self.assertEqual(t['nativeFilters'],{} if 'Battle Shout missing' in d['id'] or 'Battle Shout expiring' in d['id'] or ' | Upkeep' in d['id'] or d['id'].endswith(' | Well Fed missing') else {'PLAYER':True})
             self.assertTrue(t['auraRankSpellIDs'])
             self.assertEqual(d['blizzardAuraDisplay']['maxIcons'],1)
             self.assertEqual(d['triggers']['secretFallback'],'none')
@@ -403,7 +403,7 @@ class PackTests(unittest.TestCase):
                 d=by_id[id]
                 # 0.13.10: weapon reminders follow their own switch (imbue/oil);
                 # their gate adds the tray's.
-                module='(imbue|oil)' if ' | Weapon reminder | ' in id else 'petMissing' if id.endswith(' | Pet missing') else 'tray'
+                module='(imbue|oil)' if ' | Weapon reminder | ' in id else 'petMissing' if id.endswith(' | Pet missing') else 'fedMissing' if id.endswith(' | Well Fed missing') else 'tray'
                 self.assertRegex(d['load']['loadFlag'],f'^FOREVERHUD_{cls}_{module}',id)
                 gate=d['triggers'][max(k for k in d['triggers'] if isinstance(k,int))]['trigger'].get('custom','')
                 if 'controlledChildren' not in d: self.assertIn('Gate("tray"',gate,id)
@@ -537,6 +537,18 @@ class PackTests(unittest.TestCase):
                 ' gate=false out[#out+1]=string.format("%.2f",f(0.1,1)) print(table.concat(out," "))')
             got=subprocess.run([lua,'-e',script],capture_output=True,text=True,check=True).stdout.split()
             self.assertEqual(got,['1.00','0.20','1.00','0.20','1.00','0.50','0.00','0.00'])
+
+    def test_well_fed_reminder(self):
+        # 0.13.13: opt-in Well Fed missing, by aura name, every class.
+        by_id={d['id']:d for d in self.regions}
+        for cls,c in CLASSES.items():
+            for id,place in ((f"ForeverHUD | {c['name']} | Well Fed missing",'maintenance'),(f"ForeverHUD | {c['name']} | Tray | Row | Well Fed missing",'tray')):
+                d=by_id[id];t=d['triggers'][1]['trigger']
+                self.assertEqual((t['auraRankSpellIDs'],t['secretShowOn'],t['nativeFilters']),(['Well Fed'],'showOnMissing',{}),id)
+                self.assertEqual(d['load']['loadFlag'],f'FOREVERHUD_{cls}_fedMissing',id)
+                self.assertNotIn(id,self.eligibility,id)
+                self.assertIn(f'Gate("{place}","{cls}") and ForeverHUD.Gate("fedMissing","{cls}")',d['triggers'][2]['trigger']['custom'],id)
+                self.assertEqual(d['blizzardAuraDisplay']['auraMain']['type'],'pulse',id)
 
     def test_pet_missing_reminder(self):
         # 0.13.12: native Conditions trigger, no living pet and not mounted.

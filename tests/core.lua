@@ -83,7 +83,9 @@ E.Set('x',135);E.Set('y',-230)
 class="MAGE";E.InitDB();E.Notify()
 check(E.Profile().x==0 and E.Profile().primary,"New class gets own defaults")
 -- 0.13.10: weapon reminders default on only for classes that enchant their own weapon.
-check(E.Profile().imbue==false and E.Profile().oil==false and E.Profile().petMissing==false,"A Mage gets no weapon or pet reminder by default")
+check(E.Profile().imbue==false and E.Profile().oil==false and E.Profile().petMissing==false and E.Profile().fedMissing==false,"A Mage gets no weapon, pet or Well Fed reminder by default")
+E.Set("fedMissing",true);check(E.Profile().fedMissing==true and flags.FOREVERHUD_MAGE_fedMissing,"The Well Fed reminder can be turned on")
+E.Set("fedMissing",false)
 check(not flags.FOREVERHUD_MAGE_oil,"An off reminder stays unloaded")
 class="ROGUE";E.InitDB();E.Notify()
 check(E.Profile().oil==true and E.Profile().imbue==false and flags.FOREVERHUD_ROGUE_oil,"Rogue poison reminder is on by default")
@@ -139,7 +141,7 @@ check(not E.Profile().resources,"Actual settings checkbox changes module")
 E.panel.sliders.scale:SetValue(1.2)
 check(math.abs(E.Profile().scale-1.2)<0.0001,"Actual settings slider changes layout")
 E.ToggleOptions();check(not E.panel:IsShown(),"Settings panel closes")
-check(E.panel.checks.imbue and E.panel.checks.oil and E.panel.checks.petMissing,"Warlock settings list the weapon and pet reminders")
+check(E.panel.checks.imbue and E.panel.checks.oil and E.panel.checks.petMissing and E.panel.checks.fedMissing,"Warlock settings list the weapon, pet and Well Fed reminders")
 -- 0.13.10: the minimap addon-list entry (TOC AddonCompartmentFunc).
 ForeverHUD_OnAddonCompartmentClick("ForeverHUD","LeftButton");check(E.panel:IsShown(),"Minimap entry left-click opens settings")
 ForeverHUD_OnAddonCompartmentClick("ForeverHUD","LeftButton");check(not E.panel:IsShown(),"and closes them")
@@ -235,7 +237,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.12','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.13','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return ForeverHUD and ForeverHUD.version=="0.3.2" and ForeverHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true
