@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.16 — 2026-11-14 (prerelease)
+
+User: "Shooting a wand should never spin up a buff icon", then "Always show the wing".
+
+- **Utility cooldowns are always shown.** In the Forever layout, the right-hand cooldown wing (Cooldown Manager Utility entries 1 to 4) and its overflow row showed an entry only while on cooldown. A wand Shoot puts spells on a shared lockout that ForeverAuras reports as on cooldown (its `WandCooldown.lua` keeps only the ready look; its spell trigger's wand detection only suppresses the ready alert), so Shadow Ward appeared on every shot. Those Utility entries now use Show: Always; a real cooldown still shows its countdown, and the wand hold keeps them looking ready. The damage wing over Health and the item row stay cooldown-only.
+- Companion only: copy the addon and `/reload`; no aura update needed.
+
 ## 0.13.15 — 2026-11-14 (prerelease)
 
 User, with a tooltip of Demonic Brand on the target ("Magic: the caster's pet deals an additional 35 to 38 damage with its next 2 attacks"): "why you taking off the brand buff from CDM?"
