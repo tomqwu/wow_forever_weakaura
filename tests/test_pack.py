@@ -401,7 +401,10 @@ class PackTests(unittest.TestCase):
             self.assertTrue(tray)
             for id in tray:
                 d=by_id[id]
-                self.assertTrue(d['load']['loadFlag'].startswith(f'FOREVERHUD_{cls}_tray'),id)
+                # 0.13.10: weapon reminders follow their own switch (imbue/oil);
+                # their gate adds the tray's.
+                module='(imbue|oil)' if ' | Weapon reminder | ' in id else 'tray'
+                self.assertRegex(d['load']['loadFlag'],f'^FOREVERHUD_{cls}_{module}',id)
                 gate=d['triggers'][max(k for k in d['triggers'] if isinstance(k,int))]['trigger'].get('custom','')
                 if 'controlledChildren' not in d: self.assertIn('Gate("tray"',gate,id)
                 self.assertLess(d['yOffset']+by_id[d['parent']]['yOffset'],-40,'Tray hangs below the larger seal')
@@ -515,6 +518,40 @@ class PackTests(unittest.TestCase):
                 ('HUNTER','Survival','Counterattack'),('SHAMAN','Enhancement','Maelstrom Weapon'),('ROGUE','Combat','Riposte'),
                 ('PALADIN','Retribution','Hammer of Wrath'),('WARRIOR','Fury','Execute')):
             self.assertEqual(first(cls,spec),name,(cls,spec))
+
+    def test_weapon_enchant_reminders(self):
+        # 0.13.10: native Weapon Enchant trigger, Show On Enchant Missing; an
+        # imbue (Firestone, Shaman imbue) and an oil/stone/poison are separate
+        # checks, because Forever lets one weapon carry both.
+        by_id={d['id']:d for d in self.regions}
+        def reminders(cls):
+            return sorted(id for id in by_id if id.startswith(f"ForeverHUD | {CLASSES[cls]['name']} | ") and ' | Weapon reminder | ' in id)
+        for cls,c in CLASSES.items():
+            ids=reminders(cls)
+            self.assertTrue(ids,cls)
+            for id in ids:
+                d=by_id[id]
+                t=d['triggers'][1]['trigger']
+                self.assertEqual((t['type'],t['event'],t['showOn']),('item','Weapon Enchant','showOnMissing'),id)
+                module='imbue' if t['enchantKind']=='imbue' else 'oil'
+                self.assertEqual(t['enchantKind'],{'imbue':'imbue','oil':'temporary'}[module])
+                self.assertRegex(d['load']['loadFlag'],f'^FOREVERHUD_{cls}_{module}',id)
+                place='tray' if ' | Tray | ' in id else 'maintenance'
+                gate=d['triggers'][2]['trigger']['custom']
+                self.assertIn(f'Gate("{place}","{cls}")',gate,id);self.assertIn(f'Gate("{module}","{cls}")',gate,id)
+                self.assertEqual((d['iconSource'],d['animation']['main']['preset']),(0,'alphaPulse'),id)
+                self.assertTrue(d['displayIcon'].startswith('Interface\\Icons\\'),id)
+                self.assertTrue([s for s in d['subRegions'] if s['type']=='subglow'],id)
+        names=lambda cls:[id.split(' | ')[-1] for id in reminders(cls) if ' | Tray | ' in id]
+        self.assertEqual(names('WARLOCK'),['Firestone or Spellstone missing','Oil or stone missing'])
+        self.assertEqual(names('SHAMAN'),['Oil or stone missing','Weapon imbue missing'])
+        self.assertEqual(names('ROGUE'),['Main-hand poison missing','Off-hand poison missing'])
+        self.assertEqual(names('MAGE'),['Oil or stone missing'])
+        # Gated on the learned spell, so a low-level character is not nagged.
+        firestone=self.eligibility['ForeverHUD | Warlock | Tray | Row | Weapon reminder | Firestone or Spellstone missing']
+        self.assertEqual((firestone['module'],firestone['requires'],firestone['seeds']),('imbue','tray',[6366]))
+        poison=self.eligibility['ForeverHUD | Rogue | Weapon reminder | Off-hand poison missing']
+        self.assertEqual((poison['module'],poison['requires'],poison['seeds']),('oil','maintenance',[2842]))
 
     def test_proc_ids_come_from_the_client_name_table(self):
         # 0.13.9: checked against ForeverAuras SpellNameData.lua (client build

@@ -82,9 +82,19 @@ E.ResetPosition();check(E.Profile().x==0 and E.Profile().y==-235 and E.Profile()
 E.Set('x',135);E.Set('y',-230)
 class="MAGE";E.InitDB();E.Notify()
 check(E.Profile().x==0 and E.Profile().primary,"New class gets own defaults")
+-- 0.13.10: weapon reminders default on only for classes that enchant their own weapon.
+check(E.Profile().imbue==false and E.Profile().oil==false,"A Mage gets no weapon reminder by default")
+check(not flags.FOREVERHUD_MAGE_oil,"An off reminder stays unloaded")
+class="ROGUE";E.InitDB();E.Notify()
+check(E.Profile().oil==true and E.Profile().imbue==false and flags.FOREVERHUD_ROGUE_oil,"Rogue poison reminder is on by default")
+E.Set("oil",false);E.InitDB();check(E.Profile().oil==false and not flags.FOREVERHUD_ROGUE_oil,"Turning a weapon reminder off persists and unloads it")
+E.Profile().oil=nil;E.InitDB();check(E.Profile().oil==true,"A missing value gets the class default")
+class="MAGE";E.InitDB();E.Notify()
 check(flags.FOREVERHUD_MAGE_primary and not flags.FOREVERHUD_WARLOCK_primary,"Login switches loaded modules")
 class="WARLOCK";E.InitDB();E.Notify()
 check(E.Profile().x==135 and not E.Profile().primary,"Returning class restores its settings")
+check(E.Profile().imbue==true and E.Profile().oil==false and flags.FOREVERHUD_WARLOCK_imbue,"An existing Warlock profile gains the Firestone reminder, oil off")
+E.ApplyLayout() -- the Rogue checks above applied that class's layout
 combat=true;E.Set("x",999);E.Set("scale",1.4);E.Set("enabled",false)
 check(E.Profile().x==135 and E.Profile().scale==1.25 and E.Profile().enabled,"Combat changes are deferred")
 check(root.scale==1.25 and E.anchor.point[4]==135,"No combat writes to native ancestry")
@@ -128,6 +138,18 @@ check(not E.Profile().resources,"Actual settings checkbox changes module")
 E.panel.sliders.scale:SetValue(1.2)
 check(math.abs(E.Profile().scale-1.2)<0.0001,"Actual settings slider changes layout")
 E.ToggleOptions();check(not E.panel:IsShown(),"Settings panel closes")
+check(E.panel.checks.imbue and E.panel.checks.oil,"Warlock settings list both weapon reminders")
+-- 0.13.10: the minimap addon-list entry (TOC AddonCompartmentFunc).
+ForeverHUD_OnAddonCompartmentClick("ForeverHUD","LeftButton");check(E.panel:IsShown(),"Minimap entry left-click opens settings")
+ForeverHUD_OnAddonCompartmentClick("ForeverHUD","LeftButton");check(not E.panel:IsShown(),"and closes them")
+ForeverHUD_OnAddonCompartmentEnter("ForeverHUD",E.anchor);ForeverHUD_OnAddonCompartmentLeave()
+do
+    local toc=io.open("src/ForeverHUD/ForeverHUD.toc"):read("*a")
+    for _,name in ipairs({"Click","Enter","Leave"}) do
+        local fn=toc:match("## AddonCompartmentFunc"..(name=="Click" and "" or "On"..name)..": (%S+)")
+        check(fn and type(_G[fn])=="function","TOC names the "..name.." handler")
+    end
+end
 -- 0.13.6: a page in the game's Options -> AddOns list with the size slider.
 E.RegisterGameOptions();check(E.gameOptions==nil,'Without the Settings API nothing is registered')
 local registered
@@ -212,7 +234,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.9','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.10','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return ForeverHUD and ForeverHUD.version=="0.3.2" and ForeverHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true

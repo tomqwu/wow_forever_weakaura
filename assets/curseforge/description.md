@@ -9,6 +9,8 @@ A class combat HUD for WoW Forever, built on **[ForeverAuras](https://www.cursef
 - **Spell suggestions for every spec.** Rotation actions line up above your DoTs, with the top action next to the seal. Mana and pet cues sit under their bars.
 - **Shields on the Health bar.** A pale ice-white segment shows your remaining absorb, such as Ice Barrier, Mana Shield or Power Word: Shield.
 - **Upkeep reminders.** Demon Armor, Arcane Intellect, Fortitude and Mark of the Wild show when they're missing or about to run out.
+- **Weapon enchant reminders.** A missing Firestone, Spellstone, Shaman imbue, Rogue poison, or (if you turn it on) oil or sharpening stone breathes in the same row. Each is a checkbox under Modules.
+- **Minimap entry.** ForeverHUD is in the minimap's addon list: left-click for settings, right-click to expand or fold.
 - **Retracted seal and tray.** Out of combat with no hostile target, the HUD folds to a seal showing your class counter, missing buffs and food.
 - **Native and combat-safe.** Everything comes from ForeverAuras' own triggers. Nothing is guessed from the combat log.
 - **English and Simplified Chinese.**

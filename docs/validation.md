@@ -1,6 +1,14 @@
-# Validation for 0.13.9
+# Validation for 0.13.10
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.10 (prerelease) — weapon enchant reminders and minimap entry
+
+- **Evidence read (installed ForeverAuras 1.3.9, read only):** `Prototypes.lua:7320-7511` defines the Weapon Enchant trigger (type `item`; `weapon` main/off; `enchantKind` any/imbue/temporary; `showOn` showOnActive/showOnMissing/showAlways). `Types.lua:4181-4191` labels the kinds "Imbue (Firestones, Mage Scrolls, Shaman Imbues)" and "Oil, Stone or Poison". `ItemStatus.lua:62-93` reads both kinds per hand from `C_Item.GetWeaponEnchantInfo` and treats secret values as unreadable. The user's tooltip shows Minor Wizard Oil and Firestone on one weapon, matching the two kinds.
+- **Learned spells** (`SpellNameData.lua`): Create Firestone 6366 (742), Rockbiter Weapon 8017 (2999), Poisons 2842 (2717).
+- **Minimap entry:** BetterLootGlimmer and Baganator, installed for this client, register through `## AddonCompartmentFunc`, and LibDBIcon in ForeverAuras uses `AddonCompartmentFrame`, so the client has the addon list. ForeverHUD did not register before.
+- **Tests:** `tests/test_pack.py` `test_weapon_enchant_reminders` (trigger fields, module flags, gates, learned-spell eligibility, names per class) and the tray test; `tests/core.lua` covers class defaults, an existing profile gaining them, turning one off, the settings checkboxes and the three compartment handlers named in the TOC (117 checks).
+- **Not yet checked in game:** the reminders showing and hiding as enchants are applied and expire, the icon art (standard `Interface/Icons` paths: INV_Ammo_FireTar, Spell_Nature_RockBiter, Ability_Poisons, INV_Potion_100), and the minimap entry.
 
 ## 0.13.9 (prerelease) — client spell IDs and `/fhud dump`
 

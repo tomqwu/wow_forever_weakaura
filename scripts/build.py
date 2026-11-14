@@ -12,11 +12,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
+from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP, weapon_enchants,
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.9"
+VERSION = "0.13.10"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -248,6 +248,25 @@ def breathe(d):
     d['blizzardAuraDisplay']['auraMain'] = dict(BREATHE)
     d['subRegions'].append(dict(MISSING_GLOW))
     return d
+# 0.13.10: the same breath on an ordinary icon (a Weapon Enchant trigger has
+# no native aura button): ForeverAuras' Main animation preset fades it in a
+# loop over the same 2.4 s, with the same glow.
+def breathe_plain(d):
+    d['animation']['main'] = dict(type='preset', preset='alphaPulse', duration_type='seconds',
+        duration=BREATHE['duration'], easeType='none', easeStrength=3)
+    d['subRegions'].append(dict(MISSING_GLOW))
+    return d
+def tray_look(d):
+    # An ordinary icon dressed like the native aura buttons beside it: the
+    # dark inner ring under a tight frame, no text.
+    for sub in d['subRegions']:
+        if sub.get('type')=='subtext': sub['text_visible']=False
+        if sub.get('type')=='subtexture': sub.update(xOffset=TRAY_FRAME_OUTSET,yOffset=TRAY_FRAME_OUTSET)
+    d['subRegions'].insert(1,dict(type='subborder',border_visible=True,border_color=TRAY_RING_COLOR,
+        border_edge='Square Full White',border_size=TRAY_RING,border_offset=0))
+    return d
+def enchant_trigger(hand,kind):
+    return dict(type='item',event='Weapon Enchant',weapon=hand,enchantKind=kind,showOn='showOnMissing')
 CENTRED_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='CENTER_HORIZONTAL', blizzardFlowSpacing=2)
 # Class-plan secondary rows by side: damage left, support right.
 ROLE_X = {'Offense':-160,'Control':0,'Defense':160}
@@ -608,8 +627,8 @@ def generate():
         maintenance=prefix+' | Maintenance'
         # Only classes with an upkeep aura get this row; no empty groups.
         # Upkeep buffs are not damage: they sit right, beyond the resource bar.
-        if cls=='WARLOCK' or UPKEEP.get(cls):
-            p.group(maintenance,auras,cls,'maintenance',x=286,y=13,dynamic=True).update(grow='RIGHT',space=6)
+        # 0.13.10: every class has one, for the weapon enchant reminders.
+        p.group(maintenance,auras,cls,'maintenance',x=286,y=13,dynamic=True).update(grow='RIGHT',space=6)
         # The player's own buffs are not damage: a fixed row seated over the
         # resource bar, mirroring the DoT row over Health.
         effects=prefix+" | Player effects";p.group(effects,auras,cls,"buffs",x=SEAL_EDGE+DOT_SIZE//2,y=DOT_ROW_Y).update(SPINE_RIGHT)
@@ -646,6 +665,20 @@ def generate():
             # Demon Skin / Demon Armor / Fel Armor: shown only when none is up,
             # or in its last 15 seconds.
             upkeep_reminders([687,706,28176],'Demon armor')
+        def enchant_reminder(name,parent,module,place,hand,kind,known,art,size):
+            d=icon(p,name,parent,cls,module,enchant_trigger(hand,kind),size,known=known)
+            d.update(iconSource=0,displayIcon='Interface\\Icons\\'+art,cooldown=False)
+            # Shown only where it sits (the expanded upkeep row or the folded
+            # tray) and only while its own module is on.
+            d['triggers'][2]['trigger']['custom']=(f'function() return ForeverHUD and ForeverHUD.Gate("{place}","{cls}") '
+                f'and ForeverHUD.Gate("{module}","{cls}") or false end')
+            if known: p.eligibility[name]['requires']=place
+            return d
+        for module,hand,kind,name,known,art in weapon_enchants(cls):
+            d=enchant_reminder(prefix+' | Weapon reminder | '+name+' missing',maintenance,module,'maintenance',hand,kind,known,art,24)
+            for sub in d['subRegions']:
+                if sub.get('type')=='subtext': sub['text_visible']=False
+            breathe_plain(d)
         if cls=='WARRIOR':
             # Rend (damage) joins the centred DoT row over Health; Battle Shout
             # (a buff) joins the centred buff row over the resource bar.
@@ -725,6 +758,8 @@ def generate():
         for seeds,name in upkeeps:
             trigger=aura_trigger(seeds);trigger.update(nativeFilters={},secretShowOn='showOnMissing')
             breathe(icon(p,f'{row} | Upkeep reminder | {name} missing',row,cls,'tray',trigger,TRAY_ICON,modern=True))
+        for module,hand,kind,name,known,art in weapon_enchants(cls):
+            breathe_plain(tray_look(enchant_reminder(f'{row} | Weapon reminder | {name} missing',row,module,'tray',hand,kind,known,art,TRAY_ICON)))
         for name in ('Food','Drink','Well Fed'):
             # Aura names expand natively to every spell ID with that name
             # (ForeverAuras BlizzardAuraDisplay GetSpellIDs), so no ID list.
