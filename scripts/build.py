@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.12"
+VERSION = "0.13.13"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -684,6 +684,18 @@ def generate():
             # Demon Skin / Demon Armor / Fel Armor: shown only when none is up,
             # or in its last 15 seconds.
             upkeep_reminders([687,706,28176],'Demon armor')
+        def well_fed_reminder(name,parent,place,size):
+            # 0.13.13 (user: "Yes, opt-in"): Well Fed missing, by aura name
+            # (expanded natively to every ID with that name, as the tray's
+            # Food/Drink/Well Fed icons are), any caster, Show On Missing.
+            # Module "fedMissing", off by default for every class.
+            trigger=aura_trigger(['Well Fed']);trigger.update(nativeFilters={},secretShowOn='showOnMissing')
+            d=breathe(icon(p,name,parent,cls,'fedMissing',trigger,size,modern=True))
+            # A name is not a learned spell: no discovery entry, only the switch.
+            p.eligibility.pop(name,None);d['load']['loadFlag']=f'FOREVERHUD_{cls}_fedMissing'
+            d['triggers'][2]['trigger']['custom']=(f'function() return ForeverHUD and ForeverHUD.Gate("{place}","{cls}") '
+                f'and ForeverHUD.Gate("fedMissing","{cls}") or false end')
+            return d
         def class_reminder(name,parent,module,place,trigger,known,art,size):
             d=icon(p,name,parent,cls,module,trigger,size,known=known)
             d.update(iconSource=0,displayIcon='Interface\\Icons\\'+art,cooldown=False)
@@ -704,6 +716,7 @@ def generate():
             for sub in d['subRegions']:
                 if sub.get('type')=='subtext': sub['text_visible']=False
             breathe_plain(d)
+        well_fed_reminder(prefix+' | Well Fed missing',maintenance,'maintenance',24)
         if cls=='WARRIOR':
             # Rend (damage) joins the centred DoT row over Health; Battle Shout
             # (a buff) joins the centred buff row over the resource bar.
@@ -792,6 +805,9 @@ def generate():
             # Aura names expand natively to every spell ID with that name
             # (ForeverAuras BlizzardAuraDisplay GetSpellIDs), so no ID list.
             d=icon(p,f'{row} | {name}',row,cls,'tray',aura_trigger([name]),TRAY_ICON,modern=True)
+        # Removes its own discovery entry, so the name-matched loop below
+        # leaves its switch alone; the install cue stays last in the row.
+        well_fed_reminder(f'{row} | Well Fed missing',row,'tray',TRAY_ICON)
         # 0.13.5: the install cue is an icon in this row, not a line of its
         # own, so every notification sits on one horizontal line. It is an
         # ordinary icon like the shard counter; the companion only answers

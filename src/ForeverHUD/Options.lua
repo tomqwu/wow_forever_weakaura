@@ -85,7 +85,7 @@ local function build()
         if not only or only[E.class] then shown[#shown+1]=entry end
     end
     for i,entry in ipairs(shown)do
-        check(p.sections.Modules,entry[1],entry[2],i%2==1 and 22 or 292,-190-math.floor((i-1)/2)*27)
+        check(p.sections.Modules,entry[1],entry[2],i%2==1 and 22 or 292,-190-math.floor((i-1)/2)*25)
     end
     label(p.sections.Modules,'Disabled modules unload their trackers.',11,27,-440,{.65,.61,.73})
     local behavior=p.sections.Behavior
