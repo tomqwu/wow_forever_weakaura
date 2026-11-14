@@ -404,7 +404,7 @@ class PackTests(unittest.TestCase):
                 self.assertTrue(d['load']['loadFlag'].startswith(f'FOREVERHUD_{cls}_tray'),id)
                 gate=d['triggers'][max(k for k in d['triggers'] if isinstance(k,int))]['trigger'].get('custom','')
                 if 'controlledChildren' not in d: self.assertIn('Gate("tray"',gate,id)
-                self.assertLess(d['yOffset']+by_id[d['parent']]['yOffset'],-46,'Tray hangs below the larger seal')
+                self.assertLess(d['yOffset']+by_id[d['parent']]['yOffset'],-40,'Tray hangs below the larger seal')
             row=by_id[prefix+' | Tray | Row']
             self.assertEqual((row['blizzardFlow'],row['blizzardFlowGrowth']),(True,'CENTER_HORIZONTAL'))
             names=[by_id[id]['triggers'][1]['trigger']['auraRankSpellIDs'] for id in row['controlledChildren'] if id.split(' | ')[-1] in ('Food','Drink','Well Fed')]
@@ -413,10 +413,12 @@ class PackTests(unittest.TestCase):
             for side in ('Health','Resource'):
                 self.assertNotIn(f'{prefix} | Tray | {side}',by_id)
             # 0.9.2: one horizontal row right under the seal for every class.
-            # 0.13.2: the folded seal is 118 px (10% under 132); the row keeps
-            # a 4 px gap under it, so its icons' tops sit at y=-50.
-            self.assertEqual(big['width'],118)
-            self.assertEqual(row['yOffset'],-67)
+            # 0.13.2: the folded seal shrank 10% (132 to 118); 0.13.6: another
+            # 10% (106). The row keeps a 4 px gap under it, and the companion's
+            # install cue repeats the row's y.
+            self.assertEqual(big['width'],106)
+            self.assertEqual(row['yOffset'],-61)
+            self.assertIn(f"E.INSTALL_CUE = {{size=34, y={row['yOffset']},",(ROOT/'src/ForeverHUD/Core.lua').read_text(**UTF8))
             icon_size=by_id[row['controlledChildren'][0]]['width']
             self.assertEqual(big['yOffset']-big['height']//2-(row['yOffset']+icon_size//2),4)
             self.assertEqual(by_id[prefix+' | Tray']['controlledChildren'],[row['id']],'Everything in the tray sits in the one row')

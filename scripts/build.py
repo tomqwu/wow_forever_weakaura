@@ -199,7 +199,8 @@ SUGGESTIONS = {
 }
 # 0.8 retracted mode: larger seal and the tray under it.
 # 0.13.2: 10% smaller (was 132), user request with a folded screenshot.
-RETRACTED_SEAL = 118
+# 0.13.6: another 10% (was 118). Spell and tray icons keep their sizes.
+RETRACTED_SEAL = 106
 TRAY_ICON = 34
 # The native aura buttons' dark inner ring, copied on the ordinary tray icon.
 TRAY_RING = 3
@@ -208,7 +209,8 @@ TRAY_RING_COLOR = [0.04, 0.03, 0.06, 1]
 # and the tray row's gap so neighbouring frames don't overlap.
 TRAY_FRAME_OUTSET = 3
 TRAY_SPACING = 8
-# Keeps the 4 px gap under the folded seal (centre y=13): 13-59-4-17.
+# Keeps the 4 px gap under the folded seal (centre y=13): 13-53-4-17 = -61.
+# Core.lua E.INSTALL_CUE.y repeats this value (checked by tests/test_pack.py).
 TRAY_ROW1_Y = 13 - RETRACTED_SEAL // 2 - 4 - TRAY_ICON // 2
 # 0.13.1: a missing upkeep buff breathes, so it catches the eye without
 # flashing. ForeverAuras' native Pulse (Aura Main) fades the icon to 40% and

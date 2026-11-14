@@ -187,8 +187,8 @@ ForeverAuras.Import=function(encoded)imported=encoded end
 class='WARLOCK';E.InitDB();E.Reset();E.state=nil
 E.RefreshInstallCue(true)
 check(E.installCue.shown and #E.cueProblems==1 and E.cueProblems[1]:find('Warlock'),'An older class group shows the install cue with its reason')
--- 0.13.5: always on the tray row's line (y=-67), never a line of its own.
-check(E.installCue.point[5]==E.Profile().y+E.INSTALL_CUE.y and E.INSTALL_CUE.y==-67,'The cue sits on the tray row line')
+-- 0.13.5: always on the tray row's line (y=-61 since 0.13.6), never a line of its own.
+check(E.installCue.point[5]==E.Profile().y+E.INSTALL_CUE.y and E.INSTALL_CUE.y==-61,'The cue sits on the tray row line')
 check(E.installCue.point[4]==E.Profile().x+84 and E.installCue.width==34 and not E.installCueInRow,'An older class group without the row icon gets the companion icon beside the row')
 check(E.NeedsAuras(),'The row icon is told the auras need work')
 local cueTimer=timers[#timers]

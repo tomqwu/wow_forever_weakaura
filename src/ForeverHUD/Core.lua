@@ -506,8 +506,8 @@ end
 --  * An older or missing class group cannot draw it, so the companion draws
 --    the same icon on the row's line: centred when there is no tray, else to
 --    the right of a three-icon row.
--- Offsets follow the tray row (y=-67, 34 px icons, 8 px gap).
-E.INSTALL_CUE = {size=34, y=-67, side=3*17+2*4+8+17, strip=230, icon="Interface\\Icons\\Trade_Engineering", breath=2.4}
+-- Offsets follow the tray row (y=-61, 34 px icons, 8 px gap).
+E.INSTALL_CUE = {size=34, y=-61, side=3*17+2*4+8+17, strip=230, icon="Interface\\Icons\\Trade_Engineering", breath=2.4}
 function E.NeedsAuras() return E.cueProblems ~= nil and #E.cueProblems > 0 end
 local cue = CreateFrame("Button", nil, UIParent)
 cue:SetSize(E.INSTALL_CUE.size, E.INSTALL_CUE.size)
