@@ -1,6 +1,15 @@
-# Validation for 0.13.3
+# Validation for 0.13.4
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.4 (prerelease) — every class's missing self-buff, with a glow; suggestions glow
+
+- **ForeverAuras source (installed addon, read only):** `SecretAuraGlow.lua:2–9`: Glow elements on Aura (Modern) displays, including "the Missing icon", are built from textures and animation groups registered with `AddAuraShownAnimation`; `:391–399` Pixel Glow takes `glowLines`, `glowFrequency` (lap = 1/frequency s) and `glowThickness`; `:154` honours `useGlowColor`.
+- **Change:** every `… Upkeep reminder | <name> missing` display (tray and HUD) gets one `subglow` (Pixel, 6 lines, frequency 0.2, thickness 2, gold 1/0.82/0.3/0.9) next to the 0.13.1 Pulse. `UPKEEP` now gives Mage armor (adds Molten Armor 30482), Inner Fire, Aspect (missing only; adds 5118, 13159, 20043, 13161, 34074) and Blessing (adds Salvation, Light, Sanctuary and the six Greater Blessings) missing reminders, and adds Shaman Shield (324, 24398). No class keeps a plain `… | Upkeep | …` icon.
+- **Suggestion glow (same release; user screenshot of the 0.13.3 row, in game):** every `… | Suggest | …` display gets one `subglow` of type `buttonOverlay` (Action Button Glow). `SecretAuraGlow.lua:371–389` builds it natively on Aura (Modern) icons; ordinary icons in the Modern Aura Group are drawn by stand-ins, which mirror Glow elements (`SecretAuraStand.lua:24`, `MirrorGlow`); the cues are ordinary icons with the ordinary glow. `test_suggestion_row_is_translucent` checks one glow on every suggestion.
+- **Not built:** Rogue poisons (weapon enchants are not auras).
+- **`tests/test_pack.py`:** reminders and tray icons for all eight buffs, no expiring Aspect reminder, the extra Aspect and Blessing IDs, one glow on every missing reminder and none on expiring ones.
+- **Not yet checked in game:** the glow on the tray and HUD icons, and whether Molten Armor (30482) and Water Shield (24398) exist on this client (an unknown ID only never matches).
 
 ## 0.13.3 (prerelease) — install icon under the folded seal
 
