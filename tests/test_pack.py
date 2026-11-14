@@ -8,7 +8,7 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 sys.path.insert(0,str(ROOT/'src'))
-from build import generate, class_import, TITLE, UTF8, PRIMARY_Y, VERSION, CORE, CORE_ID, ART_STRATA, owner_of, root_id
+from build import generate, class_import, TITLE, UTF8, PRIMARY_Y, VERSION, CORE, CORE_ID, ART_STRATA, owner_of, root_id, SUGGESTIONS
 from catalog import CLASSES, HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES
 from build import rgba
 
@@ -198,11 +198,21 @@ class PackTests(unittest.TestCase):
                 for d in self.regions),'No empty placeholder groups')
             depth=lambda id:0 if id==prefix else 1+depth(by_id[id]['parent'])
             self.assertLessEqual(max(depth(id) for id in subtree(by_id,prefix)),3)
-        procs=[d for d in self.regions if ' | Usable proc | ' in d['id']]
-        self.assertEqual(len(procs),4)
-        for d in procs:
-            self.assertEqual(d['parent'],'ForeverHUD | Warrior | Primary')
-            self.assertEqual(d['yOffset']+PRIMARY_Y,-23,'Screen position unchanged from the class root')
+        # 0.13.6: Warrior reactive strikes are suggestions (glowing, in the
+        # row), for every spec and without talents; the old unlit row is gone.
+        self.assertFalse([d for d in self.regions if ' | Usable proc | ' in d['id']])
+        for spec,first in (('Leveling','Overpower'),('Arms','Overpower'),('Fury','Execute'),('Protection','Revenge')):
+            names=[r['name'] for r in SUGGESTIONS['WARRIOR'][spec]]
+            self.assertEqual(names[0],first,spec)
+            self.assertIn('Overpower',names,spec)
+            self.assertIn('Victory Rush',names,spec)
+        for name,seed in (('Overpower',7384),('Revenge',6572),('Execute',5308),('Victory Rush',402927)):
+            d=by_id['ForeverHUD | Warrior | Suggest | '+name]
+            t=d['triggers'][1]['trigger']
+            self.assertEqual((t['event'],t['spellName'],t['use_targetRequired']),('Action Usable',seed,True))
+            self.assertEqual(d['parent'],'ForeverHUD | Warrior | Suggest')
+            self.assertEqual(self.eligibility[d['id']]['spec'],'Leveling')
+            self.assertEqual([s['glowType'] for s in d['subRegions'] if s['type']=='subglow'],['buttonOverlay'])
 
     def test_native_effect_animation_and_resource_curve(self):
         effects=[d for d in self.regions if ' | FX | ' in d['id']]

@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.5"
+VERSION = "0.13.6"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -135,6 +135,8 @@ EVOCATION=curve('Evocation',12051,'Spell_Nature_Purge',20)
 INNERVATE=curve('Innervate',29166,'Spell_Nature_Lightning',30,powertype=0)
 MEND_PET=curve('Mend Pet',136,'Ability_Hunter_MendPet',40,'pet','Health')
 HUNTERS=[missing("Hunter's Mark",1130),missing('Serpent Sting',1978)]
+OVERPOWER=ready('Overpower',7384);REVENGE=ready('Revenge',6572)
+EXECUTE=ready('Execute',5308);VICTORY_RUSH=ready('Victory Rush',402927)
 SUGGESTIONS = {
     'WARLOCK': {
         # 0.9 list, kept with its display IDs for characters without talents.
@@ -183,13 +185,16 @@ SUGGESTIONS = {
         'Protection':[buff('Holy Shield',20925),ready('Consecration',26573),ready('Judgement',20271)],
         'Retribution':[ready('Hammer of Wrath',24275),ready('Judgement',20271),ready('Consecration',26573)],
     },
-    # Warrior procs (Overpower, Revenge, Execute, Victory Rush) and the Rend /
-    # Battle Shout reminders already have their own rows; suggestions add
-    # each spec's main strike.
+    # 0.13.6: the reactive strikes (Overpower, Revenge, Execute, Victory Rush)
+    # are suggestions, in the row with the "press me" glow, instead of small
+    # unlit icons under the Health bar (user: no prompt when Overpower comes
+    # up). 'Leveling' covers a Warrior without talents. Rend and Battle Shout
+    # keep their own reminders.
     'WARRIOR': {
-        'Arms':[ready('Mortal Strike',12294)],
-        'Fury':[ready('Bloodthirst',23881),ready('Whirlwind',1680)],
-        'Protection':[ready('Shield Slam',23922)],
+        'Leveling':[OVERPOWER,REVENGE,EXECUTE,VICTORY_RUSH],
+        'Arms':[OVERPOWER,EXECUTE,ready('Mortal Strike',12294),VICTORY_RUSH],
+        'Fury':[EXECUTE,ready('Bloodthirst',23881),ready('Whirlwind',1680),OVERPOWER,VICTORY_RUSH],
+        'Protection':[REVENGE,ready('Shield Slam',23922),OVERPOWER,EXECUTE,VICTORY_RUSH],
     },
 }
 # 0.8 retracted mode: larger seal and the tray under it.
@@ -632,12 +637,8 @@ def generate():
                 reminder=icon(p,prefix+' | '+name,dots if unit=='target' else effects,cls,'dots' if unit=='target' else 'buffs',trigger,DOT_SIZE,modern=True)
                 if unit=='target':
                     reminder['triggers'][2]['trigger']['custom']='function() return ForeverHUD and ForeverHUD.Gate("dots","WARRIOR") and ForeverHUD.ReminderContext() or false end'
-            for i,(seed,name) in enumerate(((7384,'Overpower'),(6572,'Revenge'),(5308,'Execute'),(402927,'Victory Rush'))):
-                # Damage procs sit left, under the Health bar. Inside Primary,
-                # so the offset is relative to PRIMARY_Y (screen y=-23).
-                proc=icon(p,prefix+' | Usable proc | '+name,primary,cls,'primary',dict(type='spell',event='Action Usable',
-                    spellName=seed,use_spellName=True,use_exact_spellName=False,use_ignoreSpellCooldown=False,use_targetRequired=True),28,x=-74-i*32,y=-23-PRIMARY_Y,known=seed)
-                p.eligibility[proc['id']].update(proc=name)
+            # 0.13.6: the "Usable proc" row under the Health bar is gone; the
+            # same four native Action Usable checks are Warrior suggestions.
         # FA's native Aura Start/Main settings bind playback to aura assignment
         # and lifetime. No helper hooks or alpha readback on native buttons.
         for tier,seeds in EFFECTS[cls].items():
