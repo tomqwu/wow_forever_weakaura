@@ -1,6 +1,15 @@
-# Validation for 0.13.8
+# Validation for 0.13.9
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.9 (prerelease) — client spell IDs and `/fhud dump`
+
+- **Evidence read (installed ForeverAuras 1.3.9, read only):** `SpellNameData.lua:2-11` describes the table (every name with two or more IDs, scanned with `C_Spell.GetSpellName` on client build 70374). Lines 276 (Avenging Wrath), 615 (Clearcasting), 931 (Demonic Brand), 1383 (Fingers of Frost), 1796 (Heating Up), 1862 (Hot Streak = 48108, 401724), 2319 (Maelstrom Weapon), 2483 (Missile Barrage), 2493 (Molten Armor), 2553 (Nature's Swiftness), 2569 (Nightfall = 18094, 23653), 3896 (Surge of Light) and 4310 (Water Shield) were read directly. None of 44445, 44544, 44401, 53817, 33151, 31884, 24398 or 30482 appears under those names.
+- **Stack Count:** `SecretAuraSingle.lua:2329-2374` implements a native "at least n" gate but returns "This client can't check Stack Count." without `C_AuraContainerUtil.ProcessCustomAuraButtonApplicationBarOptions`. Whether the live client has it is unknown, so no rule sets it; the generator supports `stacks=` and the dump records the answer.
+- **Change:** as listed in the changelog. `tests/test_pack.py` `test_proc_ids_come_from_the_client_name_table` checks the new ID lists and that none of the dead IDs is referenced by any trigger, load condition or eligibility seed, and that no display uses the stack gate.
+- **`/fhud dump`:** `tests/core.lua` covers a client with none of the APIs (header and empty sections, no error), aura recording with stacks, a secret value never being stored, no aura read in combat, `watch`, `names` and invalid input. The API names (`C_SpellBook`, `C_Traits`, `C_ClassTalents`, `C_UnitAuras`, `C_CooldownViewer`) follow the retail surface Forever is reported to share and are **not verified on interface 16001**; each call is wrapped so a missing one leaves its section empty.
+- **Research basis:** `reports/WoW Forever rotation engine research.md` and its notes. Web guides were read through summaries; only the items above were re-checked here against local files.
+- **Not yet checked in game:** that the corrected rules load and show, and what `/fhud dump` records.
 
 ## 0.13.8 (prerelease) — lighter install check
 

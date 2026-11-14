@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.13.9 — 2026-11-13 (prerelease)
+
+Follows the research in `reports/WoW Forever rotation engine research.md` (user: "do a full research on forever ... and come up with a recommendation engine"; "Yes, build it"). World of Warcraft: Forever is a Blizzard game (client `wowf` 1.60.1), not a private server, and its spell IDs differ from the Wrath-era ones these lists were first written with.
+
+- **Spell IDs from the client.** Checked against ForeverAuras' `SpellNameData.lua`, a scan of the client's spell names (build 70374):
+  - Mage: Hot Streak 44445 becomes **Heating Up** (400624, 400625, 460878); Fingers of Frost and Missile Barrage use their Forever IDs. A proc lists every ID that shares its name, because no file records which one is the aura on the player.
+  - Shaman: Maelstrom Weapon (408498, 408505, 409946); Water Shield 408510 in the shield reminder.
+  - Priest and Paladin: Surge of Light and Avenging Wrath use the IDs that carry those names. Surge of Light leaves the Discipline and Holy suggestions (no talent node on Forever).
+  - Druid: Nature's Swiftness is 17116 (16188 is the Shaman spell).
+  - Removed: Molten Armor 30482 from the Mage armor reminder; Nightfall rank ID 18095 and Arcane Concentration rank IDs 12574 to 12577 (one spell per talent on this client).
+- **Rule types.** Shadowburn is a cooldown nuke on Forever, so it is suggested when usable, in the row, not as a target-health execute. Backlash leaves the Destruction list (in no Forever spell list). Hammer of Wrath is suggested for Retribution only.
+- **`/fhud dump`.** Records the client build, spellbook, talent nodes, auras on player, target, pet and focus (outside combat), and Cooldown Manager sets into `ForeverHUDDB.dump[class]`. `watch` snapshots auras after each fight, `names <text>` scans spell names. It reads only, stores no character name, and every client call is guarded. It also records whether the client has the function ForeverAuras needs for "at N stacks" rules.
+- **Not yet:** stack rules (Heating Up at 3, Maelstrom Weapon at 5), Demonic Brand, Holy Strike, Shank and the other Forever spells. They need the dumped aura IDs first; a wrong ID fails silently.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.8 — 2026-11-13 (prerelease)
 
 - **Lighter install check** (user: "there is a bug players reporting lagging"). While the install gear was shown, the companion ran the full aura check every 3 seconds, and that check walks every saved ForeverAuras display twice. A player with many auras who hadn't updated yet got a repeating hitch out of combat. The timer now only compares the two installed build numbers, every 10 seconds, and runs the full check once when they stop being older. Login, the end of an import, and a click still run the full check.
