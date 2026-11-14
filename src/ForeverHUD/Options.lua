@@ -156,6 +156,45 @@ function E.ToggleOptions()
     local p = E.panel or build()
     p:SetShown(not p:IsShown())
 end
+-- 0.13.6: a ForeverHUD page in the game's Options -> AddOns list, so the HUD
+-- size can be changed where players look for addon settings. It edits the
+-- same per-class "scale" preference as the /fhud slider (60% to 160%); the
+-- whole HUD scales together, so text keeps its proportion to the art.
+function E.RegisterGameOptions()
+    if E.gameOptions or type(Settings)~='table' or type(Settings.RegisterCanvasLayoutCategory)~='function'
+        or type(Settings.RegisterAddOnCategory)~='function' then return end
+    local page=CreateFrame('Frame')
+    label(page,'F O R E V E R H U D',18,16,-16)
+    label(page,'Each class keeps its own settings.',11,16,-44,{.65,.61,.73})
+    label(page,'HUD size',12,16,-80)
+    local s=CreateFrame('Slider',nil,page,'OptionsSliderTemplate')
+    s:SetSize(260,16);s:SetPoint('TOPLEFT',18,-106)
+    s:SetMinMaxValues(.6,1.6);s:SetValueStep(.05);s:SetObeyStepOnDrag(true)
+    if s.Low then s.Low:SetText('60%')end;if s.High then s.High:SetText('160%')end;if s.Text then s.Text:SetText('')end
+    s.value=label(page,'',12,292,-106)
+    local function percent(value)return string.format('%d%%',math.floor(value*100+.5))end
+    local function refresh()
+        local p=E.Profile();if not p then return end
+        page.refreshing=true;s:SetValue(p.scale);s.value:SetText(percent(p.scale));page.refreshing=false
+    end
+    s:SetScript('OnValueChanged',function(_,value)
+        if page.refreshing then return end
+        value=math.floor(value/.05+.5)*.05;E.Set('scale',value)
+        s.value:SetText(percent(value));E.RefreshOptions()
+    end)
+    local note=label(page,'The whole HUD scales together, text included. A change made in combat applies after combat.',11,16,-136,{.65,.61,.73})
+    note:SetWidth(520);note:SetJustifyH('LEFT')
+    local open=CreateFrame('Button',nil,page,'UIPanelButtonTemplate')
+    open:SetSize(240,26);open:SetPoint('TOPLEFT',16,-178);open:SetText(E.L('All ForeverHUD settings (/fhud)'))
+    open:SetScript('OnClick',function()if not(E.panel and E.panel:IsShown())then E.ToggleOptions()end end)
+    page:SetScript('OnShow',refresh)
+    local ok,category=pcall(Settings.RegisterCanvasLayoutCategory,page,'ForeverHUD')
+    if not ok or not category or not pcall(Settings.RegisterAddOnCategory,category) then return end
+    E.gameOptions={page=page,slider=s,category=category,refresh=refresh}
+end
+local login=CreateFrame('Frame')
+login:RegisterEvent('PLAYER_LOGIN')
+login:SetScript('OnEvent',function()E.RegisterGameOptions()end)
 SLASH_FOREVERHUD1 = "/fhud"
 SLASH_FOREVERHUD2 = "/foreverhud"
 SlashCmdList.FOREVERHUD = function(message)

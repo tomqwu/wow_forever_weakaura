@@ -126,6 +126,17 @@ check(not E.Profile().resources,"Actual settings checkbox changes module")
 E.panel.sliders.scale:SetValue(1.2)
 check(math.abs(E.Profile().scale-1.2)<0.0001,"Actual settings slider changes layout")
 E.ToggleOptions();check(not E.panel:IsShown(),"Settings panel closes")
+-- 0.13.6: a page in the game's Options -> AddOns list with the size slider.
+E.RegisterGameOptions();check(E.gameOptions==nil,'Without the Settings API nothing is registered')
+local registered
+Settings={RegisterCanvasLayoutCategory=function(frame,name)return {frame=frame,name=name}end,RegisterAddOnCategory=function(category)registered=category end}
+E.RegisterGameOptions();E.RegisterGameOptions()
+check(registered and registered.name=='ForeverHUD' and registered.frame==E.gameOptions.page,'ForeverHUD registers one page in the game AddOns options')
+E.gameOptions.page.scripts.OnShow(E.gameOptions.page)
+check(E.gameOptions.slider.valueNumber==E.Profile().scale and E.gameOptions.slider.value.text=='120%','The game page shows the current size')
+E.gameOptions.slider:SetValue(1.3)
+check(math.abs(E.Profile().scale-1.3)<0.0001 and root.scale==E.Profile().scale and E.gameOptions.slider.value.text=='130%','The game page size slider resizes the HUD')
+E.gameOptions.slider:SetValue(1.2);Settings=nil
 local pref=E.Profile()
 pref.castBarMode=nil;pref.cast=true;pref.hideDefaultCast=false;E.InitDB()
 check(pref.castBarMode=='Default' and not pref.cast,'Old overlapping cast defaults migrate to the game bar only')

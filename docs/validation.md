@@ -9,7 +9,8 @@ Sections below 0.4.0 describe releases made under the Eclipse name and keep the 
 - **Change:** the four checks move into `SUGGESTIONS['WARRIOR']` as `ready` rules, in a new `Leveling` list and in Arms, Fury and Protection; the `Usable proc` displays are removed. They inherit the row's 70% opacity and Action Button Glow.
 - **`tests/test_pack.py`:** no `Usable proc` display; each list's leading rule; the four displays' trigger, parent, spec and glow.
 - **Folded seal (same release):** `RETRACTED_SEAL` 118 → 106, still larger than the 104 px open seal; `TRAY_ROW1_Y` −67 → −61 (derived); `E.INSTALL_CUE.y` −61 in `Core.lua`, now asserted equal to the row offset by `tests/test_pack.py`. No icon size changed.
-- **Not yet checked in game:** that Overpower lights up after a dodge on this client; the smaller seal.
+- **Game options page (same release):** `Options.lua` `E.RegisterGameOptions()` runs at `PLAYER_LOGIN` and uses `Settings.RegisterCanvasLayoutCategory` and `Settings.RegisterAddOnCategory`, the calls other addons installed on this client use (e.g. Baganator, Syndicator); both are type-checked and wrapped in `pcall`, so a client without them simply has no page. The slider writes `E.Set("scale")`, clamped 0.6 to 1.6 as before (`Core.lua` `limit("scale", 0.6, 1.6)`). `tests/core.lua` covers no API, single registration, showing the current size and resizing.
+- **Not yet checked in game:** that Overpower lights up after a dodge on this client; the smaller seal; the Options → AddOns page.
 
 ## 0.13.5 (prerelease) — install icon in the tray row
 
