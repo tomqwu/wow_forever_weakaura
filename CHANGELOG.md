@@ -6,6 +6,7 @@
   - Overpower, Revenge, Execute and Victory Rush are now suggestions: the same native Action Usable checks, shown in the suggestion row with the Action Button Glow.
   - Every Warrior spec lists them (Arms leads with Overpower, Fury with Execute, Protection with Revenge), and a new `Leveling` list covers a Warrior without talents, who had no suggestion row before.
   - The old `Usable proc` row is removed: four unlit 28 px icons under the Health bar. Updating the class group deletes them.
+- **A size setting in the game's addon options** (user: "ideally add an option ... to resize the UI and make everything still readable?"; "also add addon setting, allowing size changes there"). ForeverHUD registers a page in **Options → AddOns** with a **HUD size** slider, 60% to 160%, and a button to the full `/fhud` panel. It edits the existing per-class Scale preference; the whole HUD scales together, so text keeps its proportion to the art.
 - **The folded seal shrinks another 10%** (user: "shrink another 10%, don't change spell icon size as it's already small enough"; read as the class seal, following the 0.13.2 request). The retracted seal is 106 px (was 118); the tray row moves from y=-67 to y=-61 to keep its 4 px gap, and the companion's install cue follows. Spell, suggestion and tray icons are unchanged.
 - Update your class in `/fa`, choosing **Update Auras** (or click the gear).
 
