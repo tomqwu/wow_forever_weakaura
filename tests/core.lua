@@ -143,6 +143,23 @@ SlashCmdList.FOREVERHUD('60%');check(math.abs(E.Profile().scale-.6)<0.0001,'/fhu
 SlashCmdList.FOREVERHUD(' 130 ');check(math.abs(E.Profile().scale-1.3)<0.0001,'/fhud 130 sets the size')
 SlashCmdList.FOREVERHUD('500');check(math.abs(E.Profile().scale-1.3)<0.0001 and not E.panel:IsShown(),'An out-of-range size changes nothing and opens nothing')
 SlashCmdList.FOREVERHUD('120')
+-- 0.13.9: /fhud dump. With none of the client APIs it still records the header.
+SlashCmdList.FOREVERHUD('dump');local rec=ForeverHUDDB.dump.WARLOCK
+check(rec.info.class=='WARLOCK' and rec.info.addon==E.releaseVersion and rec.info.stackGate==false and #rec.spells==0 and #rec.talents==0 and #rec.auras==0 and #rec.cdm==0,'A dump without client APIs records the header and empty sections')
+check(not E.panel:IsShown(),'/fhud dump does not open the panel')
+C_UnitAuras={GetAuraDataByIndex=function(unit,index,filter)if unit=='player' and filter=='HELPFUL' and index==1 then return {spellId=400625,name='Heating Up',applications=2,duration=20,sourceUnit='player'} end
+    if unit=='target' and filter=='HARMFUL' and index==1 then return {spellId=secret,name='Hidden',applications=1} end end}
+C_AuraContainerUtil={ProcessCustomAuraButtonApplicationBarOptions=function()end}
+C_Spell={GetSpellName=function(id)return ({[1293695]='Demonic Brand',[1293696]='Demonic Brand',[980]='Bane of Agony'})[id] end}
+SlashCmdList.FOREVERHUD('dump auras');rec=ForeverHUDDB.dump.WARLOCK
+check(#rec.auras==2 and rec.auras[1].id==400625 and rec.auras[1].stacks==2 and rec.auras[2].id==nil and rec.auras[2].name=='Hidden' and rec.info.stackGate==true,'Auras are recorded with stacks; a secret value is left out, never stored')
+InCombatLockdown=function()return true end;rec.auras=nil;SlashCmdList.FOREVERHUD('dump auras');check(rec.auras==nil,'Auras are not read in combat')
+InCombatLockdown=function()return false end
+SlashCmdList.FOREVERHUD('dump watch');check(rec.watching==true,'Watch arms a snapshot after each fight')
+E.DUMP_SCAN_TOP=1300000;E.DUMP_SCAN_STEP=1300000;SlashCmdList.FOREVERHUD('dump names Brand')
+check(#rec.names.brand==2 and rec.names.brand[1].id==1293695,'Name search lists every matching spell ID')
+SlashCmdList.FOREVERHUD('dump names ab');SlashCmdList.FOREVERHUD('dump nonsense');check(rec.names.ab==nil,'A short search or unknown section changes nothing')
+SlashCmdList.FOREVERHUD('dump watch');C_UnitAuras=nil;C_AuraContainerUtil=nil;C_Spell=nil;ForeverHUDDB.dump=nil
 -- 0.13.7: cast bar size, language choice, lower default position.
 local castBar=CreateFrame('Frame');local beforeCast=ForeverAuras.GetRegion
 ForeverAuras.GetRegion=function(id)if id=='ForeverHUD | Core | Cast' then return castBar end;return beforeCast(id)end
@@ -195,7 +212,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.8','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.9','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return ForeverHUD and ForeverHUD.version=="0.3.2" and ForeverHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true

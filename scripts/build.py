@@ -13,9 +13,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
+    HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.8"
+VERSION = "0.13.9"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -126,7 +127,12 @@ def curve(name,known,icon,at,unit='player',event='Power',powertype=None):
     return dict(kind='curve',name=name,event=event,unit=unit,variable=variable,at=at,known=known,icon=icon,powertype=powertype)
 def missing(name,seed): return dict(kind='missing',name=name,seed=seed)
 def buff(name,seed): return dict(kind='buff',name=name,seed=seed)
-def active(name,seed,talent=None): return dict(kind='active',name=name,seed=seed,talent=talent,reactive=True)
+# seed: one aura ID or every ID that shares the aura's name. stacks: show only
+# at that many stacks or more (native Stack Count gate). No rule sets stacks
+# yet: ForeverAuras needs C_AuraContainerUtil.ProcessCustomAuraButtonApplicationBarOptions
+# for it, and whether the live client has that is read by /fhud dump first.
+# Heating Up pays off at 3 stacks and Maelstrom Weapon at 5.
+def active(name,seed,talent=None,stacks=None): return dict(kind='active',name=name,seed=seed,talent=talent,stacks=stacks,reactive=True)
 def ready(name,seed,reactive=False): return dict(kind='ready',name=name,seed=seed,reactive=reactive)
 # 0.13.6: a condition-triggered spell leads its list. 'Reactive' rules are a
 # proc aura being up (every `active` rule) and a strike that is only usable
@@ -145,27 +151,29 @@ OVERPOWER=react('Overpower',7384);REVENGE=react('Revenge',6572)
 EXECUTE=react('Execute',5308);VICTORY_RUSH=react('Victory Rush',402927)
 MONGOOSE=react('Mongoose Bite',1495);HAMMER=react('Hammer of Wrath',24275)
 # Arcane Concentration (talent ranks) gives the Mage's Clearcasting.
-MAGE_CLEARCAST=active('Clearcasting',12536,[11213,12574,12575,12576,12577])
+MAGE_CLEARCAST=active('Clearcasting',12536,[11213])
 SUGGESTIONS = {
     'WARLOCK': {
         # 0.9 list, kept with its display IDs for characters without talents.
         'Leveling':[LIFE_TAP,missing('Corruption',172),missing('Immolate',348),
-            active('Shadow Trance',17941,[18094,18095]),HEALTH_FUNNEL],
+            active('Shadow Trance',17941,[18094]),HEALTH_FUNNEL],
         'Affliction':[LIFE_TAP,missing('Corruption',172),missing('Bane of Agony',980),
-            missing('Siphon Life',18265),active('Shadow Trance',17941,[18094,18095])],
+            missing('Siphon Life',18265),active('Shadow Trance',17941,[18094])],
         'Demonology':[LIFE_TAP,missing('Corruption',172),missing('Immolate',348),
             missing('Bane of Agony',980),HEALTH_FUNNEL],
-        'Destruction':[LIFE_TAP,active('Backlash',34936),react('Conflagrate',1293817),
-            missing('Immolate',348),curve('Shadowburn',17877,'Spell_Shadow_ScourgeBuild',25,'target','Health')],
+        # 0.13.9: Shadowburn is a 15 s cooldown nuke on Forever, not an execute,
+        # so it is a plain usable rule. Backlash is in no Forever spell list.
+        'Destruction':[LIFE_TAP,react('Conflagrate',1293817),missing('Immolate',348),ready('Shadowburn',17877)],
     },
     'MAGE': {
-        'Arcane':[EVOCATION,active('Missile Barrage',44401),MAGE_CLEARCAST],
-        'Fire':[EVOCATION,missing('Improved Scorch',22959),active('Hot Streak',44445)],
-        'Frost':[EVOCATION,active('Fingers of Frost',44544)],
+        'Arcane':[EVOCATION,active('Missile Barrage',MISSILE_BARRAGE),MAGE_CLEARCAST],
+        'Fire':[EVOCATION,missing('Improved Scorch',22959),active('Heating Up',HEATING_UP)],
+        'Frost':[EVOCATION,active('Fingers of Frost',FINGERS_OF_FROST)],
     },
     'PRIEST': {
-        'Discipline':[active('Surge of Light',33151),ready('Penance',402174)],
-        'Holy':[active('Surge of Light',33151),ready('Prayer of Mending',401859)],
+        # 0.13.9: Surge of Light has no talent node on Forever.
+        'Discipline':[ready('Penance',402174)],
+        'Holy':[ready('Prayer of Mending',401859)],
         'Shadow':[buff('Shadowform',15473),missing('Shadow Word: Pain',589),missing('Vampiric Embrace',15286),
             missing('Devouring Plague',2944),ready('Mind Blast',8092)],
     },
@@ -186,12 +194,13 @@ SUGGESTIONS = {
     },
     'SHAMAN': {
         'Elemental':[missing('Flame Shock',8050),buff('Lightning Shield',324)],
-        'Enhancement':[buff('Lightning Shield',324),active('Maelstrom Weapon',53817),ready('Stormstrike',17364),missing('Flame Shock',8050)],
+        'Enhancement':[buff('Lightning Shield',324),active('Maelstrom Weapon',MAELSTROM_WEAPON),ready('Stormstrike',17364),missing('Flame Shock',8050)],
         'Restoration':[curve('Mana Tide Totem',16190,'Spell_Frost_SummonWaterElemental',30),ready('Riptide',408521)],
     },
     'PALADIN': {
-        'Holy':[HAMMER,ready('Holy Shock',1311606)],
-        'Protection':[HAMMER,buff('Holy Shield',20925),ready('Consecration',26573),ready('Judgement',20271)],
+        # 0.13.9: no Forever guide uses Hammer of Wrath for Holy or Protection.
+        'Holy':[ready('Holy Shock',1311606)],
+        'Protection':[buff('Holy Shield',20925),ready('Consecration',26573),ready('Judgement',20271)],
         'Retribution':[HAMMER,ready('Judgement',20271),ready('Consecration',26573)],
     },
     # 0.13.6: the reactive strikes (Overpower, Revenge, Execute, Victory Rush)
@@ -791,7 +800,9 @@ def generate():
                         d['subRegions'][2]['text_visible']=False;d['subRegions'][3]['text_visible']=False
                         d['triggers'][2]['trigger']['custom']=in_target
                     else:
-                        d=icon(p,name,suggest,cls,'suggest',aura_trigger([rule['seed']]),SUGGEST_SIZE,modern=True)
+                        t=aura_trigger(rule['seed'] if isinstance(rule['seed'],list) else [rule['seed']])
+                        if rule.get('stacks'): t.update(secretUseStacks=True,secretStacks=rule['stacks'],secretStacksOperator='>=')
+                        d=icon(p,name,suggest,cls,'suggest',t,SUGGEST_SIZE,modern=True)
                         if rule.get('talent'): p.eligibility[d['id']].update(seeds=rule['talent'])
                     if rule['kind']!='curve': d['alpha']=SUGGEST_ALPHA
                     d['subRegions'].append(dict(SUGGEST_GLOW))

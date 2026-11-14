@@ -488,8 +488,9 @@ class PackTests(unittest.TestCase):
         for d in suggestions:
             glows=[s for s in d['subRegions'] if s['type']=='subglow']
             self.assertEqual([(g['glow'],g['glowType']) for g in glows],[(True,'buttonOverlay')],d['id'])
+        # 0.13.9: Shadowburn is a usable rule in the row, no longer an execute cue.
         shadowburn=by_id['ForeverHUD | Warlock | Suggest | Destruction | Shadowburn']
-        self.assertEqual((shadowburn['alpha'],shadowburn['conditions'][0]['changes'][0]['value']),(0,0.7))
+        self.assertEqual((shadowburn['alpha'],shadowburn['parent']),(0.7,'ForeverHUD | Warlock | Suggest'))
         tap=by_id['ForeverHUD | Warlock | Suggest | Life Tap']
         self.assertEqual(tap['conditions'][0]['changes'][0]['value'],1)
 
@@ -509,11 +510,42 @@ class PackTests(unittest.TestCase):
                 order=[id for id in by_id[prefix]['controlledChildren'] if self.eligibility[id]['spec']==spec]
                 self.assertEqual(order,[f"{base} | {r['name']}" for r in rules if r['kind']!='curve'],(cls,spec))
         first=lambda cls,spec:[r['name'] for r in SUGGESTIONS[cls][spec] if r['kind']!='curve'][0]
-        for cls,spec,name in (('WARLOCK','Affliction','Shadow Trance'),('WARLOCK','Destruction','Backlash'),
-                ('MAGE','Fire','Hot Streak'),('DRUID','Feral','Clearcasting'),('HUNTER','Beast Mastery','Mongoose Bite'),
+        for cls,spec,name in (('WARLOCK','Affliction','Shadow Trance'),('WARLOCK','Destruction','Conflagrate'),
+                ('MAGE','Fire','Heating Up'),('DRUID','Feral','Clearcasting'),('HUNTER','Beast Mastery','Mongoose Bite'),
                 ('HUNTER','Survival','Counterattack'),('SHAMAN','Enhancement','Maelstrom Weapon'),('ROGUE','Combat','Riposte'),
-                ('PALADIN','Protection','Hammer of Wrath'),('PRIEST','Holy','Surge of Light'),('WARRIOR','Fury','Execute')):
+                ('PALADIN','Retribution','Hammer of Wrath'),('WARRIOR','Fury','Execute')):
             self.assertEqual(first(cls,spec),name,(cls,spec))
+
+    def test_proc_ids_come_from_the_client_name_table(self):
+        # 0.13.9: checked against ForeverAuras SpellNameData.lua (client build
+        # 70374). A proc carries every ID that shares its name; the Wrath-era
+        # IDs that do not carry these names on Forever are gone everywhere.
+        by_id={d['id']:d for d in self.regions}
+        ids=lambda id:by_id[id]['triggers'][1]['trigger']['auraRankSpellIDs']
+        self.assertEqual(ids('ForeverHUD | Mage | Suggest | Fire | Heating Up'),[400624,400625,460878])
+        self.assertEqual(ids('ForeverHUD | Mage | Suggest | Frost | Fingers of Frost'),[400647,400669,400670,401741])
+        self.assertEqual(ids('ForeverHUD | Mage | Suggest | Arcane | Missile Barrage'),[400588,400589,401736,467409])
+        self.assertEqual(ids('ForeverHUD | Shaman | Suggest | Enhancement | Maelstrom Weapon'),[408498,408505,409946])
+        self.assertEqual(ids('ForeverHUD | Shaman | Upkeep reminder | Shield missing'),[324,408510])
+        self.assertEqual(ids('ForeverHUD | Mage | Upkeep reminder | Mage armor missing'),[168,7302,6117])
+        self.assertNotIn('ForeverHUD | Mage | Suggest | Fire | Hot Streak',by_id)
+        for gone in ('Surge of Light','Backlash'):
+            self.assertFalse([id for id in by_id if ' | Suggest | ' in id and id.endswith(' | '+gone)],gone)
+        self.assertEqual([r['name'] for r in SUGGESTIONS['PALADIN']['Holy']],['Holy Shock'])
+        dead={44445,44544,44401,53817,33151,31884,24398,30482,18095,12574,12575,12576,12577}
+        import json
+        used=set()
+        def walk(value):
+            if isinstance(value,dict):
+                for v in value.values(): walk(v)
+            elif isinstance(value,list):
+                for v in value: walk(v)
+            elif isinstance(value,int) and not isinstance(value,bool): used.add(value)
+        for d in self.regions: walk(d.get('triggers'));walk(d.get('load'))
+        for entry in self.eligibility.values(): walk(entry.get('seeds'))
+        self.assertFalse(dead&used,'An ID the client does not know by that name is still referenced')
+        # No rule uses the Stack Count gate until the client is known to support it.
+        self.assertFalse([d['id'] for d in self.regions if d['triggers'][1]['trigger'].get('secretUseStacks')])
 
     def test_warlock_spell_suggestions(self):
         by_id={d['id']:d for d in self.regions}
@@ -531,7 +563,7 @@ class PackTests(unittest.TestCase):
         self.assertTrue(all(id.count(' | ')==3 for id in lists['Leveling']),'Leveling keeps the 0.9 IDs')
         self.assertEqual(names('Affliction'),['Shadow Trance','Life Tap','Corruption','Bane of Agony','Siphon Life'])
         self.assertEqual(names('Demonology'),['Life Tap','Corruption','Immolate','Bane of Agony','Health Funnel'])
-        self.assertEqual(names('Destruction'),['Backlash','Conflagrate','Life Tap','Immolate','Shadowburn'])
+        self.assertEqual(names('Destruction'),['Conflagrate','Life Tap','Immolate','Shadowburn'])
         # The row grows left from the seal, its lead slot's right edge 4 px
         # outside the Health bar's inner end; actions sit at the row origin.
         self.assertEqual((row['blizzardFlow'],row['blizzardFlowGrowth'],row['blizzardFlowSpacing']),(True,'LEFT',4))
@@ -549,15 +581,13 @@ class PackTests(unittest.TestCase):
         burn=by_id['ForeverHUD | Warlock | Suggest | Destruction | Shadowburn']
         self.assertEqual((mana['parent'],mana['xOffset'],mana['yOffset'],mana['width']),(cues['id'],218,-28,22),'Life Tap under the Mana bar')
         self.assertEqual((pet['parent'],pet['xOffset'],pet['yOffset'],pet['width']),(cues['id'],-218,-28,22),'Health Funnel under the Pet bar')
-        self.assertEqual((burn['xOffset']-16,burn['yOffset']),(-228,74),'Execute cue in the row\'s far slot')
-        destruction=[id for id in lists['Destruction'] if by_id[id]['parent']==row['id']]
-        self.assertLessEqual(len(destruction)*32+(len(destruction)-1)*4,180-32-4,'Row never reaches the execute slot')
+        self.assertEqual((burn['parent'],burn['xOffset'],burn['yOffset']),(row['id'],0,0),'Shadowburn sits in the row')
         conflag=by_id['ForeverHUD | Warlock | Suggest | Destruction | Conflagrate']
         self.assertEqual((conflag['triggers'][1]['trigger']['event'],conflag['triggers'][1]['trigger']['spellName']),('Action Usable',1293817))
         self.assertIn('ForeverHUD.SuggestTarget()',conflag['triggers'][2]['trigger']['custom'])
-        burn=by_id['ForeverHUD | Warlock | Suggest | Destruction | Shadowburn']
-        self.assertEqual((burn['triggers'][1]['trigger']['unit'],burn['conditions'][0]['check']),('target',dict(trigger=1,variable='percenthealth',op='<=',value=25)))
-        self.assertIn('ForeverHUD.SuggestTarget()',burn['triggers'][2]['trigger']['custom'],'Execute cue only in combat on a hostile target')
+        # 0.13.9: a 15 s cooldown nuke on Forever, so a native Action Usable rule.
+        self.assertEqual((burn['triggers'][1]['trigger']['event'],burn['triggers'][1]['trigger']['spellName'],burn['conditions']),('Action Usable',17877,[]))
+        self.assertIn('ForeverHUD.SuggestTarget()',burn['triggers'][2]['trigger']['custom'],'Only in combat on a hostile target')
         # 0.9.6: on the damage side, right above the DoT row.
         dots=by_id['ForeverHUD | Warlock | Target effects']
         self.assertEqual(row['yOffset']-16,dots['yOffset']+14+4,'4 px above the 28 px DoT row')
@@ -576,7 +606,7 @@ class PackTests(unittest.TestCase):
             d=by_id['ForeverHUD | Warlock | Suggest | '+name]
             self.assertEqual(d['triggers'][1]['trigger']['secretShowOn'],'showOnMissing')
             self.assertIn('ForeverHUD.SuggestTarget()',d['triggers'][2]['trigger']['custom'])
-        self.assertEqual(self.eligibility['ForeverHUD | Warlock | Suggest | Shadow Trance']['seeds'],[18094,18095],'Shown once Nightfall is learned')
+        self.assertEqual(self.eligibility['ForeverHUD | Warlock | Suggest | Shadow Trance']['seeds'],[18094],'Shown once Nightfall is learned')
         self.assertEqual(self.eligibility['ForeverHUD | Warlock | Suggest | Life Tap']['seeds'],[1454])
         for d in self.regions:
             if d['id'].startswith('ForeverHUD | Warlock | Suggest | '):

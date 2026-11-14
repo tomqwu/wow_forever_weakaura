@@ -4,7 +4,7 @@ Everything for the ForeverHUD project on CurseForge, project ID **1801711** ([au
 
 ## Check first
 
-- **Private-server policy.** ForeverHUD targets the WoW Forever client (interface `16001`) and its ForeverAuras fork. CurseForge doesn't allow projects made for private or unofficial servers, and Forever isn't one of its game versions. Read CurseForge's current project guidelines before listing; if Forever counts as unofficial, keep GitHub Releases as the only channel.
+- **Game version.** ForeverHUD targets World of Warcraft: Forever, Blizzard's own game (client product `wowf`, version 1.60.1, interface `16001`), and its ForeverAuras fork. CurseForge lists it as WoW game version `1.60.1`. An earlier version of this note wrongly treated Forever as a private server.
 - **Dependency.** ForeverHUD needs **ForeverAuras**, which is on CurseForge as [`foreverauras`](https://www.curseforge.com/wow/addons/foreverauras) (project 1703325). Since 0.13.5 every upload declares it as a **required dependency** (`relations` in `scripts/curseforge.py`), so the CurseForge app installs it alongside. Files uploaded before that (0.9.5 to 0.13.4) carry no relation; archive them on the dashboard once a newer file is approved.
 
 ## Project details
