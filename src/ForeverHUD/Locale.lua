@@ -1,5 +1,13 @@
 local _, E = ...
-local zh = GetLocale() == "zhCN"
+-- 0.13.7: Chinese follows the client (zhCN or zhTW) unless /fhud picks a
+-- language. Read at call time: the saved choice loads after this file.
+local client = GetLocale()
+local function zh()
+    local choice = ForeverHUDDB and ForeverHUDDB.language
+    if choice == "zhCN" then return true elseif choice == "enUS" then return false end
+    return client == "zhCN" or client == "zhTW"
+end
+E.Chinese = zh
 local strings = {
     ['Tracked bars (ForeverHUD)']='持续时间条（ForeverHUD）',
 
@@ -77,6 +85,9 @@ local strings = {
     ["Your ForeverHUD auras are missing or older than the addon. Type /fhud install (or open /fa) and choose Update Auras."] = "你的 ForeverHUD 光环缺失或比插件旧。请输入 /fhud install（或打开 /fa），并选择 Update Auras（更新光环）。",
     ["Auras up to date"] = "光环已是最新",
     ["HUD size"] = "界面大小",
+    ["Cast bar size"] = "施法条大小",
+    ["Auto"] = "自动",
+    ["Language set. Type /reload to apply it everywhere."] = "语言已更改。输入 /reload 后全部生效。",
     ["HUD size %d%%."] = "界面大小 %d%%。",
     ["HUD size %d%% applies after combat."] = "界面大小 %d%% 将在脱离战斗后生效。",
     ["HUD size takes a number from 60 to 160, for example /fhud 80."] = "界面大小请输入 60 到 160 之间的数字，例如 /fhud 80。",
@@ -89,7 +100,7 @@ local strings = {
     ["Priest"] = "牧师", ["Rogue"] = "盗贼", ["Druid"] = "德鲁伊",
     ["Hunter"] = "猎人", ["Shaman"] = "萨满祭司", ["Paladin"] = "圣骑士",
 }
-function E.L(text) return zh and strings[text] or text end
+function E.L(text) return zh() and strings[text] or text end
 E.modules = {
     {"resources", "Resources"}, {"primary", "Primary abilities"},
     {"utility", "Utility abilities"}, {"dots", "Target effects"},

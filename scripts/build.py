@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.6"
+VERSION = "0.13.7"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -477,7 +477,7 @@ def generate():
     cast=bar(p,CORE_ID+" | Cast",CORE_ID,CORE,"cast",dict(type="unit",event="Cast",unit="player",use_unit=True,spellNames=[]),
         width=300,height=13,y=-178,color=rgba(CORE_ACCENT),text="%p",name_text="%n")
     # One Core serves every class: the helper paints the class accent.
-    cast['actions']['init']=dict(do_custom=True,custom='if ForeverHUD then ForeverHUD.RefreshCasting(); ForeverHUD.Tint(aura_env.region or (ForeverAuras or WeakAuras).GetRegion(aura_env.id), "accent") end')
+    cast['actions']['init']=dict(do_custom=True,custom='if ForeverHUD then ForeverHUD.RefreshCasting(); if ForeverHUD.ApplyCastScale then ForeverHUD.ApplyCastScale() end; ForeverHUD.Tint(aura_env.region or (ForeverAuras or WeakAuras).GetRegion(aura_env.id), "accent") end')
     # Core has no class name leaf, so its always-on bars request the layout
     # bind that anchors this root (Bind is idempotent).
     for leaf in (CORE_ID+' | Health',CORE_ID+' | Resource',CORE_ID+' | Cast'):

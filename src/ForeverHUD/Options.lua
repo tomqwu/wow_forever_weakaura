@@ -1,5 +1,8 @@
 local _, E = ...
 local castLabels={Default="Default game bar",ForeverHUD="ForeverHUD bar",Both="Both bars"}
+local percentKeys={scale=true,opacity=true,castScale=true}
+-- Shown in both languages, so the control can be found from either.
+local languageNames={zhCN="简体中文",enUS="English"}
 local function label(parent, text, size, x, y, color)
     local f = parent:CreateFontString(nil, "OVERLAY")
     f:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", size, "")
@@ -21,12 +24,13 @@ function E.RefreshOptions()
     for key, box in pairs(panel.checks) do box:SetChecked(p[key]) end
     for key, slider in pairs(panel.sliders) do
         slider:SetValue(p[key]); slider.value:SetText(tostring(p[key]))
-        if key == "scale" or key == "opacity" then slider.value:SetText(string.format("%d%%", p[key]*100)) end
+        if percentKeys[key] then slider.value:SetText(string.format("%d%%", math.floor(p[key]*100+.5))) end
     end
     panel.school:SetText(E.L('Talent school')..': '..E.L(p.school)
         ..(p.school=='Auto' and E.selection and (' ('..E.L(E.selection.mode or 'Leveling')..')') or ''))
     panel.castChoice:SetText(E.L('Cast bar display')..': '..E.L(castLabels[p.castBarMode]))
     panel.cooldown:SetText(E.L('Cooldown layout')..': '..E.L(p.cooldownLayout))
+    panel.language:SetText('Language / 语言: '..(languageNames[ForeverHUDDB.language] or E.L('Auto')))
     panel.swing:SetText(E.L('Swing mode')..': '..E.L(p.swingMode))
     panel.swing:SetShown(E.class=='WARRIOR')
     panel.checks.cleave:SetShown(E.class=='WARRIOR')
@@ -115,7 +119,7 @@ local function build()
         s:SetScript('OnValueChanged',function(_,value)
             if p.refreshing then return end
             value=math.floor(value/step+.5)*step;E.Set(key,value)
-            s.value:SetText((key=='scale' or key=='opacity')and string.format('%d%%',value*100)or tostring(value))
+            s.value:SetText(percentKeys[key] and string.format('%d%%',math.floor(value*100+.5))or tostring(value))
         end)
         p.sliders[key]=s
     end
@@ -123,8 +127,16 @@ local function build()
     slider('opacity','Opacity',.25,1,.05,292,-205)
     slider('x','Horizontal position',-900,900,1,27,-290)
     slider('y','Vertical position',-600,600,1,292,-290)
+    -- 0.13.7: the ForeverHUD cast bar's own size, and the language choice.
+    slider('castScale','Cast bar size',.6,2,.05,27,-350)
+    p.language=CreateFrame('Button',nil,position,'UIPanelButtonTemplate')
+    p.language:SetSize(241,29);p.language:SetPoint('TOPLEFT',292,-362)
+    p.language:SetScript('OnClick',function()
+        local nextChoice={Auto='zhCN',zhCN='enUS',enUS='Auto'}
+        E.SetLanguage(nextChoice[ForeverHUDDB.language or 'Auto'])
+    end)
     local inspect=CreateFrame('Button',nil,position,'UIPanelButtonTemplate')
-    inspect:SetSize(506,29);inspect:SetPoint('TOPLEFT',27,-382);inspect:SetText(E.L('Expand for inspection'))
+    inspect:SetSize(506,29);inspect:SetPoint('TOPLEFT',27,-420);inspect:SetText(E.L('Expand for inspection'))
     inspect:SetScript('OnClick',function()if E.state then E.state.Inspect()end end)
     p.notice=label(p,'',11,27,-466,{.65,.61,.73});p.notice:SetWidth(506);p.notice:SetJustifyH('LEFT')
     -- Aura install status: red with an install button when the Core or class
@@ -195,6 +207,15 @@ end
 local login=CreateFrame('Frame')
 login:RegisterEvent('PLAYER_LOGIN')
 login:SetScript('OnEvent',function()E.RegisterGameOptions()end)
+-- 'zhCN', 'enUS' or 'Auto' (follow the game client). Account-wide.
+function E.SetLanguage(choice)
+    if type(ForeverHUDDB)~='table' then return end
+    ForeverHUDDB.language=(choice=='zhCN' or choice=='enUS') and choice or nil
+    E.RefreshOptions()
+    local text=E.L('Language set. Type /reload to apply it everywhere.')
+    if E.panel and E.panel.notice then E.panel.notice:SetText(text) end
+    print('ForeverHUD: '..text)
+end
 function E.SetSize(percent)
     if not E.Profile() then return end
     if not percent or percent<60 or percent>160 then
@@ -211,7 +232,9 @@ SlashCmdList.FOREVERHUD = function(message)
     local install=message and message:match("^%s*install%s*(%a*)%s*$")
     -- 0.13.6: /fhud 60 or /fhud 60% sets the HUD size (60 to 160).
     local size=message and message:match("^%s*(%d+%.?%d*)%s*%%?%s*$")
+    local language=message and ({zh='zhCN',cn='zhCN',zhcn='zhCN',['中文']='zhCN',en='enUS',english='enUS',enus='enUS',auto='Auto'})[(message:match('^%s*(%S+)%s*$') or ''):lower()]
     if size then E.SetSize(tonumber(size))
+    elseif language then E.SetLanguage(language)
     elseif install and E.InstallBundled then E.InstallBundled(install=="force")
     elseif message and message:match("^%s*spells%s*$") and E.ReportSpells then E.ReportSpells()
     elseif message and message:match("^%s*inspect%s*$") and E.state then E.state.Inspect()

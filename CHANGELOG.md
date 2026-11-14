@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.7 — 2026-11-13 (prerelease)
+
+- **Cast bar size** (user: "casting bar should be able to customized in size too"). `/fhud` → Position has a **Cast bar size** slider, 60% to 200%, per class. It scales the ForeverHUD cast bar on top of the HUD size. The game's own cast bar isn't touched; it is sized in the game's Edit Mode.
+- **Chinese on any client** (user: "add chinese zh client Language"). A **Language / 语言** button in `/fhud` → Position cycles Auto, 简体中文 and English, and `/fhud zh` / `/fhud en` / `/fhud auto` do the same. The choice is account-wide; `/reload` applies it to every label. Auto now also shows Chinese on a zhTW client. Spell names stay the client's own.
+- **Faint until combat** (user: "when clicking the mob, the whole framework should be 20% visible, only 100% visible entering combat"). Opened by a hostile target outside combat (and during the 5 s hold after losing it), the whole HUD is at 20% of your opacity setting. It is fully visible in combat, from the moment combat starts, and while inspected: a seal click, `/fhud inspect`, the settings panel or the `/fa` editor. The folded seal and tray are unchanged. Companion only.
+- **Lower default position** (user: "overall default position can be a bit lower, let's say 10%"). The default is y −235 (was −160), about 10% of the screen lower. A profile still at the old default (x 0, y −160) moves once; a position you set is kept.
+- `/reload` is enough. Update the Core in `/fa` (choose **Update Auras**) so the cast bar reapplies its size whenever ForeverAuras rebuilds it.
+
 ## 0.13.6 — 2026-11-13 (prerelease)
 
 - **Warrior strikes prompt you** (user: "战士压制出现的时候，没有提示", no prompt when the Warrior's Overpower comes up).
