@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.11 — 2026-11-14 (prerelease)
+
+User: "when CDm on the right side goes out, it can flash then fade out, such as Demonic Brand etc."
+
+- **Buffs flash as they end.** The Cooldown Manager buff icons on the right (`Core | Native player effects | Entries`) have a native Finish animation: two quick dips to 20%, then a fade to nothing, 0.9 s in all. ForeverAuras plays it whenever the icon hides; the curve checks the row's own gate first, so a fold, combat-only mode or turning the HUD off still hides the row at once. The class-plan buff icons are native aura buttons, which have no finish animation, and the tracked bars and cooldowns are unchanged.
+- **Fix (0.13.10):** the weapon enchant reminders used ForeverAuras' Pulse *preset*, which replaces the given 2.4 s with its own 0.5 s flash. They now use a custom Main animation, 100% to 40% and back over 2.4 s, like the missing-buff breath.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.10 — 2026-11-14 (prerelease)
 
 User: "such as firestone enchant should be notified if it's not applied, similarly to oil, but optional configurable", with a tooltip showing Minor Wizard Oil and Firestone on one weapon; and "I still don't see addon on the map slider".

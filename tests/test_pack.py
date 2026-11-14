@@ -519,6 +519,25 @@ class PackTests(unittest.TestCase):
                 ('PALADIN','Retribution','Hammer of Wrath'),('WARRIOR','Fury','Execute')):
             self.assertEqual(first(cls,spec),name,(cls,spec))
 
+    def test_cdm_buffs_flash_then_fade(self):
+        # 0.13.11: native Finish animation on the right-side CDM buff icons.
+        by_id={d['id']:d for d in self.regions}
+        finish=by_id['ForeverHUD | Core | Native player effects | Entries']['animation']['finish']
+        self.assertEqual((finish['type'],finish['use_alpha'],finish['alphaType'],finish['duration']),('custom',True,'custom',0.9))
+        self.assertIn('ForeverHUD.Gate("buffs","CORE")',finish['alphaFunc'],'A closing row hides without the flash')
+        # Only that row flashes; the tracked bars and cooldowns do not.
+        flashing=[d['id'] for d in self.regions if d['animation']['finish'].get('type')!='none']
+        self.assertEqual(flashing,['ForeverHUD | Core | Native player effects | Entries'])
+        # Evaluate the curve: two dips, then a fade to nothing.
+        import shutil,subprocess
+        lua=shutil.which('lua')
+        if lua:
+            script=('ForeverHUD={Gate=function() return gate end} gate=true local f=' + finish['alphaFunc'] +
+                ' local out={} for _,p in ipairs({0,0.1125,0.225,0.3375,0.45,0.725,1}) do out[#out+1]=string.format("%.2f",f(p,1)) end'
+                ' gate=false out[#out+1]=string.format("%.2f",f(0.1,1)) print(table.concat(out," "))')
+            got=subprocess.run([lua,'-e',script],capture_output=True,text=True,check=True).stdout.split()
+            self.assertEqual(got,['1.00','0.20','1.00','0.20','1.00','0.50','0.00','0.00'])
+
     def test_weapon_enchant_reminders(self):
         # 0.13.10: native Weapon Enchant trigger, Show On Enchant Missing; an
         # imbue (Firestone, Shaman imbue) and an oil/stone/poison are separate
@@ -539,7 +558,10 @@ class PackTests(unittest.TestCase):
                 place='tray' if ' | Tray | ' in id else 'maintenance'
                 gate=d['triggers'][2]['trigger']['custom']
                 self.assertIn(f'Gate("{place}","{cls}")',gate,id);self.assertIn(f'Gate("{module}","{cls}")',gate,id)
-                self.assertEqual((d['iconSource'],d['animation']['main']['preset']),(0,'alphaPulse'),id)
+                main=d['animation']['main']
+                self.assertEqual(d['iconSource'],0,id)
+                # 0.13.11: a real breath (100% -> 40% over 2.4 s), not the 0.5 s Pulse preset.
+                self.assertEqual((main['type'],main['alphaType'],main['alpha'],main['duration']),('custom','alphaPulse',0.4,2.4),id)
                 self.assertTrue(d['displayIcon'].startswith('Interface\\Icons\\'),id)
                 self.assertTrue([s for s in d['subRegions'] if s['type']=='subglow'],id)
         names=lambda cls:[id.split(' | ')[-1] for id in reminders(cls) if ' | Tray | ' in id]
