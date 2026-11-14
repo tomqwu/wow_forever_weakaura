@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.3"
+VERSION = "0.13.4"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -96,6 +96,13 @@ SUGGEST_MAX = 5
 # drawn at 70% opacity, so it reads as advice and doesn't cover the frame.
 # The mana and pet cues under their bars stay fully opaque.
 SUGGEST_ALPHA = 0.7
+# 0.13.4 ("a bit more flashing, inviting people to click"): every suggestion
+# wears the game's Action Button Glow, the gold "press me" border with
+# crawling ants. Native on Aura (Modern) icons, mirrored onto the stand-ins
+# of ordinary icons in the row, and ordinary on the cues.
+SUGGEST_GLOW = dict(type='subglow', glow=True, glowType='buttonOverlay', useGlowColor=False,
+    glowColor=[1, 1, 1, 1], glowLines=8, glowFrequency=0.25, glowLength=10, glowThickness=1,
+    glowScale=1, glowBorder=False, glowXOffset=0, glowYOffset=0, glowDuration=1)
 # Threshold cues can't join the row (they're shown at zero opacity until the
 # curve fires, so they'd hold a slot). They sit beside the bar they're about:
 # mana under the Mana bar's outer end, pet under the Pet bar's, and a target
@@ -202,8 +209,15 @@ TRAY_ROW1_Y = 13 - RETRACTED_SEAL // 2 - 4 - TRAY_ICON // 2
 # flashing. ForeverAuras' native Pulse (Aura Main) fades the icon to 40% and
 # back in a loop; the Missing look plays it whenever the icon is shown.
 BREATHE = dict(type='pulse', duration=2.4)
+# 0.13.4 ("a bit more visible"): a gentle gold Pixel glow joins the breath,
+# six thin lines circling the icon once every five seconds. ForeverAuras draws
+# Glow elements on the Missing look too (SecretAuraGlow.lua).
+MISSING_GLOW = dict(type='subglow', glow=True, glowType='Pixel', useGlowColor=True,
+    glowColor=[1, 0.82, 0.3, 0.9], glowLines=6, glowFrequency=0.2, glowLength=8,
+    glowThickness=2, glowScale=1, glowBorder=False, glowXOffset=1, glowYOffset=1, glowDuration=1)
 def breathe(d):
     d['blizzardAuraDisplay']['auraMain'] = dict(BREATHE)
+    d['subRegions'].append(dict(MISSING_GLOW))
     return d
 CENTRED_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='CENTER_HORIZONTAL', blizzardFlowSpacing=2)
 # Class-plan secondary rows by side: damage left, support right.
@@ -580,10 +594,11 @@ def generate():
             # Manager mode shows the player's tracked buffs at the same spot.
             p.eligibility[d['id']].update(effect=True)
 
-        def upkeep_reminders(seeds,name):
+        def upkeep_reminders(seeds,name,expires=True):
             # Native Show On: Aura(s) Missing / Remaining Time; nothing inferred.
+            # A buff with no duration (an aspect) gets no "expiring" reminder.
             upkeep=aura_trigger(seeds);upkeep['nativeFilters']={}
-            for expiring in (False,True):
+            for expiring in ((False,True) if expires else (False,)):
                 reminder=copy.deepcopy(upkeep)
                 reminder.update(secretShowOn='showOnActive' if expiring else 'showOnMissing',
                     secretUseRem=expiring,secretRem=15,secretRemOperator='<=')
@@ -593,7 +608,7 @@ def generate():
         for i,(seeds,name,missing) in enumerate(UPKEEP.get(cls,[])):
             if missing:
                 # Reminders cover it: no "it's up" icon (0.8.1).
-                upkeep_reminders(seeds,name)
+                upkeep_reminders(seeds,name,missing is True)
             else:
                 # No reminder for this buff, so its active icon is the only cue.
                 upkeep=aura_trigger(seeds);upkeep['nativeFilters']={}
@@ -748,6 +763,7 @@ def generate():
                         d=icon(p,name,suggest,cls,'suggest',aura_trigger([rule['seed']]),SUGGEST_SIZE,modern=True)
                         if rule.get('talent'): p.eligibility[d['id']].update(seeds=rule['talent'])
                     if rule['kind']!='curve': d['alpha']=SUGGEST_ALPHA
+                    d['subRegions'].append(dict(SUGGEST_GLOW))
                     # The companion loads only the list for the current spec.
                     p.eligibility[d['id']].update(spec=spec)
         alerts=prefix+' | Alerts'; p.group(alerts,prefix,cls,'base')

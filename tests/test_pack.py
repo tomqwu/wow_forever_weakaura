@@ -297,11 +297,22 @@ class PackTests(unittest.TestCase):
         # 0.8.1: an upkeep buff covered by reminders has no "it's up" icon;
         # one without reminders keeps its active icon as the only cue.
         self.assertNotIn('ForeverHUD | Warlock | Player effects | Demon armor',by_id)
-        for cls,name in (('Mage','Arcane Intellect'),('Priest','Fortitude'),('Druid','Mark of the Wild')):
+        # 0.13.4: every class's always-on self-buff reminds when missing;
+        # none keeps a plain "it's up" icon.
+        for cls,name in (('Mage','Arcane Intellect'),('Priest','Fortitude'),('Druid','Mark of the Wild'),
+                ('Mage','Mage armor'),('Priest','Inner Fire'),('Hunter','Aspect'),('Paladin','Blessing'),('Shaman','Shield')):
             self.assertNotIn(f'ForeverHUD | {cls} | Upkeep | {name}',by_id)
             self.assertIn(f'ForeverHUD | {cls} | Upkeep reminder | {name} missing',by_id)
-        for cls,name in (('Mage','Mage armor'),('Priest','Inner Fire'),('Hunter','Aspect'),('Paladin','Blessing')):
-            self.assertIn(f'ForeverHUD | {cls} | Upkeep | {name}',by_id)
+            self.assertIn(f'ForeverHUD | {cls} | Tray | Row | Upkeep reminder | {name} missing',by_id)
+        self.assertFalse([d['id'] for d in self.regions if ' | Upkeep | ' in d['id']])
+        # An aspect has no duration, so it never gets an "expiring" reminder.
+        self.assertNotIn('ForeverHUD | Hunter | Upkeep reminder | Aspect expiring',by_id)
+        self.assertIn('ForeverHUD | Paladin | Upkeep reminder | Blessing expiring',by_id)
+        # Raid-wide and alternative buffs count as present.
+        aspect=by_id['ForeverHUD | Hunter | Upkeep reminder | Aspect missing']['triggers'][1]['trigger']['auraRankSpellIDs']
+        self.assertTrue({13165,13163,5118}<=set(aspect))
+        blessing=by_id['ForeverHUD | Paladin | Upkeep reminder | Blessing missing']['triggers'][1]['trigger']['auraRankSpellIDs']
+        self.assertTrue({19740,25782,25898}<=set(blessing))
 
     def test_resource_colors_follow_native_type_across_classes(self):
         by_id={d['id']:d for d in self.regions}
@@ -430,12 +441,17 @@ class PackTests(unittest.TestCase):
         for d in breathing:
             self.assertTrue(d['id'].endswith(' missing'),d['id'])
             self.assertEqual(d['blizzardAuraDisplay']['auraMain'],dict(type='pulse',duration=2.4))
+            # 0.13.4: plus a gentle gold Pixel glow.
+            glows=[s for s in d['subRegions'] if s['type']=='subglow']
+            self.assertEqual(len(glows),1,d['id'])
+            self.assertEqual((glows[0]['glow'],glows[0]['glowType'],glows[0]['glowLines']),(True,'Pixel',6))
             trigger=d['triggers'][1]['trigger']
             self.assertEqual(trigger['secretShowOn'],'showOnMissing',d['id'])
             self.assertFalse(trigger.get('secretGained'),d['id'])
         for d in self.regions:
             if d['id'].endswith(' expiring'):
                 self.assertNotIn('auraMain',d.get('blizzardAuraDisplay') or {},d['id'])
+                self.assertFalse([s for s in d['subRegions'] if s['type']=='subglow'],d['id'])
 
     def test_suggestion_row_is_translucent(self):
         # 0.13.1: the rotation row and the execute cue at its end at 70%;
@@ -445,6 +461,12 @@ class PackTests(unittest.TestCase):
             if 'controlledChildren' not in by_id[id]]
         self.assertGreater(len(row_icons),30)
         for d in row_icons: self.assertEqual(d['alpha'],0.7,d['id'])
+        # 0.13.4: every suggestion (row and cues) wears the Action Button Glow.
+        suggestions=[d for d in self.regions if (' | Suggest | ' in d['id'] or ' | Suggest cues | ' in d['id']) and 'controlledChildren' not in d]
+        self.assertGreater(len(suggestions),len(row_icons))
+        for d in suggestions:
+            glows=[s for s in d['subRegions'] if s['type']=='subglow']
+            self.assertEqual([(g['glow'],g['glowType']) for g in glows],[(True,'buttonOverlay')],d['id'])
         shadowburn=by_id['ForeverHUD | Warlock | Suggest | Destruction | Shadowburn']
         self.assertEqual((shadowburn['alpha'],shadowburn['conditions'][0]['changes'][0]['value']),(0,0.7))
         tap=by_id['ForeverHUD | Warlock | Suggest | Life Tap']

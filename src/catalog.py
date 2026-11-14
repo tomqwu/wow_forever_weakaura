@@ -190,12 +190,19 @@ ALERTS = {
     'SHAMAN':[(16190,95),(16188,90),(16166,85),(8177,80),(17364,75)],
     'PALADIN':[(642,95),(633,90),(1022,85),(1044,80),(20216,75),(1311606,70)],
 }
+# (spell IDs, name, reminder): True = missing and last-15-seconds reminders;
+# 'missing' = missing only (a buff with no duration, which never "expires");
+# False = an "it's up" icon only. 0.13.4: every class's always-on self-buff
+# reminds when missing (Mage armor, Inner Fire, Aspect, Blessing, and the
+# Shaman's Lightning/Water Shield); Greater Blessings and the other aspects
+# count, so a raid buff or Cheetah doesn't nag.
 UPKEEP = {
-    'MAGE':[([1459,23028],'Arcane Intellect',True),([168,7302,6117],'Mage armor',False)],
-    'PRIEST':[([1243,21562],'Fortitude',True),([588],'Inner Fire',False)],
+    'MAGE':[([1459,23028],'Arcane Intellect',True),([168,7302,6117,30482],'Mage armor',True)],
+    'PRIEST':[([1243,21562],'Fortitude',True),([588],'Inner Fire',True)],
     'DRUID':[([1126,21849],'Mark of the Wild',True)],
-    'HUNTER':[([13163,13165],'Aspect',False)],
-    'PALADIN':[([19740,19742,20217],'Blessing',False)],
+    'HUNTER':[([13165,13163,5118,13159,20043,13161,34074],'Aspect','missing')],
+    'PALADIN':[([19740,19742,20217,1038,19977,20911,25782,25894,25898,25895,25890,25899],'Blessing',True)],
+    'SHAMAN':[([324,24398],'Shield',True)],
 }
 
 def candidates(cls):

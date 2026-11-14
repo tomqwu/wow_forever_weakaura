@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.13.4 — 2026-11-13 (prerelease)
+
+- **Missing upkeep is easier to see** (user: "missing armor can be a bit more visible"). Missing reminders, in the tray and on the HUD, keep the 2.4 s breath and add a gentle gold Pixel glow: six thin lines circling the icon once every five seconds. The "expiring" reminders stay plain.
+- **Every class reviewed** (user: "let's review all class and see if everything is up to date"). Always-on self-buffs that only had an "it's up" icon now remind when missing, in the tray and on the HUD, like Demon Armor:
+  - Mage: Frost, Ice, Mage or Molten Armor.
+  - Priest: Inner Fire.
+  - Hunter: an aspect, missing only (aspects have no duration). Cheetah, Pack, Wild, Beast and Viper count as present.
+  - Paladin: a blessing. Greater Blessings, Salvation, Light, Sanctuary and another paladin's blessing count.
+  - Shaman (new): Lightning Shield or Water Shield.
+  - Unchanged: Warlock armor, Arcane Intellect, Fortitude, Mark of the Wild, Warrior Battle Shout. Rogue poisons are weapon enchants, not auras, so ForeverAuras' aura trigger can't see them.
+  - The old `… | Upkeep | Mage armor`, `Inner Fire`, `Aspect` and `Blessing` "it's up" icons are removed; updating the class group deletes them.
+- **Suggestions invite a click** (user, with an in-game screenshot of the suggestion row: "recommendation can be a bit more flashing, inviting people to click"). Every suggestion, in the row and the mana, pet and execute cues, wears the game's Action Button Glow: the gold border with crawling ants that marks a spell to press. The row stays at 70% opacity.
+- Update the Core and your class in `/fa`, choosing **Update Auras** (or click the gear under the seal).
+
 ## 0.13.3 — 2026-11-13 (prerelease)
 
 - **An install icon under the folded seal** (user: "the class icon should have an additional icon along side of other missing spells if aura needs to be installed/updated").
