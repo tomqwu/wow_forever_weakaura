@@ -10,8 +10,8 @@ Use the combined import for a fresh nine-class installation or to update an exis
 
 | Group | Import | Characters | Displays |
 | --- | --- | ---: | ---: |
-| Core | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 6,016 | 17 |
-| Warlock | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 16,388 | 146 |
+| Core | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 6,017 | 17 |
+| Warlock | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 16,389 | 146 |
 | Warrior | [ForeverHUD-Warrior.txt](ForeverHUD-Warrior.txt) | 18,220 | 178 |
 | Mage | [ForeverHUD-Mage.txt](ForeverHUD-Mage.txt) | 13,073 | 111 |
 | Priest | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 13,184 | 111 |
@@ -31,8 +31,8 @@ Use the combined import for a fresh nine-class installation or to update an exis
 
 | 分组 | 导入文件 | 字符数 | 显示数量 |
 | --- | --- | ---: | ---: |
-| 核心 | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 6,016 | 17 |
-| 术士 | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 16,388 | 146 |
+| 核心 | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 6,017 | 17 |
+| 术士 | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 16,389 | 146 |
 | 战士 | [ForeverHUD-Warrior.txt](ForeverHUD-Warrior.txt) | 18,220 | 178 |
 | 法师 | [ForeverHUD-Mage.txt](ForeverHUD-Mage.txt) | 13,073 | 111 |
 | 牧师 | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 13,184 | 111 |

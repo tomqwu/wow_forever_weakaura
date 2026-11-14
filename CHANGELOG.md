@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.8 — 2026-11-13 (prerelease)
+
+- **Lighter install check** (user: "there is a bug players reporting lagging"). While the install gear was shown, the companion ran the full aura check every 3 seconds, and that check walks every saved ForeverAuras display twice. A player with many auras who hadn't updated yet got a repeating hitch out of combat. The timer now only compares the two installed build numbers, every 10 seconds, and runs the full check once when they stop being older. Login, the end of an import, and a click still run the full check.
+- This is the one periodic cost found by reading the code; it is not confirmed in game as the cause of the reports.
+- `/reload` is enough; no aura update is needed.
+
 ## 0.13.7 — 2026-11-13 (prerelease)
 
 - **Cast bar size** (user: "casting bar should be able to customized in size too"). `/fhud` → Position has a **Cast bar size** slider, 60% to 200%, per class. It scales the ForeverHUD cast bar on top of the HUD size. The game's own cast bar isn't touched; it is sized in the game's Edit Mode.
