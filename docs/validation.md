@@ -1,6 +1,12 @@
-# Validation for 0.13.16
+# Validation for 0.13.17
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.17 (prerelease) — Shadow Ward left out of the Utility wing
+
+- **Evidence:** the user's screenshot shows Shadow Ward alone in the always-shown Utility wing; the first `/fhud dump` lists it first in the Utility set (cdmID 199743). `SpellNameData.lua:3204` gives its ranks 6229, 11739, 11740 and 28610.
+- **Change and test:** `Selection.lua` `S.SKIP_UTILITY` skips entries with any of those IDs in the Utility wing and the Native utility row; `tests/selection.lua` checks it stays out and the next Utility entry takes slot 5 (112 checks).
+- **Not yet checked in game.**
 
 ## 0.13.16 (prerelease) — Utility cooldowns always shown
 

@@ -190,6 +190,12 @@ check(trigger(' | Primary | Native 5 | Entry').cdmShow=='always' and trigger(' |
     and trigger(' | Native utility | Entries').cdmShow=='always','The Utility wing and its overflow row are always shown')
 check(trigger(' | Primary | Native 1 | Entry').cdmShow=='cooldown' and trigger(' | Primary | Native 4 | Entry').cdmShow=='cooldown'
     and trigger(' | Native items | Entries').cdmShow=='cooldown','The damage wing and item row stay cooldown-only')
+-- 0.13.17: Shadow Ward (situational) is left out of the Utility wing and row;
+-- the next Utility entry takes its slot.
+D.cdm[29]={cdmID=29,name='Shadow Ward',category='Utility',identities={[6229]=true,[28610]=true}}
+table.insert(D.cdmOrder.Utility,1,29);S.Refresh()
+check(S.nativeSlots[5]==30 and not S.nativeUsed[29] and not trigger(' | Native utility | Entries').cdmSpells.multi[29],'Shadow Ward stays out of the Utility wing and its row')
+table.remove(D.cdmOrder.Utility,1);D.cdm[29]=nil;S.Refresh()
 E.Profile().utility=false;S.Refresh()
 check(not S.nativeSlots[5] and not next(trigger(' | Primary | Native 5 | Entry').cdmSpells.multi),'With utility abilities off, the right wing stays empty')
 E.Profile().utility=true;S.Refresh()

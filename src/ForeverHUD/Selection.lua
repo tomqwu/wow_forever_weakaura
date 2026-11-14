@@ -75,6 +75,16 @@ end
 local function preparation(entry)
     return entry.identities[5697] or entry.identities[698] or entry.identities[20608]
 end
+-- 0.13.17 (user: "yes hide it, it's very dumb"): Shadow Ward is a situational
+-- ward (it only absorbs shadow damage), cast when a shadow caster shows up,
+-- not a cooldown to watch. The game's Cooldown Manager files it under
+-- Utility; ForeverHUD leaves it out of the Utility wing and its overflow row.
+-- All four ranks (SpellNameData.lua: 6229, 11739, 11740, 28610).
+S.SKIP_UTILITY={[6229]=true,[11739]=true,[11740]=true,[28610]=true}
+local function skipped(entry)
+    for spell in pairs(entry.identities or {}) do if S.SKIP_UTILITY[spell] then return true end end
+    return false
+end
 function E.SortCDM(a,b)
     -- cloneId is FA's public identity key, never a duration, stack or alpha.
     local function key(row)
@@ -149,7 +159,7 @@ function S.SyncCDM()
         if S.nativeMode then
             if not preparation(entry) then
                 if entry.category=='Essential' and not S.nativeUsed[id] then selected[id]=true
-                elseif entry.category=='Utility' and not S.nativeUsed[id] then utility[id]=true
+                elseif entry.category=='Utility' and not S.nativeUsed[id] and not skipped(entry) then utility[id]=true
                 elseif entry.category=='EquipSlotEssential' then items[id]=true end
             end
         elseif (entry.category=="Essential" or entry.category=="Utility" or entry.category=="SpecAgnosticEssential")
@@ -272,7 +282,7 @@ function S.Refresh()
             local records={}
             for _,id in ipairs(E.discovery.cdmOrder[category] or {})do
                 local record=E.discovery.cdm[id]
-                if record and not preparation(record) and not S.used[record.name] and #records<4 then
+                if record and not preparation(record) and not (category=='Utility' and skipped(record)) and not S.used[record.name] and #records<4 then
                     S.used[record.name]=true;records[#records+1]=record
                 end
             end
