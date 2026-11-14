@@ -216,6 +216,24 @@ UPKEEP = {
     'SHAMAN':[([324,408510],'Shield',True)],
 }
 
+# 0.13.10 weapon enchant reminders (user: "firestone enchant should be notified
+# if it's not applied, similarly to oil, but optional configurable"). Each is
+# ForeverAuras' native Weapon Enchant trigger with Show On: Enchant Missing,
+# which tells an imbue (Firestone, Spellstone, Shaman imbues) from a temporary
+# enchant (oil, sharpening stone, poison) on the same hand.
+# (module, hand, enchant kind, name, learned spell or None, icon)
+# Learned spells (rank 1, SpellNameData.lua): Create Firestone 6366, Rockbiter
+# Weapon 8017, Poisons 2842. Icon paths are standard Interface/Icons files.
+def weapon_enchants(cls):
+    rows=[]
+    if cls=='WARLOCK': rows.append(('imbue','main','imbue','Firestone or Spellstone',6366,'INV_Ammo_FireTar'))
+    if cls=='SHAMAN': rows.append(('imbue','main','imbue','Weapon imbue',8017,'Spell_Nature_RockBiter'))
+    if cls=='ROGUE':
+        rows+=[('oil','main','temporary','Main-hand poison',2842,'Ability_Poisons'),
+               ('oil','off','temporary','Off-hand poison',2842,'Ability_Poisons')]
+    else: rows.append(('oil','main','temporary','Oil or stone',None,'INV_Potion_100'))
+    return rows
+
 def candidates(cls):
     c=CLASSES[cls]
     result={}

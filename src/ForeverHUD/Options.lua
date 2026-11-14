@@ -79,8 +79,13 @@ local function build()
         end)
         section:SetShown(i==1)
     end
-    for i,entry in ipairs(E.modules)do
-        check(p.sections.Modules,entry[1],entry[2],i%2==1 and 22 or 292,-190-math.floor((i-1)/2)*30)
+    local shown={}
+    for _,entry in ipairs(E.modules)do
+        local only=E.moduleClasses and E.moduleClasses[entry[1]]
+        if not only or only[E.class] then shown[#shown+1]=entry end
+    end
+    for i,entry in ipairs(shown)do
+        check(p.sections.Modules,entry[1],entry[2],i%2==1 and 22 or 292,-190-math.floor((i-1)/2)*27)
     end
     label(p.sections.Modules,'Disabled modules unload their trackers.',11,27,-440,{.65,.61,.73})
     local behavior=p.sections.Behavior
@@ -416,4 +421,22 @@ SlashCmdList.FOREVERHUD = function(message)
     elseif message and message:match("^%s*spells%s*$") and E.ReportSpells then E.ReportSpells()
     elseif message and message:match("^%s*inspect%s*$") and E.state then E.state.Inspect()
     else E.ToggleOptions() end
+end
+-- 0.13.10: an entry in the minimap's addon list (TOC AddonCompartmentFunc),
+-- as other Forever addons have. Left-click opens the settings, right-click
+-- expands or folds the HUD, like the seal.
+function ForeverHUD_OnAddonCompartmentClick(_, button)
+    if button == "RightButton" then
+        if E.state and E.state.ToggleInspect then E.state.ToggleInspect(); E.Notify() end
+    else E.ToggleOptions() end
+end
+function ForeverHUD_OnAddonCompartmentEnter(_, frame)
+    if not GameTooltip or not frame then return end
+    GameTooltip:SetOwner(frame, "ANCHOR_LEFT")
+    GameTooltip:SetText("ForeverHUD")
+    GameTooltip:AddLine(E.L("Left-click for settings. Right-click to expand or fold."), 1, 1, 1, true)
+    GameTooltip:Show()
+end
+function ForeverHUD_OnAddonCompartmentLeave()
+    if GameTooltip then GameTooltip:Hide() end
 end

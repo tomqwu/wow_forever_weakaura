@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.13.10 — 2026-11-14 (prerelease)
+
+User: "such as firestone enchant should be notified if it's not applied, similarly to oil, but optional configurable", with a tooltip showing Minor Wizard Oil and Firestone on one weapon; and "I still don't see addon on the map slider".
+
+- **Weapon enchant reminders.** ForeverAuras' native Weapon Enchant trigger with Show On: Enchant Missing, in the expanded upkeep row and the folded tray, breathing like a missing buff (Main animation Pulse 2.4 s and the gold glow). The trigger tells an imbue from a temporary enchant on the same hand, so there are two reminders:
+  - **Weapon imbue** (module `imbue`): Warlock Firestone or Spellstone (shown once Create Firestone is learned), Shaman weapon imbue (once Rockbiter Weapon is learned). On by default for both classes; the checkbox shows only for them.
+  - **Oil, stone or poison** (module `oil`): every class, main hand; Rogues get main- and off-hand poison reminders once Poisons is learned. On by default for Rogues only.
+  - Each class keeps its own choice. Profiles from earlier versions get the class default.
+  - Every class now has the upkeep row, which holds these reminders.
+- **Minimap addon list.** The TOC registers `AddonCompartmentFunc` (with OnEnter/OnLeave), as other Forever addons do: left-click toggles the settings, right-click expands or folds the HUD.
+- The module list in the settings uses slightly tighter rows to fit the two new checkboxes.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.9 — 2026-11-13 (prerelease)
 
 Follows the research in `reports/WoW Forever rotation engine research.md` (user: "do a full research on forever ... and come up with a recommendation engine"; "Yes, build it"). World of Warcraft: Forever is a Blizzard game (client `wowf` 1.60.1), not a private server, and its spell IDs differ from the Wrath-era ones these lists were first written with.

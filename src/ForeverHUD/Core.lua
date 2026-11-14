@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.13.9"
+E.releaseVersion = "0.13.10"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -34,6 +34,16 @@ local defaults = {
     cast=false, pet=true, art=true, motion=true, nameplates=false,
     tray=true, suggest=true,
 }
+-- 0.13.10: weapon enchant reminders are on by default only for the classes
+-- that make their own (Firestone, Shaman imbues, Rogue poisons); anyone can
+-- turn the oil/stone reminder on in the Modules tab.
+local classDefaults = {imbue = {WARLOCK = true, SHAMAN = true}, oil = {ROGUE = true}}
+E.classDefaults = classDefaults
+local function fillClass(profile, force)
+    for key, classes in pairs(classDefaults) do
+        if force or type(profile[key]) ~= "boolean" then profile[key] = classes[E.class] == true end
+    end
+end
 local anchor = CreateFrame("Frame", "ForeverHUDAnchor", UIParent)
 anchor:SetSize(1, 1)
 E.anchor = anchor
@@ -129,6 +139,7 @@ local function fill(profile)
     for key, value in pairs(defaults) do
         if type(profile[key]) ~= type(value) then profile[key] = value end
     end
+    fillClass(profile)
     profile.cast=profile.castBarMode~='Default'
     profile.hideDefaultCast=profile.castBarMode=='ForeverHUD'
     local function limit(key, low, high)
@@ -323,7 +334,10 @@ function E.Bind()
 end
 function E.Set(key, value)
     local p = E.Profile()
-    if not p or defaults[key] == nil or type(defaults[key]) ~= type(value) then return end
+    if not p then return end
+    local default = defaults[key]
+    if classDefaults[key] then default = false end
+    if default == nil or type(default) ~= type(value) then return end
     if key=='cast' then key,value='castBarMode',value and 'ForeverHUD' or 'Default'
     elseif key=='hideDefaultCast' then
         local mode=E.queued and E.queued.castBarMode or p.castBarMode
@@ -355,6 +369,7 @@ function E.Reset()
     if E.InCombat() then return end
     local p = E.Profile(); if not p then return end
     for key, value in pairs(defaults) do p[key] = value end
+    fillClass(p, true)
     E.hovering, E.utilityPinned = false, false
     if E.state then E.state.Start() end
     if E.discovery then E.discovery.Start() end

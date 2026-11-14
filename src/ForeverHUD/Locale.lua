@@ -103,6 +103,9 @@ local strings = {
     ["ForeverHUD auras need installing or updating"] = "ForeverHUD 光环需要安装或更新",
     ["Click to install or update. In the window, choose Update Auras."] = "点击安装或更新。在弹出的窗口中选择 Update Auras（更新光环）。",
     ["Install / update auras"] = "安装/更新光环",
+    ["Left-click for settings. Right-click to expand or fold."] = "左键打开设置，右键展开或收起。",
+    ["Weapon imbue reminder"] = "武器灌注提醒",
+    ["Oil, stone or poison reminder"] = "武器油/磨刀石/毒药提醒",
     ["Warlock"] = "术士", ["Warrior"] = "战士", ["Mage"] = "法师",
     ["Priest"] = "牧师", ["Rogue"] = "盗贼", ["Druid"] = "德鲁伊",
     ["Hunter"] = "猎人", ["Shaman"] = "萨满祭司", ["Paladin"] = "圣骑士",
@@ -120,4 +123,10 @@ E.modules = {
     {"alerts", "Audible alerts"},
     {"tray", "Retracted tray"},
     {"suggest", "Spell suggestions"},
+    -- 0.13.10: weapon enchant reminders. "imbue": Firestone or Spellstone,
+    -- Shaman weapon imbues. "oil": oil, sharpening stone or Rogue poison.
+    {"imbue", "Weapon imbue reminder"},
+    {"oil", "Oil, stone or poison reminder"},
 }
+-- Modules only some classes have; the settings list hides them elsewhere.
+E.moduleClasses = {imbue = {WARLOCK = true, SHAMAN = true}}
