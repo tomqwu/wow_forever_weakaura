@@ -195,11 +195,24 @@ end
 local login=CreateFrame('Frame')
 login:RegisterEvent('PLAYER_LOGIN')
 login:SetScript('OnEvent',function()E.RegisterGameOptions()end)
+function E.SetSize(percent)
+    if not E.Profile() then return end
+    if not percent or percent<60 or percent>160 then
+        print('ForeverHUD: '..E.L('HUD size takes a number from 60 to 160, for example /fhud 80.'));return
+    end
+    local value=math.floor(percent/5+.5)*5
+    E.Set('scale',value/100);E.RefreshOptions()
+    if E.gameOptions and E.gameOptions.page:IsShown() then E.gameOptions.refresh() end
+    print('ForeverHUD: '..E.L(E.InCombat() and 'HUD size %d%% applies after combat.' or 'HUD size %d%%.'):format(value))
+end
 SLASH_FOREVERHUD1 = "/fhud"
 SLASH_FOREVERHUD2 = "/foreverhud"
 SlashCmdList.FOREVERHUD = function(message)
     local install=message and message:match("^%s*install%s*(%a*)%s*$")
-    if install and E.InstallBundled then E.InstallBundled(install=="force")
+    -- 0.13.6: /fhud 60 or /fhud 60% sets the HUD size (60 to 160).
+    local size=message and message:match("^%s*(%d+%.?%d*)%s*%%?%s*$")
+    if size then E.SetSize(tonumber(size))
+    elseif install and E.InstallBundled then E.InstallBundled(install=="force")
     elseif message and message:match("^%s*spells%s*$") and E.ReportSpells then E.ReportSpells()
     elseif message and message:match("^%s*inspect%s*$") and E.state then E.state.Inspect()
     else E.ToggleOptions() end

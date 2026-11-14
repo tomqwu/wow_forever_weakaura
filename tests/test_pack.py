@@ -493,6 +493,28 @@ class PackTests(unittest.TestCase):
         tap=by_id['ForeverHUD | Warlock | Suggest | Life Tap']
         self.assertEqual(tap['conditions'][0]['changes'][0]['value'],1)
 
+    def test_reactive_suggestions_lead_every_list(self):
+        # 0.13.6: a proc that is up, or a strike that only becomes usable on a
+        # condition, sits before everything else in its list, for every class.
+        by_id={d['id']:d for d in self.regions}
+        for cls,lists in SUGGESTIONS.items():
+            for spec,rules in lists.items():
+                flags=[bool(r.get('reactive')) for r in rules if r['kind']!='curve']
+                self.assertEqual(flags,sorted(flags,reverse=True),(cls,spec))
+                for r in rules:
+                    if r['kind']=='active': self.assertTrue(r.get('reactive'),(cls,spec,r['name']))
+                # The row is built in list order, so its first shown slot is the top rule.
+                prefix='ForeverHUD | '+CLASSES[cls]['name']+' | Suggest'
+                base=prefix if spec=='Leveling' else f'{prefix} | {spec}'
+                order=[id for id in by_id[prefix]['controlledChildren'] if self.eligibility[id]['spec']==spec]
+                self.assertEqual(order,[f"{base} | {r['name']}" for r in rules if r['kind']!='curve'],(cls,spec))
+        first=lambda cls,spec:[r['name'] for r in SUGGESTIONS[cls][spec] if r['kind']!='curve'][0]
+        for cls,spec,name in (('WARLOCK','Affliction','Shadow Trance'),('WARLOCK','Destruction','Backlash'),
+                ('MAGE','Fire','Hot Streak'),('DRUID','Feral','Clearcasting'),('HUNTER','Beast Mastery','Mongoose Bite'),
+                ('HUNTER','Survival','Counterattack'),('SHAMAN','Enhancement','Maelstrom Weapon'),('ROGUE','Combat','Riposte'),
+                ('PALADIN','Protection','Hammer of Wrath'),('PRIEST','Holy','Surge of Light'),('WARRIOR','Fury','Execute')):
+            self.assertEqual(first(cls,spec),name,(cls,spec))
+
     def test_warlock_spell_suggestions(self):
         by_id={d['id']:d for d in self.regions}
         row=by_id['ForeverHUD | Warlock | Suggest']
@@ -504,11 +526,12 @@ class PackTests(unittest.TestCase):
             lists.setdefault(self.eligibility[id]['spec'],[]).append(id)
         self.assertEqual(set(lists),{'Leveling','Affliction','Demonology','Destruction'})
         names=lambda spec:[id.split(' | ')[-1] for id in lists[spec]]
-        self.assertEqual(names('Leveling'),['Life Tap','Corruption','Immolate','Shadow Trance','Health Funnel'],'Priority order, left to right')
+        # 0.13.6: procs and conditional strikes lead (Shadow Trance, Backlash, Conflagrate).
+        self.assertEqual(names('Leveling'),['Shadow Trance','Life Tap','Corruption','Immolate','Health Funnel'],'Priority order, left to right')
         self.assertTrue(all(id.count(' | ')==3 for id in lists['Leveling']),'Leveling keeps the 0.9 IDs')
-        self.assertEqual(names('Affliction'),['Life Tap','Corruption','Bane of Agony','Siphon Life','Shadow Trance'])
+        self.assertEqual(names('Affliction'),['Shadow Trance','Life Tap','Corruption','Bane of Agony','Siphon Life'])
         self.assertEqual(names('Demonology'),['Life Tap','Corruption','Immolate','Bane of Agony','Health Funnel'])
-        self.assertEqual(names('Destruction'),['Life Tap','Immolate','Conflagrate','Backlash','Shadowburn'])
+        self.assertEqual(names('Destruction'),['Backlash','Conflagrate','Life Tap','Immolate','Shadowburn'])
         # The row grows left from the seal, its lead slot's right edge 4 px
         # outside the Health bar's inner end; actions sit at the row origin.
         self.assertEqual((row['blizzardFlow'],row['blizzardFlowGrowth'],row['blizzardFlowSpacing']),(True,'LEFT',4))
