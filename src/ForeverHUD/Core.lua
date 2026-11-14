@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.13.4"
+E.releaseVersion = "0.13.5"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -495,14 +495,20 @@ function E.InstallBundled(force)
         print('ForeverHUD: '..E.L('After "%s" is installed, run /fhud install again for "%s".'):format(bundle.rootID,later.rootID))
     end
 end
--- 0.13.3 install cue. While the HUD is folded out of combat, an icon on a
--- second line under the tray says this character's auras are missing, older
--- than the addon or left detached. The companion draws it: an aura cannot
--- show that it is itself missing or old. It uses the tray icons' look (dark
--- ring, ornate frame) and breathes like a missing buff. A click runs
--- /fhud install. Offsets follow the folded seal (centre y=13, 118 px), the
--- tray row (y=-67, 34 px icons) and the row gap (8 px).
-E.INSTALL_CUE = {size=34, y=-67-34-8, icon="Interface\\Icons\\Trade_Engineering", breath=2.4}
+-- Install cue (0.13.3; in the tray row since 0.13.5). While the HUD is folded
+-- out of combat and this character's auras are missing, older than the addon
+-- or left detached, a gear icon shows in the tray row, on the same line as
+-- the other notifications.
+--  * A class group from 0.13.5 on carries the icon itself ("... | Tray | Row |
+--    Install"), so the native row centres it with the rest; the companion only
+--    answers NeedsAuras() and lays an invisible strip over the row for the
+--    tooltip and the click.
+--  * An older or missing class group cannot draw it, so the companion draws
+--    the same icon on the row's line: centred when there is no tray, else to
+--    the right of a three-icon row.
+-- Offsets follow the tray row (y=-67, 34 px icons, 8 px gap).
+E.INSTALL_CUE = {size=34, y=-67, side=3*17+2*4+8+17, strip=230, icon="Interface\\Icons\\Trade_Engineering", breath=2.4}
+function E.NeedsAuras() return E.cueProblems ~= nil and #E.cueProblems > 0 end
 local cue = CreateFrame("Button", nil, UIParent)
 cue:SetSize(E.INSTALL_CUE.size, E.INSTALL_CUE.size)
 cue:RegisterForClicks("LeftButtonUp")
@@ -530,16 +536,26 @@ end
 local cueTimer
 -- recheck: read the installed builds again (cheap otherwise, so Notify can call it).
 function E.RefreshInstallCue(recheck)
+    local before = E.NeedsAuras()
     if recheck or E.cueProblems == nil then E.cueProblems = E.AuraProblems() end
-    local p = E.Profile()
+    local api, p, classID = E.API(), E.Profile(), E.ClassID()
     local folded = E.state == nil or (E.state.world == true and not E.state.Visible())
-    local show = p ~= nil and p.enabled and #E.cueProblems > 0 and E.LiveWorld() and not E.InCombat()
+    local show = p ~= nil and p.enabled and E.NeedsAuras() and E.LiveWorld() and not E.InCombat()
         and (folded or #rootRegions() == 0)
     if show then
+        local has = function(id) return api and api.GetData and classID and type(api.GetData(id)) == "table" end
+        -- The installed class group draws the icon in its row; only catch the mouse.
+        local inRow = p.tray ~= false and has(classID.." | Tray | Row | Install")
+        local x = (inRow or not has(classID) or p.tray == false) and 0 or E.INSTALL_CUE.side
+        cueRing:SetShown(not inRow); cueArt:SetShown(not inRow); cueFrame:SetShown(not inRow)
+        cue:SetSize(inRow and E.INSTALL_CUE.strip or E.INSTALL_CUE.size, E.INSTALL_CUE.size)
         cue:SetScale(p.scale); cue:ClearAllPoints()
-        cue:SetPoint("CENTER", UIParent, "CENTER", p.x/p.scale, p.y/p.scale + E.INSTALL_CUE.y)
+        cue:SetPoint("CENTER", UIParent, "CENTER", p.x/p.scale + x, p.y/p.scale + E.INSTALL_CUE.y)
+        E.installCueInRow = inRow == true
     end
     cue:SetShown(show == true)
+    -- The row icon's trigger reads NeedsAuras(): tell ForeverAuras when it flips.
+    if before ~= E.NeedsAuras() and api and api.ScanEvents then api.ScanEvents("FOREVERHUD_UPDATE") end
     -- While shown, look again every few seconds, so an import made in /fa clears it.
     if show and not cueTimer and C_Timer and C_Timer.NewTimer then
         cueTimer = C_Timer.NewTimer(3, function() cueTimer = nil; E.RefreshInstallCue(true) end)

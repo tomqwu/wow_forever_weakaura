@@ -153,7 +153,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.4','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.5','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return ForeverHUD and ForeverHUD.version=="0.3.2" and ForeverHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true
@@ -187,14 +187,24 @@ ForeverAuras.Import=function(encoded)imported=encoded end
 class='WARLOCK';E.InitDB();E.Reset();E.state=nil
 E.RefreshInstallCue(true)
 check(E.installCue.shown and #E.cueProblems==1 and E.cueProblems[1]:find('Warlock'),'An older class group shows the install cue with its reason')
-check(E.installCue.point[5]==E.Profile().y+E.INSTALL_CUE.y and E.INSTALL_CUE.y==-109,'The cue sits on its own line under the tray')
+-- 0.13.5: always on the tray row's line (y=-67), never a line of its own.
+check(E.installCue.point[5]==E.Profile().y+E.INSTALL_CUE.y and E.INSTALL_CUE.y==-67,'The cue sits on the tray row line')
+check(E.installCue.point[4]==E.Profile().x+84 and E.installCue.width==34 and not E.installCueInRow,'An older class group without the row icon gets the companion icon beside the row')
+check(E.NeedsAuras(),'The row icon is told the auras need work')
 local cueTimer=timers[#timers]
+local rowIcon='ForeverHUD | Warlock | Tray | Row | Install';builds[rowIcon]=40
+E.RefreshInstallCue(true)
+check(E.installCueInRow and E.installCue.point[4]==E.Profile().x and E.installCue.width==E.INSTALL_CUE.strip,'A class group with the row icon gets only an invisible strip over the row')
+E.Set('tray',false);check(not E.installCueInRow and E.installCue.point[4]==E.Profile().x and E.installCue.width==34,'With the tray off the companion icon sits centred')
+E.Set('tray',true);builds[rowIcon]=nil
+local scansBefore=scans
 E.installCue.scripts.OnClick(E.installCue)
 check(imported=='warlock','Clicking the cue opens the next import')
 InCombatLockdown=function()return true end;E.Notify();check(not E.installCue.shown,'The cue hides in combat')
 InCombatLockdown=function()return false end;E.Notify();check(E.installCue.shown,'The cue returns after combat')
 builds['ForeverHUD | Warlock']=50;cueTimer.callback()
 check(not E.installCue.shown and #E.cueProblems==0,'A finished update clears the cue on the next look')
+check(not E.NeedsAuras() and scans>scansBefore,'ForeverAuras is told when the answer flips, so the row icon hides')
 builds['ForeverHUD | Core']=nil;E.RefreshInstallCue(true)
 check(E.installCue.shown and E.cueProblems[1]:find('Core'),'A missing Core shows the cue')
 E.Shutdown();check(not E.installCue.shown,'World leave hides the cue')
