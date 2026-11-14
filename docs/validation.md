@@ -1,6 +1,12 @@
-# Validation for 0.13.14
+# Validation for 0.13.15
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.15 (prerelease) — Demonic Brand kept in the right-hand row
+
+- **Evidence:** the user's screenshot shows Demonic Brand on the target's frame (2 stacks) with the tooltip "Magic ... the caster's pet deals an additional 35 to 38 damage with its next 2 attacks": a target debuff, which the 0.13.14 rule removed as intended, but one the user watches as a buff. The dump's CDM entry is 1293695 linked 1293696.
+- **Change and test:** `S.KEEP_TARGET` keeps entries with either ID; `tests/selection.lua` checks Brand stays and another target debuff (Fear) stays out (109 checks).
+- **Not yet checked in game.**
 
 ## 0.13.14 (prerelease) — only the player's buffs in the right-hand row
 

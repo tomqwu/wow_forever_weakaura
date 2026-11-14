@@ -218,7 +218,8 @@ D.cdm[44]={cdmID=44,name='Fear',category='TrackedBuff',identities={[1324448]=tru
 D.cdm[45]={cdmID=45,name='Demon Armor',category='TrackedBuff',identities={[1086]=true}}
 E.Profile().dots=false;S.SyncCDM()
 local rim=trigger(' | Native player effects | Entries').cdmSpells.multi
-check(not rim[43] and not rim[44],'Target debuffs from the tracked list stay off the player buff row')
+check(not rim[44],'Target debuffs from the tracked list stay off the player buff row')
+check(rim[43],'Demonic Brand stays: it powers up the pet, so the Warlock watches it like a buff')
 check(rim[45],'A buff on the player stays in the row')
 local asked=harmfulAsked;S.SyncCDM();check(harmfulAsked==asked,'Spell harmfulness is cached')
 C_Spell=nil;E.Profile().dots=true;D.cdm[43],D.cdm[44],D.cdm[45]=nil,nil,nil;S.SyncCDM()

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.15 — 2026-11-14 (prerelease)
+
+User, with a tooltip of Demonic Brand on the target ("Magic: the caster's pet deals an additional 35 to 38 damage with its next 2 attacks"): "why you taking off the brand buff from CDM?"
+
+- **Demonic Brand is back in the right-hand row.** 0.13.14 left out every target debuff from the Cooldown Manager tracked list, Demonic Brand included. It powers up the Warlock's pet, so it is watched like a buff: entries carrying Demonic Brand (1293695, debuff 1293696) are kept (`S.KEEP_TARGET`). Curses, Fear and Banish stay out.
+- Companion only: copy the addon and `/reload`; no aura update needed.
+
 ## 0.13.14 — 2026-11-14 (prerelease)
 
 User: "why throwing wand giving this buff? on the right? bug", then "Only my buffs".
