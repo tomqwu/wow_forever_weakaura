@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.12 — 2026-11-14 (prerelease)
+
+User: "pet missing notification too?"
+
+- **Pet reminder** (module `petMissing`, Warlock and Hunter). ForeverAuras' native Conditions trigger with Has Pet = false (no pet, or a dead one) and Mounted = false, in the expanded upkeep row and the folded tray, with the same breath and glow as the other reminders. Shown once Summon Imp (688) or Call Pet (883) is learned. On by default for both classes; the checkbox appears only for them. A Destruction Warlock who sacrifices the demon can turn it off.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.11 — 2026-11-14 (prerelease)
 
 User: "when CDm on the right side goes out, it can flash then fade out, such as Demonic Brand etc."

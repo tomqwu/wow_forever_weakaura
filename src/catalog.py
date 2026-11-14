@@ -234,6 +234,13 @@ def weapon_enchants(cls):
     else: rows.append(('oil','main','temporary','Oil or stone',None,'INV_Potion_100'))
     return rows
 
+# 0.13.12 pet reminder (user: "pet missing notification too?"): ForeverAuras'
+# Conditions trigger, Has Pet = false (no pet, or a dead one) and Mounted =
+# false, so mounting does not nag. Shown once the class's first pet spell is
+# learned (SpellNameData.lua: Summon Imp 688, Call Pet 883).
+# class: (learned spell, icon)
+PET_REMINDER = {'WARLOCK':(688,'Spell_Shadow_SummonImp'), 'HUNTER':(883,'Ability_Hunter_BeastCall')}
+
 def candidates(cls):
     c=CLASSES[cls]
     result={}

@@ -106,6 +106,7 @@ local strings = {
     ["Left-click for settings. Right-click to expand or fold."] = "左键打开设置，右键展开或收起。",
     ["Weapon imbue reminder"] = "武器灌注提醒",
     ["Oil, stone or poison reminder"] = "武器油/磨刀石/毒药提醒",
+    ["Pet reminder"] = "宠物提醒",
     ["Warlock"] = "术士", ["Warrior"] = "战士", ["Mage"] = "法师",
     ["Priest"] = "牧师", ["Rogue"] = "盗贼", ["Druid"] = "德鲁伊",
     ["Hunter"] = "猎人", ["Shaman"] = "萨满祭司", ["Paladin"] = "圣骑士",
@@ -127,6 +128,8 @@ E.modules = {
     -- Shaman weapon imbues. "oil": oil, sharpening stone or Rogue poison.
     {"imbue", "Weapon imbue reminder"},
     {"oil", "Oil, stone or poison reminder"},
+    -- 0.13.12: no living pet (Warlock, Hunter), not while mounted.
+    {"petMissing", "Pet reminder"},
 }
 -- Modules only some classes have; the settings list hides them elsewhere.
-E.moduleClasses = {imbue = {WARLOCK = true, SHAMAN = true}}
+E.moduleClasses = {imbue = {WARLOCK = true, SHAMAN = true}, petMissing = {WARLOCK = true, HUNTER = true}}
