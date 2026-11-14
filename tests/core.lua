@@ -195,7 +195,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.7','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.8','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return ForeverHUD and ForeverHUD.version=="0.3.2" and ForeverHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true
@@ -244,7 +244,12 @@ E.installCue.scripts.OnClick(E.installCue)
 check(imported=='warlock','Clicking the cue opens the next import')
 InCombatLockdown=function()return true end;E.Notify();check(not E.installCue.shown,'The cue hides in combat')
 InCombatLockdown=function()return false end;E.Notify();check(E.installCue.shown,'The cue returns after combat')
-builds['ForeverHUD | Warlock']=50;cueTimer.callback()
+-- 0.13.8: the timer never walks the saved displays while the builds are still behind.
+local walks=0;ForeverAurasSaved={displays=setmetatable({},{__pairs=function(t)walks=walks+1;return next,t end})}
+local realPairs=pairs;pairs=function(t)if t==ForeverAurasSaved.displays then walks=walks+1 end;return realPairs(t)end
+cueTimer.callback();check(walks==0 and E.installCue.shown and E.INSTALL_CUE.recheck==10,'The periodic check reads only build numbers')
+cueTimer=timers[#timers]
+builds['ForeverHUD | Warlock']=50;cueTimer.callback();pairs=realPairs;ForeverAurasSaved=nil
 check(not E.installCue.shown and #E.cueProblems==0,'A finished update clears the cue on the next look')
 check(not E.NeedsAuras() and scans>scansBefore,'ForeverAuras is told when the answer flips, so the row icon hides')
 builds['ForeverHUD | Core']=nil;E.RefreshInstallCue(true)

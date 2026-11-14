@@ -1,6 +1,14 @@
-# Validation for 0.13.7
+# Validation for 0.13.8
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.8 (prerelease) — lighter install check
+
+- **Report (user, relayed from players, no details):** lag.
+- **Read in the code:** `E.Notify` has no frequent caller (login and combat edges, target and fold changes, settings). The only repeating work added recently was the install cue's 3 s timer, which called `E.AuraProblems()`; that calls `E.DetachedDisplays` per bundle, a `pairs` over all of `ForeverAurasSaved.displays` with a `string.sub` per entry. It ran whenever the cue was shown: out of combat, folded, auras missing or older, which is the normal state after every addon update until the auras are updated. ForeverAuras' glow mirroring (`SecretAuraStand.lua` `MirrorGlow`) runs on show, size and visibility changes only, not per event.
+- **Change:** the timer calls `RefreshInstallCue("light")` every 10 s; it compares installed and bundled build numbers and runs the full check only when they are no longer behind.
+- **`tests/core.lua`:** a timer tick with the builds still behind never iterates the saved displays; the cue still clears when the build catches up.
+- **Not established:** that this was the reported lag. Other candidates need in-game profiling (`/fa pstart`, `/fa pstop`, `/fa pprint`): reactive Warrior suggestions entering and leaving the suggestion row as rage changes, and the glows added in 0.13.4.
 
 ## 0.13.7 (prerelease) — cast bar size, language choice, lower default
 

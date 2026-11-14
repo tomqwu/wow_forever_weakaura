@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.13.7"
+E.releaseVersion = "0.13.8"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -541,7 +541,7 @@ end
 --    the same icon on the row's line: centred when there is no tray, else to
 --    the right of a three-icon row.
 -- Offsets follow the tray row (y=-61, 34 px icons, 8 px gap).
-E.INSTALL_CUE = {size=34, y=-61, side=3*17+2*4+8+17, strip=230, icon="Interface\\Icons\\Trade_Engineering", breath=2.4}
+E.INSTALL_CUE = {size=34, y=-61, side=3*17+2*4+8+17, strip=230, icon="Interface\\Icons\\Trade_Engineering", breath=2.4, recheck=10}
 function E.NeedsAuras() return E.cueProblems ~= nil and #E.cueProblems > 0 end
 local cue = CreateFrame("Button", nil, UIParent)
 cue:SetSize(E.INSTALL_CUE.size, E.INSTALL_CUE.size)
@@ -568,9 +568,24 @@ if cue.CreateAnimationGroup then
     cue:SetScript("OnHide", function() breath:Stop() end)
 end
 local cueTimer
--- recheck: read the installed builds again (cheap otherwise, so Notify can call it).
+-- 0.13.8: the periodic look is cheap. AuraProblems() walks every saved
+-- ForeverAuras display (twice) to count detached ones, which hitched every
+-- few seconds for players with many auras who had not updated yet. The
+-- timer now only compares the two installed build numbers, and runs the
+-- full check once when they stop being older.
+local function buildsBehind()
+    if E.OldClassLayout() then return true end
+    for _, bundle in ipairs(E.BundlesFor(E.class)) do
+        local installed = E.InstalledBuild(bundle.rootID)
+        if not installed or installed < bundle.build then return true end
+    end
+    return false
+end
+-- recheck: true reads everything again; "light" only the build numbers.
+-- Without it nothing is read, so Notify can call this freely.
 function E.RefreshInstallCue(recheck)
     local before = E.NeedsAuras()
+    if recheck == "light" then recheck = E.cueProblems ~= nil and #E.cueProblems > 0 and not buildsBehind() end
     if recheck or E.cueProblems == nil then E.cueProblems = E.AuraProblems() end
     local api, p, classID = E.API(), E.Profile(), E.ClassID()
     local folded = E.state == nil or (E.state.world == true and not E.state.Visible())
@@ -590,9 +605,9 @@ function E.RefreshInstallCue(recheck)
     cue:SetShown(show == true)
     -- The row icon's trigger reads NeedsAuras(): tell ForeverAuras when it flips.
     if before ~= E.NeedsAuras() and api and api.ScanEvents then api.ScanEvents("FOREVERHUD_UPDATE") end
-    -- While shown, look again every few seconds, so an import made in /fa clears it.
+    -- While shown, look again now and then, so an import made in /fa clears it.
     if show and not cueTimer and C_Timer and C_Timer.NewTimer then
-        cueTimer = C_Timer.NewTimer(3, function() cueTimer = nil; E.RefreshInstallCue(true) end)
+        cueTimer = C_Timer.NewTimer(E.INSTALL_CUE.recheck, function() cueTimer = nil; E.RefreshInstallCue("light") end)
     end
 end
 function E.StopInstallCue()
