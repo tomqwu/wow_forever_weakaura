@@ -1,6 +1,12 @@
-# Validation for 0.13.13
+# Validation for 0.13.14
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.14 (prerelease) — only the player's buffs in the right-hand row
+
+- **Evidence:** the first `/fhud dump` (Warlock) lists Demonic Brand (1293695, linked 1293696), Curses, Fear (linked 1324451, 1324453) and Banish among the Cooldown Manager's Tracked Buffs. `CDMSetup.lua:33-39` (ForeverAuras) moves every tracked category into Tracked Buffs. `CooldownViewerCatalog.lua:784-810` decides a CDM aura's unit from `C_Spell.IsSpellHarmful` over its spell IDs; `Selection.lua` `S.TargetAura` applies the same rule to each entry's spell, override and linked IDs.
+- **Tests:** `tests/selection.lua` checks that harmful entries stay out of the row even with the DoT row off, that a player buff stays, and that the answer is cached (108 checks).
+- **Not yet checked in game:** that `C_Spell.IsSpellHarmful` answers true for Demonic Brand's linked ID on this client, and that the wand-applied icon is gone from the right.
 
 ## 0.13.13 (prerelease) — Well Fed reminder, and the first `/fhud dump`
 

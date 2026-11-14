@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.14 — 2026-11-14 (prerelease)
+
+User: "why throwing wand giving this buff? on the right? bug", then "Only my buffs".
+
+- **Only your buffs on the right.** In the Forever layout, the companion picks which Cooldown Manager tracked entries the right-hand buff row shows. The tracked list also holds debuffs the player puts on the target; ForeverAuras' class-pack setup moves every tracked aura there. An entry with any harmful spell among its IDs (spell, override, linked), by the game's spell data (`C_Spell.IsSpellHarmful`, the rule ForeverAuras uses for a CDM aura's unit), now stays out. The first `/fhud dump` showed Demonic Brand (linked 1293696), Curses, Fear and Banish in that list. DoTs stay in the left-hand target row as before.
+- Companion only: copy the addon and `/reload`; no aura update needed.
+
 ## 0.13.13 — 2026-11-14 (prerelease)
 
 User: "you are no longer alerting food status?", then "Yes, opt-in" to a Well Fed missing reminder.
