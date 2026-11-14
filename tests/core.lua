@@ -137,6 +137,10 @@ check(E.gameOptions.slider.valueNumber==E.Profile().scale and E.gameOptions.slid
 E.gameOptions.slider:SetValue(1.3)
 check(math.abs(E.Profile().scale-1.3)<0.0001 and root.scale==E.Profile().scale and E.gameOptions.slider.value.text=='130%','The game page size slider resizes the HUD')
 E.gameOptions.slider:SetValue(1.2);Settings=nil
+SlashCmdList.FOREVERHUD('60%');check(math.abs(E.Profile().scale-.6)<0.0001,'/fhud 60% sets the size')
+SlashCmdList.FOREVERHUD(' 130 ');check(math.abs(E.Profile().scale-1.3)<0.0001,'/fhud 130 sets the size')
+SlashCmdList.FOREVERHUD('500');check(math.abs(E.Profile().scale-1.3)<0.0001 and not E.panel:IsShown(),'An out-of-range size changes nothing and opens nothing')
+SlashCmdList.FOREVERHUD('120')
 local pref=E.Profile()
 pref.castBarMode=nil;pref.cast=true;pref.hideDefaultCast=false;E.InitDB()
 check(pref.castBarMode=='Default' and not pref.cast,'Old overlapping cast defaults migrate to the game bar only')

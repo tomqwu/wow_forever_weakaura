@@ -126,8 +126,14 @@ def curve(name,known,icon,at,unit='player',event='Power',powertype=None):
     return dict(kind='curve',name=name,event=event,unit=unit,variable=variable,at=at,known=known,icon=icon,powertype=powertype)
 def missing(name,seed): return dict(kind='missing',name=name,seed=seed)
 def buff(name,seed): return dict(kind='buff',name=name,seed=seed)
-def active(name,seed,talent=None): return dict(kind='active',name=name,seed=seed,talent=talent)
-def ready(name,seed): return dict(kind='ready',name=name,seed=seed)
+def active(name,seed,talent=None): return dict(kind='active',name=name,seed=seed,talent=talent,reactive=True)
+def ready(name,seed,reactive=False): return dict(kind='ready',name=name,seed=seed,reactive=reactive)
+# 0.13.6: a condition-triggered spell leads its list. 'Reactive' rules are a
+# proc aura being up (every `active` rule) and a strike that is only usable
+# once something happened (`react`: a dodge, a parry, a low-health target, a
+# talent's window). The lists are sorted below, reactive first, so the slot
+# next to the seal is always the thing that just lit up.
+def react(name,seed): return ready(name,seed,True)
 LIFE_TAP=curve('Life Tap',1454,'Spell_Shadow_BurningSpirit',30)
 HEALTH_FUNNEL=curve('Health Funnel',755,'Spell_Shadow_LifeDrain',35,'pet','Health')
 EVOCATION=curve('Evocation',12051,'Spell_Nature_Purge',20)
@@ -135,8 +141,11 @@ EVOCATION=curve('Evocation',12051,'Spell_Nature_Purge',20)
 INNERVATE=curve('Innervate',29166,'Spell_Nature_Lightning',30,powertype=0)
 MEND_PET=curve('Mend Pet',136,'Ability_Hunter_MendPet',40,'pet','Health')
 HUNTERS=[missing("Hunter's Mark",1130),missing('Serpent Sting',1978)]
-OVERPOWER=ready('Overpower',7384);REVENGE=ready('Revenge',6572)
-EXECUTE=ready('Execute',5308);VICTORY_RUSH=ready('Victory Rush',402927)
+OVERPOWER=react('Overpower',7384);REVENGE=react('Revenge',6572)
+EXECUTE=react('Execute',5308);VICTORY_RUSH=react('Victory Rush',402927)
+MONGOOSE=react('Mongoose Bite',1495);HAMMER=react('Hammer of Wrath',24275)
+# Arcane Concentration (talent ranks) gives the Mage's Clearcasting.
+MAGE_CLEARCAST=active('Clearcasting',12536,[11213,12574,12575,12576,12577])
 SUGGESTIONS = {
     'WARLOCK': {
         # 0.9 list, kept with its display IDs for characters without talents.
@@ -146,11 +155,11 @@ SUGGESTIONS = {
             missing('Siphon Life',18265),active('Shadow Trance',17941,[18094,18095])],
         'Demonology':[LIFE_TAP,missing('Corruption',172),missing('Immolate',348),
             missing('Bane of Agony',980),HEALTH_FUNNEL],
-        'Destruction':[LIFE_TAP,missing('Immolate',348),ready('Conflagrate',1293817),
-            active('Backlash',34936),curve('Shadowburn',17877,'Spell_Shadow_ScourgeBuild',25,'target','Health')],
+        'Destruction':[LIFE_TAP,active('Backlash',34936),react('Conflagrate',1293817),
+            missing('Immolate',348),curve('Shadowburn',17877,'Spell_Shadow_ScourgeBuild',25,'target','Health')],
     },
     'MAGE': {
-        'Arcane':[EVOCATION,active('Missile Barrage',44401)],
+        'Arcane':[EVOCATION,active('Missile Barrage',44401),MAGE_CLEARCAST],
         'Fire':[EVOCATION,missing('Improved Scorch',22959),active('Hot Streak',44445)],
         'Frost':[EVOCATION,active('Fingers of Frost',44544)],
     },
@@ -162,7 +171,7 @@ SUGGESTIONS = {
     },
     'ROGUE': {
         'Assassination':[buff('Slice and Dice',5171),missing('Rupture',1943)],
-        'Combat':[buff('Slice and Dice',5171),missing('Rupture',1943)],
+        'Combat':[react('Riposte',14251),buff('Slice and Dice',5171),missing('Rupture',1943)],
         'Subtlety':[buff('Slice and Dice',5171),missing('Hemorrhage',16511)],
     },
     'DRUID': {
@@ -171,9 +180,9 @@ SUGGESTIONS = {
         'Restoration':[INNERVATE,active('Clearcasting',16870)],
     },
     'HUNTER': {
-        'Beast Mastery':HUNTERS+[MEND_PET],
-        'Marksmanship':HUNTERS+[MEND_PET],
-        'Survival':HUNTERS+[ready('Counterattack',19306),ready('Mongoose Bite',1495),MEND_PET],
+        'Beast Mastery':[MONGOOSE]+HUNTERS+[MEND_PET],
+        'Marksmanship':[MONGOOSE]+HUNTERS+[MEND_PET],
+        'Survival':[react('Counterattack',19306),MONGOOSE]+HUNTERS+[MEND_PET],
     },
     'SHAMAN': {
         'Elemental':[missing('Flame Shock',8050),buff('Lightning Shield',324)],
@@ -181,9 +190,9 @@ SUGGESTIONS = {
         'Restoration':[curve('Mana Tide Totem',16190,'Spell_Frost_SummonWaterElemental',30),ready('Riptide',408521)],
     },
     'PALADIN': {
-        'Holy':[ready('Holy Shock',1311606)],
-        'Protection':[buff('Holy Shield',20925),ready('Consecration',26573),ready('Judgement',20271)],
-        'Retribution':[ready('Hammer of Wrath',24275),ready('Judgement',20271),ready('Consecration',26573)],
+        'Holy':[HAMMER,ready('Holy Shock',1311606)],
+        'Protection':[HAMMER,buff('Holy Shield',20925),ready('Consecration',26573),ready('Judgement',20271)],
+        'Retribution':[HAMMER,ready('Judgement',20271),ready('Consecration',26573)],
     },
     # 0.13.6: the reactive strikes (Overpower, Revenge, Execute, Victory Rush)
     # are suggestions, in the row with the "press me" glow, instead of small
@@ -197,6 +206,9 @@ SUGGESTIONS = {
         'Protection':[REVENGE,ready('Shield Slam',23922),OVERPOWER,EXECUTE,VICTORY_RUSH],
     },
 }
+# Reactive rules first, otherwise the written order (a stable sort).
+for _lists in SUGGESTIONS.values():
+    for _spec in _lists: _lists[_spec]=sorted(_lists[_spec],key=lambda rule:not rule.get('reactive'))
 # 0.8 retracted mode: larger seal and the tray under it.
 # 0.13.2: 10% smaller (was 132), user request with a folded screenshot.
 # 0.13.6: another 10% (was 118). Spell and tray icons keep their sizes.
