@@ -26,6 +26,10 @@ import zipfile
 API = 'https://wow.curseforge.com/api'
 ADDON = 'ForeverHUD'
 PROJECT_ID = '1801711'
+# ForeverHUD does not load without ForeverAuras (TOC "## Dependencies"). Declaring
+# it on every file lets the CurseForge app install it alongside. ForeverAuras is
+# CurseForge project 1703325 (its TOC X-Curse-Project-ID); the upload API takes the slug.
+REQUIRED = ('foreverauras',)
 TAG = re.compile(r'v(\d+\.\d+\.\d+)')
 # Fixed entry timestamp, as in scripts/build.py, so equal input gives equal bytes.
 ZIP_DATE = (2026, 1, 1, 0, 0, 0)
@@ -100,6 +104,12 @@ def multipart(metadata, archive):
     return data, f'multipart/form-data; boundary={boundary}'
 
 
+def upload_metadata(changelog, version, version_id):
+    return {'changelog': changelog, 'changelogType': 'markdown',
+            'displayName': f'ForeverHUD {version}', 'gameVersions': [version_id], 'releaseType': 'beta',
+            'relations': {'projects': [{'slug': slug, 'type': 'requiredDependency'} for slug in REQUIRED]}}
+
+
 def gh(*args):
     return subprocess.check_output(['gh', *args], text=True)
 
@@ -145,13 +155,13 @@ def main():
         print(f'Already uploaded: CurseForge file {receipt["fileId"]}; skipped.')
         return
     version_id = select_version(api_request('/game/versions', token), name)
-    print(f'Validated {archive.name} (ForeverHUD/ only); CurseForge game version {name} = {version_id}.')
+    print(f'Validated {archive.name} (ForeverHUD/ only); CurseForge game version {name} = {version_id}; '
+          f'required dependency: {", ".join(REQUIRED)}.')
     if args.dry_run:
         print('Dry run complete; no upload performed.')
-        summary(f'## CurseForge dry run\n\n{archive.name}, WoW {name} (id {version_id}). Nothing uploaded.')
+        summary(f'## CurseForge dry run\n\n{archive.name}, WoW {name} (id {version_id}), requires {", ".join(REQUIRED)}. Nothing uploaded.')
         return
-    metadata = {'changelog': release['body'] or release['url'], 'changelogType': 'markdown',
-                'displayName': f'ForeverHUD {version}', 'gameVersions': [version_id], 'releaseType': 'beta'}
+    metadata = upload_metadata(release['body'] or release['url'], version, version_id)
     data, content_type = multipart(metadata, archive)
     # Deliberately no retry: the upload POST is not idempotent.
     result = api_request(f'/projects/{project}/upload-file', token, data, content_type)

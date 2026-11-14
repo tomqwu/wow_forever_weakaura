@@ -1,6 +1,6 @@
 # ForeverHUD
 
-A class combat HUD for WoW Forever, built on **[ForeverAuras](https://github.com/neroxrw/foreverauras)** (required). The addon carries its own auras, so there's no import string to paste: ForeverAuras offers them for install.
+A class combat HUD for WoW Forever, built on **[ForeverAuras](https://www.curseforge.com/wow/addons/foreverauras)** (required; the CurseForge app installs it with ForeverHUD). The addon carries its own auras, so there's no import string to paste: ForeverAuras offers them for install.
 
 ## Features
 
