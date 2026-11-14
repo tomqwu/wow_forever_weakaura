@@ -78,7 +78,7 @@ check(root.scale==1.25 and root.alpha==.65,"Scale and opacity applied to root")
 check(root.parent==E.anchor and root.nativeAnchor[2]==E.anchor and root.nativeOffset[1]==0,"Late native root is attached to companion anchor")
 check(E.anchor.scale==nil,"Position anchor stays unscaled")
 E.InitDB();check(E.Profile().x==135 and E.Profile().scale==1.25,"Reload defaults preserve saved preferences")
-E.ResetPosition();check(E.Profile().x==0 and E.Profile().y==-160 and E.Profile().scale==1.25 and not E.Profile().primary,"Position reset preserves module preferences and scale")
+E.ResetPosition();check(E.Profile().x==0 and E.Profile().y==-235 and E.Profile().scale==1.25 and not E.Profile().primary,"Position reset preserves module preferences and scale")
 E.Set('x',135);E.Set('y',-230)
 class="MAGE";E.InitDB();E.Notify()
 check(E.Profile().x==0 and E.Profile().primary,"New class gets own defaults")
@@ -114,6 +114,8 @@ E.Profile().scale=0/0;E.Profile().opacity=math.huge;E.InitDB()
 check(E.Profile().scale==1 and E.Profile().opacity==1,"Malformed numeric settings repaired")
 E.Profile().resources="broken";E.InitDB();check(E.Profile().resources==true,"Wrong preference types repaired")
 class=secret;E.InitDB();check(E.Profile()==nil,"Restricted class identity never becomes table key")
+locale="zhTW";local TW={};assert(loadfile("src/ForeverHUD/Locale.lua"))("ForeverHUD",TW)
+check(TW.L("Warlock")=="术士","A Traditional Chinese client gets the Chinese labels")
 locale="zhCN";local Z={};assert(loadfile("src/ForeverHUD/Locale.lua"))("ForeverHUD",Z)
 check(Z.L("Warlock")=="术士" and Z.L("Target effects")=="目标持续效果","Chinese labels")
 check(E.L("Warlock")=="Warlock","English labels")
@@ -141,6 +143,31 @@ SlashCmdList.FOREVERHUD('60%');check(math.abs(E.Profile().scale-.6)<0.0001,'/fhu
 SlashCmdList.FOREVERHUD(' 130 ');check(math.abs(E.Profile().scale-1.3)<0.0001,'/fhud 130 sets the size')
 SlashCmdList.FOREVERHUD('500');check(math.abs(E.Profile().scale-1.3)<0.0001 and not E.panel:IsShown(),'An out-of-range size changes nothing and opens nothing')
 SlashCmdList.FOREVERHUD('120')
+-- 0.13.7: cast bar size, language choice, lower default position.
+local castBar=CreateFrame('Frame');local beforeCast=ForeverAuras.GetRegion
+ForeverAuras.GetRegion=function(id)if id=='ForeverHUD | Core | Cast' then return castBar end;return beforeCast(id)end
+E.Set('castScale',1.5);check(castBar.scale==1.5 and root.scale==E.Profile().scale,'The cast bar takes its own size without changing the HUD scale')
+E.Profile().castScale=9;E.InitDB();check(E.Profile().castScale==2,'Cast bar size is clamped')
+E.Set('castScale',1);ForeverAuras.GetRegion=beforeCast
+check(E.L('Warlock')=='Warlock' and not E.Chinese(),'English client stays English by default')
+SlashCmdList.FOREVERHUD('zh');check(ForeverHUDDB.language=='zhCN' and E.L('Warlock')=='术士','/fhud zh switches to Chinese on any client')
+check(E.panel.language.text:find('简体中文'),'The language button names the choice')
+SlashCmdList.FOREVERHUD('en');check(E.L('Warlock')=='Warlock','/fhud en switches back')
+E.panel.language.scripts.OnClick(E.panel.language);check(ForeverHUDDB.language==nil,'The button cycles back to Auto')
+-- Faint when opened by a target outside combat; full in combat and when inspected.
+local fake={open=true,world=true,Preview=function()return false end,Visible=function()return true end,Update=function()end,ObservePreview=function()end,Start=function()end,Stop=function()end,Inspect=function()end,HostileTarget=function()return true end}
+E.state=fake;E.Set('opacity',1);E.Notify()
+check(E.AlphaFactor()==.2 and root.alpha==.2,'A targeted HUD outside combat is 20% visible')
+fake.inspected=true;E.Notify();check(root.alpha==1,'An inspected HUD is fully visible')
+fake.inspected=false;E.Notify();E.events.scripts.OnEvent(nil,'PLAYER_REGEN_DISABLED')
+check(root.alpha==1 and E.combatEdge,'Entering combat makes it fully visible at once')
+E.events.scripts.OnEvent(nil,'PLAYER_REGEN_ENABLED');check(root.alpha==.2,'Leaving combat with the HUD still open returns to faint')
+fake.open=false;E.Notify();check(root.alpha==1,'A folded HUD keeps the seal and tray fully visible')
+E.state=nil
+local savedDB=ForeverHUDDB
+ForeverHUDDB={version=1,profiles={WARLOCK={x=0,y=-160},MAGE={x=40,y=-160}}};E.InitDB()
+check(ForeverHUDDB.profiles.WARLOCK.y==-235 and ForeverHUDDB.profiles.MAGE.y==-160 and ForeverHUDDB.version==2,'Only an untouched old default position moves down')
+ForeverHUDDB=savedDB;E.InitDB()
 local pref=E.Profile()
 pref.castBarMode=nil;pref.cast=true;pref.hideDefaultCast=false;E.InitDB()
 check(pref.castBarMode=='Default' and not pref.cast,'Old overlapping cast defaults migrate to the game bar only')
@@ -168,7 +195,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.6','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.13.7','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return ForeverHUD and ForeverHUD.version=="0.3.2" and ForeverHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true

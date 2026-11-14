@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.13.6"
+E.releaseVersion = "0.13.7"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -22,7 +22,8 @@ E.classNames = {
 }
 local defaults = {
     enabled=true, locked=true, combatOnly=false, hoverUtility=false,
-    scale=1, x=0, y=-160, opacity=1,
+    -- 0.13.7: the default sits lower (was y=-160): about 10% of a 768-unit screen.
+    scale=1, x=0, y=-235, opacity=1, castScale=1,
     school="Auto", cleave=false, cooldownLayout="Forever",
     expandCombat=true, unfoldSound=false, unfold=true,
     resourceFlow=true, swingMode="Auto",
@@ -110,6 +111,7 @@ local function rootRegions()
     return regions
 end
 -- Paint a shared Core bar with the current class's colour.
+E.RootRegions = rootRegions
 function E.Tint(region,key)
     local colors=E.classColors and E.class and E.classColors[E.class]
     local color=colors and colors[key]
@@ -134,7 +136,7 @@ local function fill(profile)
         if value ~= value or value == math.huge or value == -math.huge then value = defaults[key] end
         profile[key] = math.max(low, math.min(high, value))
     end
-    limit("scale", 0.6, 1.6); limit("opacity", 0.25, 1)
+    limit("scale", 0.6, 1.6); limit("opacity", 0.25, 1); limit("castScale", 0.6, 2)
     limit("x", -2000, 2000); limit("y", -1200, 1200)
     if E.schools and E.class then
         local valid=profile.school=="Auto"
@@ -147,12 +149,30 @@ end
 function E.InitDB()
     if type(ForeverHUDDB) ~= "table" then ForeverHUDDB = {} end
     if type(ForeverHUDDB.profiles) ~= "table" then ForeverHUDDB.profiles = {} end
-    ForeverHUDDB.version = 1
+    -- Version 2 (0.13.7): a profile still at the old default position moves
+    -- to the new, lower default. A position the player chose is kept.
+    if (tonumber(ForeverHUDDB.version) or 1) < 2 then
+        for _, profile in pairs(ForeverHUDDB.profiles) do
+            if type(profile) == "table" and profile.x == 0 and profile.y == -160 then profile.y = defaults.y end
+        end
+    end
+    ForeverHUDDB.version = 2
     local _, class = UnitClass("player")
     if not readable(class) or not E.classNames[class] then E.class = nil; return end
     E.class = class
     if type(ForeverHUDDB.profiles[class]) ~= "table" then ForeverHUDDB.profiles[class] = {} end
     fill(ForeverHUDDB.profiles[class])
+end
+-- 0.13.7: opened by a target (or its 5 s hold) outside combat, the HUD is a
+-- faint 20%; it is fully visible in combat, while inspected (seal click,
+-- /fhud inspect, the settings panel) and in the /fa editor preview.
+E.TARGET_ALPHA = 0.2
+function E.AlphaFactor()
+    if E.peeking then return E.PEEK_ALPHA end
+    local s = E.state
+    if not s or not s.open or E.combatEdge or E.InCombat() or s.combat == true then return 1 end
+    if s.inspected or E.inspectingSettings or s.Preview() then return 1 end
+    return E.TARGET_ALPHA
 end
 function E.InCombat()
     local value = InCombatLockdown()
@@ -222,7 +242,20 @@ function E.Notify()
     if E.RefreshAlerts then E.RefreshAlerts() end
     handle:SetShown(#rootRegions() > 0 and E.Gate("base", E.class) and (p.art or not p.locked))
     if E.RefreshInstallCue then E.RefreshInstallCue(false) end
+    -- Target and inspection changes outside combat switch between faint and full.
+    if E.RootAlpha and not E.InCombat() then E.RootAlpha() end
     if api and api.ScanEvents then api.ScanEvents("FOREVERHUD_UPDATE") end
+end
+-- 0.13.7: the ForeverHUD cast bar has its own size, on top of the HUD scale.
+-- Only its region scale is set, outside combat.
+function E.ApplyCastScale()
+    local p, api = E.Profile(), E.API()
+    if not p or E.InCombat() or (E.Importing and E.Importing()) or not api or not api.GetRegion then return end
+    local region = api.GetRegion(E.coreID.." | Cast")
+    if not region or not region.SetScale then return end
+    -- Never a root: those carry the HUD scale.
+    for _, root in ipairs(E.RootRegions()) do if root == region then return end end
+    region:SetScale(p.castScale)
 end
 function E.ApplyLayout()
     if E.InCombat() then E.pending = true; return end
@@ -244,7 +277,7 @@ function E.ApplyLayout()
         if region.SetOffset then region:SetOffset(0,0) end
         -- Scale the group, keeping the screen position in UIParent units.
         region:SetScale(p.scale)
-        if region.SetRegionAlpha then region:SetRegionAlpha(p.opacity * (E.peeking and E.PEEK_ALPHA or 1)) end
+        if region.SetRegionAlpha then region:SetRegionAlpha(p.opacity * E.AlphaFactor()) end
     end
     handle:SetScale(p.scale)
     handle:ClearAllPoints()
@@ -252,6 +285,7 @@ function E.ApplyLayout()
     handle:SetPoint("CENTER", UIParent, "CENTER", p.x/p.scale, p.y/p.scale+13)
     handle:SetShown(#regions > 0 and E.Gate("base", E.class) and (p.art or not p.locked))
     outline:SetShown(not p.locked)
+    E.ApplyCastScale()
     E.pending = nil
 end
 local function finishBind()
@@ -589,11 +623,12 @@ E.PEEK_ALPHA = 0.35
 local function rootAlpha()
     local p = E.Profile()
     if not p then return end
-    local alpha = p.opacity * (E.peeking and E.PEEK_ALPHA or 1)
+    local alpha = p.opacity * E.AlphaFactor()
     for _, region in ipairs(rootRegions()) do
         if region.SetRegionAlpha then region:SetRegionAlpha(alpha) end
     end
 end
+E.RootAlpha = rootAlpha
 function E.SetPeek(on)
     on = on == true
     if on == (E.peeking == true) then return end
@@ -710,9 +745,11 @@ events:SetScript("OnEvent", function(_, event, addon)
     elseif event == "PLAYER_LEAVING_WORLD" then E.Shutdown(); return
     elseif event == "PLAYER_REGEN_DISABLED" then
         E.StopDrag(false)
-        -- Combat starts just before lockdown: drop a ghost to full opacity now.
-        if E.peeking then E.peeking = nil; rootAlpha() end
+        -- Combat starts just before lockdown: go to full opacity now (from a
+        -- hover ghost or the faint targeted state).
+        E.combatEdge = true; E.peeking = nil; rootAlpha()
     elseif event == "PLAYER_REGEN_ENABLED" then
+        E.combatEdge = nil
         local p = E.Profile()
         if p and E.queued then
             for key, value in pairs(E.queued) do p[key] = value end

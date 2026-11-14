@@ -1,6 +1,15 @@
-# Validation for 0.13.6
+# Validation for 0.13.7
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.7 (prerelease) — cast bar size, language choice, lower default
+
+- **Cast bar size:** new per-class `castScale` (default 1, clamped 0.6 to 2). `E.ApplyCastScale()` sets the region scale of `ForeverHUD | Core | Cast` outside combat and outside an import, from `ApplyLayout` and from the cast display's init action (guarded, so an older companion ignores it).
+- **Language:** `Locale.lua` decides at call time: `ForeverHUDDB.language` (`zhCN`/`enUS`) if set, else the client locale, with zhTW now counted as Chinese. `E.SetLanguage` backs the panel button and `/fhud zh|en|auto`. Labels built before the change need `/reload`.
+- **Default position:** `defaults.y` −160 → −235. `InitDB` version 2 moves only profiles with x 0 and y −160.
+- **Faint until combat:** `E.AlphaFactor()` returns 0.2 when the HUD is open outside combat and not inspected, previewed or peeked, else 1 (0.35 for the hover peek, unchanged). It feeds `ApplyLayout` and `rootAlpha`; `Notify` reapplies it outside combat, and `PLAYER_REGEN_DISABLED` sets `E.combatEdge` and applies full opacity before lockdown, as the peek already did.
+- **`tests/core.lua`:** cast scale applied and clamped without touching the root scale; zhTW; `/fhud zh` and `/fhud en`; the button cycle; the one-time position migration (moved and untouched profiles); reset position −235.
+- **Not yet checked in game.** The game's default cast bar (the default cast mode) is not resized by this.
 
 ## 0.13.6 (prerelease) — Warrior reactive strikes as suggestions
 
