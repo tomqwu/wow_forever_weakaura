@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.17 — 2026-11-14 (prerelease)
+
+User, about Shadow Ward sitting in the always-shown Utility wing: "why shadow ward to be here? what's the playing logic here", then "yes hide it, it's very dumb".
+
+- **Shadow Ward leaves the Utility wing.** It only absorbs shadow damage and is cast when a shadow caster appears, so it is not a cooldown to watch. The game's Cooldown Manager files it under Utility; ForeverHUD now skips it (all ranks: 6229, 11739, 11740, 28610) in the Utility wing and its overflow row, and the next Utility entry takes the slot. The player's Cooldown Manager settings are not changed.
+- Companion only: copy the addon and `/reload`; no aura update needed.
+
 ## 0.13.16 — 2026-11-14 (prerelease)
 
 User: "Shooting a wand should never spin up a buff icon", then "Always show the wing".
