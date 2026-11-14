@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.5 — 2026-11-13 (prerelease)
+
+- **The install icon is in the tray row** (user, with a screenshot of the gear on its own line under the shard count: "all notification should be aligned horizontally, why you kept reinventing new things").
+  - The gear is now a display in each class's tray row (`… | Tray | Row | Install`), the row's last icon, so the native row centres it on the same line as the Soul Shard count, missing buffs and food. It has the tray icons' ring and frame and the missing reminders' gold glow.
+  - The companion only answers `ForeverHUD.NeedsAuras()` and lays an invisible strip over the row, so hovering or clicking anywhere on the row shows the reasons and opens the install window.
+  - A class group older than 0.13.5 (or none) can't draw the row icon, so the companion draws the same gear on the row's line: centred when there is no tray, otherwise just right of the row. The second line is gone.
+- Update the Core and your class in `/fa`, choosing **Update Auras** (or click the gear).
+
 ## 0.13.4 — 2026-11-13 (prerelease)
 
 - **Missing upkeep is easier to see** (user: "missing armor can be a bit more visible"). Missing reminders, in the tray and on the HUD, keep the 2.4 s breath and add a gentle gold Pixel glow: six thin lines circling the icon once every five seconds. The "expiring" reminders stay plain.

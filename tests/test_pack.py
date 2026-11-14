@@ -410,6 +410,15 @@ class PackTests(unittest.TestCase):
             icon_size=by_id[row['controlledChildren'][0]]['width']
             self.assertEqual(big['yOffset']-big['height']//2-(row['yOffset']+icon_size//2),4)
             self.assertEqual(by_id[prefix+' | Tray']['controlledChildren'],[row['id']],'Everything in the tray sits in the one row')
+            # 0.13.5: the install cue is the row's last icon, on the same
+            # line as every other notification, shown only on NeedsAuras().
+            cue=by_id[row['controlledChildren'][-1]]
+            self.assertEqual(cue['id'],prefix+' | Tray | Row | Install')
+            self.assertEqual((cue['regionType'],cue['yOffset'],cue['displayIcon']),('icon',0,'Interface\\Icons\\Trade_Engineering'))
+            self.assertIn('ForeverHUD.NeedsAuras and ForeverHUD.NeedsAuras()',cue['triggers'][2]['trigger']['custom'])
+            self.assertIn(f'Gate("tray","{cls}")',cue['triggers'][2]['trigger']['custom'])
+            self.assertEqual([s['glowType'] for s in cue['subRegions'] if s['type']=='subglow'],['Pixel'])
+            self.assertNotIn(cue['id'],self.eligibility,'The cue is not tied to a learned spell')
             sizes={by_id[id]['width'] for id in row['controlledChildren']}
             self.assertEqual(len(sizes),1,'Same icon size across the row')
         shards=by_id['ForeverHUD | Warlock | Tray | Row | Soul Shards']

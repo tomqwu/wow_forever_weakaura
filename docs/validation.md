@@ -1,6 +1,14 @@
-# Validation for 0.13.4
+# Validation for 0.13.5
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.5 (prerelease) — install icon in the tray row
+
+- **Game evidence (user screenshot, 0.13.4 addon over 0.13.3 auras, folded):** the gear sat on a second line under the Soul Shard count, with its tooltip listing the Core and class as older. The user asked for every notification on one horizontal line.
+- **Change (generator):** `… | Tray | Row | Install` in every class's row: an ordinary icon (like the shard counter, so ForeverAuras chains it into the Modern Aura Group by a stand-in), gear icon, ring, tight frame, the gold Pixel glow, and a gate of `Gate("tray")` and `ForeverHUD.NeedsAuras()`.
+- **Change (companion, `Core.lua`):** `E.NeedsAuras()` reports the cached problems. `RefreshInstallCue` now places the button on the row line (y −67). If the installed class group has the row icon and the tray is on, the button is an invisible 230 × 34 strip (tooltip and click only); otherwise it draws the gear, centred when there is no class group or tray, else 84 px right (clear of a three-icon row). It rescans `FOREVERHUD_UPDATE` when the answer flips.
+- **`tests/test_pack.py`:** the row icon is last in every class's row, same size, gated on `NeedsAuras`, one glow, no spell eligibility. **`tests/core.lua`:** row-line position, the beside-the-row fallback, the invisible strip when the row icon exists, the centred fallback with the tray off, and the rescan when cleared.
+- **Not yet checked in game:** that the stand-in for the row icon appears and hides with `NeedsAuras()`, and the strip's hit area.
 
 ## 0.13.4 (prerelease) — every class's missing self-buff, with a glow; suggestions glow
 

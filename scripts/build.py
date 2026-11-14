@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.4"
+VERSION = "0.13.5"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -208,6 +208,7 @@ TRAY_ROW1_Y = 13 - RETRACTED_SEAL // 2 - 4 - TRAY_ICON // 2
 # 0.13.1: a missing upkeep buff breathes, so it catches the eye without
 # flashing. ForeverAuras' native Pulse (Aura Main) fades the icon to 40% and
 # back in a loop; the Missing look plays it whenever the icon is shown.
+INSTALL_ICON = 'Interface\\Icons\\Trade_Engineering'   # same as E.INSTALL_CUE.icon in Core.lua
 BREATHE = dict(type='pulse', duration=2.4)
 # 0.13.4 ("a bit more visible"): a gentle gold Pixel glow joins the breath,
 # six thin lines circling the icon once every five seconds. ForeverAuras draws
@@ -704,6 +705,21 @@ def generate():
             # Aura names expand natively to every spell ID with that name
             # (ForeverAuras BlizzardAuraDisplay GetSpellIDs), so no ID list.
             d=icon(p,f'{row} | {name}',row,cls,'tray',aura_trigger([name]),TRAY_ICON,modern=True)
+        # 0.13.5: the install cue is an icon in this row, not a line of its
+        # own, so every notification sits on one horizontal line. It is an
+        # ordinary icon like the shard counter; the companion only answers
+        # NeedsAuras() (bundled build newer than the installed one) and lays
+        # an invisible click area over the row.
+        cue=icon(p,row+' | Install',row,cls,'tray',p.always(),TRAY_ICON)
+        cue.update(iconSource=0,displayIcon=INSTALL_ICON,cooldown=False)
+        for sub in cue['subRegions']:
+            if sub.get('type')=='subtext': sub['text_visible']=False
+            if sub.get('type')=='subtexture': sub.update(xOffset=TRAY_FRAME_OUTSET,yOffset=TRAY_FRAME_OUTSET)
+        cue['subRegions'].insert(1,dict(type='subborder',border_visible=True,border_color=TRAY_RING_COLOR,
+            border_edge='Square Full White',border_size=TRAY_RING,border_offset=0))
+        cue['subRegions'].append(dict(MISSING_GLOW))
+        cue['triggers'][2]['trigger']['custom']=(f'function() return ForeverHUD and ForeverHUD.Gate("tray","{cls}") '
+            'and ForeverHUD.NeedsAuras and ForeverHUD.NeedsAuras() or false end')
         # Name-matched tray icons follow the tray module only: a name is not a
         # learned spell for discovery. Upkeep reminders keep their learned-
         # spell eligibility, so an unlearned buff never nags.
