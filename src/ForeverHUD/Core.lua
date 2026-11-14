@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.13.11"
+E.releaseVersion = "0.13.12"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -37,7 +37,8 @@ local defaults = {
 -- 0.13.10: weapon enchant reminders are on by default only for the classes
 -- that make their own (Firestone, Shaman imbues, Rogue poisons); anyone can
 -- turn the oil/stone reminder on in the Modules tab.
-local classDefaults = {imbue = {WARLOCK = true, SHAMAN = true}, oil = {ROGUE = true}}
+local classDefaults = {imbue = {WARLOCK = true, SHAMAN = true}, oil = {ROGUE = true},
+    petMissing = {WARLOCK = true, HUNTER = true}}
 E.classDefaults = classDefaults
 local function fillClass(profile, force)
     for key, classes in pairs(classDefaults) do

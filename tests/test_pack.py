@@ -403,7 +403,7 @@ class PackTests(unittest.TestCase):
                 d=by_id[id]
                 # 0.13.10: weapon reminders follow their own switch (imbue/oil);
                 # their gate adds the tray's.
-                module='(imbue|oil)' if ' | Weapon reminder | ' in id else 'tray'
+                module='(imbue|oil)' if ' | Weapon reminder | ' in id else 'petMissing' if id.endswith(' | Pet missing') else 'tray'
                 self.assertRegex(d['load']['loadFlag'],f'^FOREVERHUD_{cls}_{module}',id)
                 gate=d['triggers'][max(k for k in d['triggers'] if isinstance(k,int))]['trigger'].get('custom','')
                 if 'controlledChildren' not in d: self.assertIn('Gate("tray"',gate,id)
@@ -537,6 +537,22 @@ class PackTests(unittest.TestCase):
                 ' gate=false out[#out+1]=string.format("%.2f",f(0.1,1)) print(table.concat(out," "))')
             got=subprocess.run([lua,'-e',script],capture_output=True,text=True,check=True).stdout.split()
             self.assertEqual(got,['1.00','0.20','1.00','0.20','1.00','0.50','0.00','0.00'])
+
+    def test_pet_missing_reminder(self):
+        # 0.13.12: native Conditions trigger, no living pet and not mounted.
+        by_id={d['id']:d for d in self.regions}
+        pets=sorted(id for id in by_id if id.endswith(' | Pet missing'))
+        self.assertEqual(pets,['ForeverHUD | Hunter | Pet missing','ForeverHUD | Hunter | Tray | Row | Pet missing',
+            'ForeverHUD | Warlock | Pet missing','ForeverHUD | Warlock | Tray | Row | Pet missing'])
+        for id in pets:
+            d=by_id[id];cls=id.split(' | ')[1].upper()
+            t=d['triggers'][1]['trigger']
+            self.assertEqual((t['type'],t['event'],t['unit'],t['use_HasPet'],t['use_mounted']),('unit','Conditions','player',False,False),id)
+            place='tray' if ' | Tray | ' in id else 'maintenance'
+            self.assertIn(f'Gate("{place}","{cls}") and ForeverHUD.Gate("petMissing","{cls}")',d['triggers'][2]['trigger']['custom'],id)
+            self.assertEqual((self.eligibility[id]['module'],self.eligibility[id]['requires'],self.eligibility[id]['seeds']),
+                ('petMissing',place,[{'WARLOCK':688,'HUNTER':883}[cls]]),id)
+            self.assertEqual((d['animation']['main']['alphaType'],d['animation']['main']['duration']),('alphaPulse',2.4),id)
 
     def test_weapon_enchant_reminders(self):
         # 0.13.10: native Weapon Enchant trigger, Show On Enchant Missing; an

@@ -1,6 +1,12 @@
-# Validation for 0.13.11
+# Validation for 0.13.12
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.12 (prerelease) — pet reminder
+
+- **Evidence read (installed ForeverAuras 1.3.9, read only):** `Prototypes.lua:10069-10122` registers pet unit events and watches `pet` when `use_HasPet` is set; `10173-10177` defines Has Pet as `UnitExists('pet') and not UnitIsDead('pet')`, a tristate, so `use_HasPet = false` means "no living pet"; `10167-10171` defines Mounted the same way. `SpellNameData.lua:531` (Call Pet 883) and `3795` (Summon Imp 688).
+- **Tests:** `test_pet_missing_reminder` (trigger fields, gates, learned-spell eligibility, breath) and the tray test; `tests/core.lua` checks the defaults and the checkbox (118 checks). The native schema test accepts the trigger.
+- **Not yet checked in game:** the reminder on dismissing or losing a pet, staying hidden while mounted, and the icons (Spell_Shadow_SummonImp, Ability_Hunter_BeastCall).
 
 ## 0.13.11 (prerelease) — CDM buffs flash as they end
 

@@ -12,11 +12,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP, weapon_enchants,
+from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EFFECTS, ALERTS, UPKEEP, weapon_enchants, PET_REMINDER,
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.11"
+VERSION = "0.13.12"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -282,6 +282,9 @@ def tray_look(d):
     return d
 def enchant_trigger(hand,kind):
     return dict(type='item',event='Weapon Enchant',weapon=hand,enchantKind=kind,showOn='showOnMissing')
+def pet_missing_trigger():
+    # Tristate false: shown only while there is no living pet and not mounted.
+    return dict(type='unit',event='Conditions',unit='player',use_HasPet=False,use_mounted=False)
 CENTRED_FLOW = dict(blizzardFlow=True, blizzardFlowGrowth='CENTER_HORIZONTAL', blizzardFlowSpacing=2)
 # Class-plan secondary rows by side: damage left, support right.
 ROLE_X = {'Offense':-160,'Control':0,'Defense':160}
@@ -681,8 +684,8 @@ def generate():
             # Demon Skin / Demon Armor / Fel Armor: shown only when none is up,
             # or in its last 15 seconds.
             upkeep_reminders([687,706,28176],'Demon armor')
-        def enchant_reminder(name,parent,module,place,hand,kind,known,art,size):
-            d=icon(p,name,parent,cls,module,enchant_trigger(hand,kind),size,known=known)
+        def class_reminder(name,parent,module,place,trigger,known,art,size):
+            d=icon(p,name,parent,cls,module,trigger,size,known=known)
             d.update(iconSource=0,displayIcon='Interface\\Icons\\'+art,cooldown=False)
             # Shown only where it sits (the expanded upkeep row or the folded
             # tray) and only while its own module is on.
@@ -691,7 +694,13 @@ def generate():
             if known: p.eligibility[name]['requires']=place
             return d
         for module,hand,kind,name,known,art in weapon_enchants(cls):
-            d=enchant_reminder(prefix+' | Weapon reminder | '+name+' missing',maintenance,module,'maintenance',hand,kind,known,art,24)
+            d=class_reminder(prefix+' | Weapon reminder | '+name+' missing',maintenance,module,'maintenance',enchant_trigger(hand,kind),known,art,24)
+            for sub in d['subRegions']:
+                if sub.get('type')=='subtext': sub['text_visible']=False
+            breathe_plain(d)
+        if cls in PET_REMINDER:
+            known,art=PET_REMINDER[cls]
+            d=class_reminder(prefix+' | Pet missing',maintenance,'petMissing','maintenance',pet_missing_trigger(),known,art,24)
             for sub in d['subRegions']:
                 if sub.get('type')=='subtext': sub['text_visible']=False
             breathe_plain(d)
@@ -775,7 +784,10 @@ def generate():
             trigger=aura_trigger(seeds);trigger.update(nativeFilters={},secretShowOn='showOnMissing')
             breathe(icon(p,f'{row} | Upkeep reminder | {name} missing',row,cls,'tray',trigger,TRAY_ICON,modern=True))
         for module,hand,kind,name,known,art in weapon_enchants(cls):
-            breathe_plain(tray_look(enchant_reminder(f'{row} | Weapon reminder | {name} missing',row,module,'tray',hand,kind,known,art,TRAY_ICON)))
+            breathe_plain(tray_look(class_reminder(f'{row} | Weapon reminder | {name} missing',row,module,'tray',enchant_trigger(hand,kind),known,art,TRAY_ICON)))
+        if cls in PET_REMINDER:
+            known,art=PET_REMINDER[cls]
+            breathe_plain(tray_look(class_reminder(f'{row} | Pet missing',row,'petMissing','tray',pet_missing_trigger(),known,art,TRAY_ICON)))
         for name in ('Food','Drink','Well Fed'):
             # Aura names expand natively to every spell ID with that name
             # (ForeverAuras BlizzardAuraDisplay GetSpellIDs), so no ID list.
