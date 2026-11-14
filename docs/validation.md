@@ -1,6 +1,14 @@
-# Validation for 0.13.5
+# Validation for 0.13.6
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.6 (prerelease) — Warrior reactive strikes as suggestions
+
+- **Game report (user, no screenshot):** nothing prompts when Overpower becomes usable.
+- **Read in the code:** the old cue was `Warrior | Usable proc | Overpower`, a 28 px icon at (−74, −23) with no glow, in the Primary group. A Warrior without talents and without Mortal Strike, Bloodthirst or Shield Slam resolved to `Leveling`, which had no Warrior list, so `SuggestSpec` returned nil and no suggestion row loaded (`Selection.lua:20–29, 206–211`). ForeverAuras' Action Usable trigger (`Prototypes.lua:5968–6059`) is `IsUsableSpell and ready and IsSpellInRange(target)`; whether the old icon showed at all in game is not known.
+- **Change:** the four checks move into `SUGGESTIONS['WARRIOR']` as `ready` rules, in a new `Leveling` list and in Arms, Fury and Protection; the `Usable proc` displays are removed. They inherit the row's 70% opacity and Action Button Glow.
+- **`tests/test_pack.py`:** no `Usable proc` display; each list's leading rule; the four displays' trigger, parent, spec and glow.
+- **Not yet checked in game:** that Overpower lights up after a dodge on this client.
 
 ## 0.13.5 (prerelease) — install icon in the tray row
 

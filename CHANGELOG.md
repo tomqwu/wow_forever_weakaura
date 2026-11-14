@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.6 — 2026-11-13 (prerelease)
+
+- **Warrior strikes prompt you** (user: "战士压制出现的时候，没有提示", no prompt when the Warrior's Overpower comes up).
+  - Overpower, Revenge, Execute and Victory Rush are now suggestions: the same native Action Usable checks, shown in the suggestion row with the Action Button Glow.
+  - Every Warrior spec lists them (Arms leads with Overpower, Fury with Execute, Protection with Revenge), and a new `Leveling` list covers a Warrior without talents, who had no suggestion row before.
+  - The old `Usable proc` row is removed: four unlit 28 px icons under the Health bar. Updating the class group deletes them.
+- Update your class in `/fa`, choosing **Update Auras** (or click the gear).
+
 ## 0.13.5 — 2026-11-13 (prerelease)
 
 - **The install icon is in the tray row** (user, with a screenshot of the gear on its own line under the shard count: "all notification should be aligned horizontally, why you kept reinventing new things").
