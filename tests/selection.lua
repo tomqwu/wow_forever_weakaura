@@ -184,6 +184,12 @@ check(trigger(' | Native cooldowns | Entries').cdmSpells.multi[15] and trigger('
 local utilityRow=trigger(' | Native utility | Entries').cdmSpells.multi
 check(utilityRow[37] and not utilityRow[30] and not utilityRow[34] and not utilityRow[32],'Utility beyond the right wing overflows to its row; wing entries and preparation are not repeated')
 check(trigger(' | Primary | Native 5 | Entry').cdmSpells.multi[30],'The right wing renders the first Utility entry natively')
+-- 0.13.16: a wand shot's shared lockout reads as a cooldown, so Utility is
+-- always shown (nothing pops up on a shot); damage stays cooldown-only.
+check(trigger(' | Primary | Native 5 | Entry').cdmShow=='always' and trigger(' | Primary | Native 8 | Entry').cdmShow=='always'
+    and trigger(' | Native utility | Entries').cdmShow=='always','The Utility wing and its overflow row are always shown')
+check(trigger(' | Primary | Native 1 | Entry').cdmShow=='cooldown' and trigger(' | Primary | Native 4 | Entry').cdmShow=='cooldown'
+    and trigger(' | Native items | Entries').cdmShow=='cooldown','The damage wing and item row stay cooldown-only')
 E.Profile().utility=false;S.Refresh()
 check(not S.nativeSlots[5] and not next(trigger(' | Primary | Native 5 | Entry').cdmSpells.multi),'With utility abilities off, the right wing stays empty')
 E.Profile().utility=true;S.Refresh()

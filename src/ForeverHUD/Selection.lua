@@ -158,12 +158,21 @@ function S.SyncCDM()
         end
     end
     local ID=E.DisplayID
+    -- 0.13.16 (user: "Shooting a wand should never spin up a buff icon";
+    -- "Always show the wing"): a wand Shoot puts spells on a shared lockout
+    -- that ForeverAuras reports as "on cooldown" (it keeps only the ready
+    -- look, WandCooldown.lua), so a cooldown-only Utility icon appeared on
+    -- every shot. Utility (the right wing over the resource bar and its
+    -- overflow row) is always shown instead: nothing appears or disappears,
+    -- a real cooldown still shows its countdown. Damage (left) and items
+    -- stay cooldown-only.
+    S.UTILITY_SHOW='always'
     syncEntries(api,ID('Native cooldowns | Entries'),selected,'cooldown')
-    syncEntries(api,ID('Native utility | Entries'),utility,'cooldown')
+    syncEntries(api,ID('Native utility | Entries'),utility,S.UTILITY_SHOW)
     syncEntries(api,ID('Native items | Entries'),items,'cooldown')
     for index=1,8 do
         local cdmID=S.nativeSlots and S.nativeSlots[index]
-        syncEntries(api,ID('Primary | Native '..index..' | Entry'),cdmID and {[cdmID]=true} or {},'cooldown')
+        syncEntries(api,ID('Primary | Native '..index..' | Entry'),cdmID and {[cdmID]=true} or {},index>4 and S.UTILITY_SHOW or 'cooldown')
     end
     local buffs,bars,representedBuffs,representedBuffIDs={},{},{},{}
     local p=E.Profile()

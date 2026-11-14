@@ -1,6 +1,12 @@
-# Validation for 0.13.15
+# Validation for 0.13.16
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.16 (prerelease) — Utility cooldowns always shown
+
+- **Evidence read (installed ForeverAuras 1.3.9, read only):** `WandCooldown.lua:1-93` holds each spell's earlier timer during Shoot's (5019) shared cooldown for its countdown and desaturation only. `SpellCooldown.lua:205-244` keeps the logical `onCooldown` from the client and adds `wandAppearanceDuration` for the look. `CooldownViewerTrigger.lua:989` shows a Show: Cooldown entry when `state.onCooldown == true`. `GenericTrigger.lua:2798-2830` marks a wand-only stretch only to suppress the ready event; `detail.ready` stays false. `CooldownViewerTrigger.lua:2094-2096` leaves an unreadable remaining time shown, so a Remaining Time filter cannot skip the lockout in combat. No native check separates a wand lockout from a real cooldown.
+- **Change and test:** `Selection.lua` syncs native slots 5 to 8 and the Native utility row with Show: Always; `tests/selection.lua` checks the Utility wing and row are always shown and the damage wing and item row stay cooldown-only (111 checks).
+- **Not yet checked in game:** that no icon pops up on a wand shot and the always-shown icons keep their ready look during it.
 
 ## 0.13.15 (prerelease) — Demonic Brand kept in the right-hand row
 
