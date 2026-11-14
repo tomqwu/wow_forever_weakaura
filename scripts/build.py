@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.10"
+VERSION = "0.13.11"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -249,13 +249,28 @@ def breathe(d):
     d['subRegions'].append(dict(MISSING_GLOW))
     return d
 # 0.13.10: the same breath on an ordinary icon (a Weapon Enchant trigger has
-# no native aura button): ForeverAuras' Main animation preset fades it in a
-# loop over the same 2.4 s, with the same glow.
+# no native aura button), with the same glow. 0.13.11: a custom Main
+# animation, 100% -> 40% -> 100% over 2.4 s like the native Pulse. The Pulse
+# *preset* replaces the whole animation with its own 0.5 s, 50% flash
+# (Animations.lua:214-215, Prototypes.lua:649-655), which is not a breath.
 def breathe_plain(d):
-    d['animation']['main'] = dict(type='preset', preset='alphaPulse', duration_type='seconds',
-        duration=BREATHE['duration'], easeType='none', easeStrength=3)
+    d['animation']['main'] = dict(type='custom', duration_type='seconds', duration=BREATHE['duration'],
+        easeType='none', easeStrength=3, use_alpha=True, alpha=0.4, alphaType='alphaPulse')
     d['subRegions'].append(dict(MISSING_GLOW))
     return d
+# 0.13.11 (user: "when CDM on the right side goes out, it can flash then fade
+# out, such as Demonic Brand"): the native Finish animation on the Cooldown
+# Manager buff icons. ForeverAuras plays it whenever an icon hides
+# (RegionPrototype.lua:1543-1544): two quick dips to 20%, then a fade to
+# nothing, 0.9 s in all. When the row itself is closing (fold, combat-only
+# mode, HUD off) the gate is already false and the icon just goes, so only a
+# buff that ends flashes.
+EXPIRE_ALPHA = ('function(progress, start) '
+    'if not (ForeverHUD and ForeverHUD.Gate("buffs","CORE")) then return 0 end '
+    'if progress < 0.45 then return start*(0.6+0.4*math.cos(progress/0.45*4*math.pi)) end '
+    'return start*(1-(progress-0.45)/0.55) end')
+EXPIRE_FLASH = dict(type='custom', duration_type='seconds', duration=0.9, easeType='none', easeStrength=3,
+    use_alpha=True, alpha=0, alphaType='custom', alphaFunc=EXPIRE_ALPHA)
 def tray_look(d):
     # An ordinary icon dressed like the native aura buttons beside it: the
     # dark inner ring under a tight frame, no text.
@@ -491,9 +506,10 @@ def generate():
     # 0.12: grows right from the seal like the class buff row (a dynamic
     # group centres its first icon on the origin).
     p.group(native_effects,native_auras,CORE,'buffs',x=SEAL_EDGE+DOT_SIZE//2,y=DOT_ROW_Y,dynamic=True).update(grow='RIGHT',align='CENTER',space=2)
-    icon(p,native_effects+' | Entries',native_effects,CORE,'buffs',dict(type='cdm',event='Blizzard CDM Buff',
+    entries=icon(p,native_effects+' | Entries',native_effects,CORE,'buffs',dict(type='cdm',event='Blizzard CDM Buff',
         cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
         use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),DOT_SIZE)
+    entries['animation']['finish']=dict(EXPIRE_FLASH)
     tracked=CORE_ID+' | Native tracked bars'
     # Tracked bars carry DoT and proc durations: the damage side, left.
     p.group(tracked,native_auras,CORE,'trackedBars',x=-410,y=13,dynamic=True).update(grow='DOWN',space=5,

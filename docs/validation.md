@@ -1,6 +1,13 @@
-# Validation for 0.13.10
+# Validation for 0.13.11
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.11 (prerelease) — CDM buffs flash as they end
+
+- **Evidence read (installed ForeverAuras 1.3.9, read only):** `RegionPrototype.lua:1543-1544` and `1600-1601` run `Private.Animate(..., "finish", data.animation.finish, ...)` before hiding a display or clone. `Animations.lua:209-300` accepts a custom animation with `use_alpha` and `alphaType = "custom"`, loading `alphaFunc` as `return <function>` and calling it with (progress, start alpha, delta). `BlizzardAuraDisplay.lua:1848-1853` offers only Start and Main for native aura buttons, so the class-plan buff icons cannot take a finish animation.
+- **Preset fix:** `Animations.lua:214-215` replaces a preset animation with `Private.anim_presets[preset]`, and `Prototypes.lua:649-655` defines `alphaPulse` as 0.5 s to 50%, so the 0.13.10 breath was a quick flicker. It is now a custom animation with `alphaType = "alphaPulse"`, 2.4 s, to 40%.
+- **Tests:** `test_cdm_buffs_flash_then_fade` checks the animation fields, that only that display has a finish animation, and evaluates the curve in Lua (1, 0.2, 1, 0.2, 1, 0.5, 0; 0 at once when the gate is closed). `test_weapon_enchant_reminders` checks the breath fields.
+- **Not yet checked in game:** the flash on a real buff ending, and that the dynamic group's re-layout looks right while an icon fades.
 
 ## 0.13.10 (prerelease) — weapon enchant reminders and minimap entry
 
