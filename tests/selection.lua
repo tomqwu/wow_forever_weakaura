@@ -209,6 +209,19 @@ check(not trigger(' | Native player effects | Entries').cdmSpells.multi[41],'A D
 E.Profile().dots=false;S.SyncCDM()
 check(trigger(' | Native player effects | Entries').cdmSpells.multi[41],'With the target row off, the native row keeps the DoT')
 E.Profile().dots=true;D.eligible[immolate]=nil;D.cdm[41]=nil;S.SyncCDM()
+-- 0.13.14: the right-hand row holds buffs on the player only. Target debuffs
+-- in the tracked list (spell data: harmful) stay out, even with the DoT row off.
+local harmfulAsked=0
+C_Spell={IsSpellHarmful=function(id) harmfulAsked=harmfulAsked+1;return id==1293696 or id==1324451 end}
+D.cdm[43]={cdmID=43,name='Demonic Brand',category='TrackedBuff',identities={[1293695]=true,[1293696]=true}}
+D.cdm[44]={cdmID=44,name='Fear',category='TrackedBuff',identities={[1324448]=true,[1324451]=true}}
+D.cdm[45]={cdmID=45,name='Demon Armor',category='TrackedBuff',identities={[1086]=true}}
+E.Profile().dots=false;S.SyncCDM()
+local rim=trigger(' | Native player effects | Entries').cdmSpells.multi
+check(not rim[43] and not rim[44],'Target debuffs from the tracked list stay off the player buff row')
+check(rim[45],'A buff on the player stays in the row')
+local asked=harmfulAsked;S.SyncCDM();check(harmfulAsked==asked,'Spell harmfulness is cached')
+C_Spell=nil;E.Profile().dots=true;D.cdm[43],D.cdm[44],D.cdm[45]=nil,nil,nil;S.SyncCDM()
 -- 0.7.1: one buff row on the right rim. Forever mode shows the tracked buffs
 -- (curated class buffs off, and not skipped from the native row).
 local backlash=prefix..' | Player effects | Backlash'

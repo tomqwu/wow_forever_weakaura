@@ -85,6 +85,26 @@ function E.SortCDM(a,b)
     local ar,ai=key(a);local br,bi=key(b)
     return ar~=br and ar<br or ar==br and ai<bi
 end
+-- 0.13.14 (user: "Only my buffs"): the right-hand row holds buffs on the
+-- player. The Cooldown Manager's tracked list also carries what the player
+-- puts on the target (Demonic Brand, curses, Fear, Banish, DoTs); the game's
+-- spell data decides, as ForeverAuras decides a CDM aura's unit
+-- (CooldownViewerCatalog.lua CDMSpellTargetsEnemy): an entry with any harmful
+-- spell among its IDs (spell, override, linked) is a target aura. Spell data
+-- is never secret; cached per spell.
+local harmful={}
+function S.TargetAura(entry)
+    for spell in pairs(entry and entry.identities or {}) do
+        local known=harmful[spell]
+        if known==nil then
+            local value=E.Call(C_Spell and C_Spell.IsSpellHarmful,spell)
+            known=E.Readable(value) and value==true or false
+            harmful[spell]=known
+        end
+        if known then return true end
+    end
+    return false
+end
 local function cdmTrigger(data)
     -- The user may have edited or replaced this entry's trigger in /fa.
     local first=type(data)=='table' and type(data.triggers)=='table' and data.triggers[1]
@@ -161,7 +181,7 @@ function S.SyncCDM()
         for spell in pairs(entry.identities)do if representedBuffIDs[spell] then duplicate=true;break end end
         if entry.category=='TrackedBar' and not preparation(entry) then bars[id]=true end
         if (entry.category=='TrackedBuff' or (entry.category=='TrackedBar' and not p.trackedBars) or entry.category=='SpecAgnosticTracked')
-            and not duplicate and not preparation(entry) then buffs[id]=true end
+            and not duplicate and not preparation(entry) and not S.TargetAura(entry) then buffs[id]=true end
     end
     -- Class plan mode uses the curated class buffs on the right rim, so the
     -- native buff row at the same spot stays empty.
