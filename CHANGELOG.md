@@ -6,6 +6,7 @@
   - Overpower, Revenge, Execute and Victory Rush are now suggestions: the same native Action Usable checks, shown in the suggestion row with the Action Button Glow.
   - Every Warrior spec lists them (Arms leads with Overpower, Fury with Execute, Protection with Revenge), and a new `Leveling` list covers a Warrior without talents, who had no suggestion row before.
   - The old `Usable proc` row is removed: four unlit 28 px icons under the Health bar. Updating the class group deletes them.
+- **The folded seal shrinks another 10%** (user: "shrink another 10%, don't change spell icon size as it's already small enough"; read as the class seal, following the 0.13.2 request). The retracted seal is 106 px (was 118); the tray row moves from y=-67 to y=-61 to keep its 4 px gap, and the companion's install cue follows. Spell, suggestion and tray icons are unchanged.
 - Update your class in `/fa`, choosing **Update Auras** (or click the gear).
 
 ## 0.13.5 — 2026-11-13 (prerelease)
