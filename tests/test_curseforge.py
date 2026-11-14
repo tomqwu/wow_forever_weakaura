@@ -75,6 +75,15 @@ class PublisherTests(unittest.TestCase):
     def test_project_is_foreverhud(self):
         self.assertEqual(publisher.PROJECT_ID, '1801711')
 
+    def test_every_upload_requires_foreverauras(self):
+        # The CurseForge app installs a required dependency alongside the addon.
+        metadata = publisher.upload_metadata('notes', '1.2.3', 17053)
+        self.assertEqual(metadata['relations'], {'projects': [{'slug': 'foreverauras', 'type': 'requiredDependency'}]})
+        self.assertEqual((metadata['displayName'], metadata['gameVersions'], metadata['releaseType']),
+                         ('ForeverHUD 1.2.3', [17053], 'beta'))
+        toc = (Path(__file__).parents[1] / 'src/ForeverHUD/ForeverHUD.toc').read_text(encoding='utf-8')
+        self.assertIn('## Dependencies: ForeverAuras', toc)
+
 
 if __name__ == '__main__':
     unittest.main()

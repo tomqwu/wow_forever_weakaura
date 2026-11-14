@@ -5,7 +5,7 @@ Everything for the ForeverHUD project on CurseForge, project ID **1801711** ([au
 ## Check first
 
 - **Private-server policy.** ForeverHUD targets the WoW Forever client (interface `16001`) and its ForeverAuras fork. CurseForge doesn't allow projects made for private or unofficial servers, and Forever isn't one of its game versions. Read CurseForge's current project guidelines before listing; if Forever counts as unofficial, keep GitHub Releases as the only channel.
-- **Dependency.** ForeverHUD needs **ForeverAuras**. If ForeverAuras isn't on CurseForge, link its GitHub page in the description, as below.
+- **Dependency.** ForeverHUD needs **ForeverAuras**, which is on CurseForge as [`foreverauras`](https://www.curseforge.com/wow/addons/foreverauras) (project 1703325). Since 0.13.5 every upload declares it as a **required dependency** (`relations` in `scripts/curseforge.py`), so the CurseForge app installs it alongside. Files uploaded before that (0.9.5 to 0.13.4) carry no relation; archive them on the dashboard once a newer file is approved.
 
 ## Project details
 
@@ -36,7 +36,7 @@ The **Publish ForeverHUD to CurseForge** workflow (`.github/workflows/curseforge
 
 1. One-time setup: the GitHub environment **curseforge** (Settings → Environments) holds the secret `CURSE_FORGE`, a CurseForge API token from https://legacy.curseforge.com/account/api-tokens, and the variable `CURSEFORGE_PROJECT_ID` = `1801711`. Only `main` may use the environment, so a run from an unreviewed branch never gets the token. Rotate the token there.
 2. Run it with the release tag and **dry run** on (the default). That downloads `ForeverHUD-vX.Y.Z.zip`, checks the TOC version against the tag and the interface (1.60 family), and finds exactly one CurseForge game version named after the interface (`16001` → `1.60.1`). Nothing is uploaded.
-3. Run it again with **dry run** off. It uploads as **Beta**, named `ForeverHUD X.Y.Z`, with the GitHub release notes as the changelog.
+3. Run it again with **dry run** off. It uploads as **Beta**, named `ForeverHUD X.Y.Z`, with the GitHub release notes as the changelog and ForeverAuras as a required dependency.
 
 ```bash
 gh workflow run curseforge.yml -f tag=v0.9.5 -f dry_run=true
