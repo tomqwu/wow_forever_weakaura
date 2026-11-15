@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.18 — 2026-11-14 (prerelease)
+
+User, showing the game's Firestone art beside the reminder: "this should be firestone icon?"
+
+- **Reminder icons come from the spell.** The weapon and pet reminders used fixed icon paths from older WoW (the Firestone one showed a black tar pot, not this client's Firestone art). A reminder tied to a learned spell now takes that spell's own icon from a native, always-active spell trigger (trigger 2; the gate stays last): Create Firestone, Rockbiter Weapon, Poisons, Summon Imp, Call Pet. The generic oil/stone reminder keeps its path.
+- Update the Core and your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.17 — 2026-11-14 (prerelease)
 
 User, about Shadow Ward sitting in the always-shown Utility wing: "why shadow ward to be here? what's the playing logic here", then "yes hide it, it's very dumb".

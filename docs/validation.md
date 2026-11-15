@@ -1,6 +1,12 @@
-# Validation for 0.13.17
+# Validation for 0.13.18
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.18 (prerelease) — reminder icons from the spell
+
+- **Evidence:** the user's screenshots show the Firestone reminder with the black `INV_Ammo_FireTar` art and the game's own Firestone art (a red swirl, with reagent counts) on the action bar.
+- **Change:** `class_reminder` adds a Cooldown Progress (Spell) trigger, Show: Always, for the learned spell as trigger 2 and sets Icon Source to it; the gate moves to trigger 3. `test_weapon_enchant_reminders` and `test_pet_missing_reminder` check the trigger, spell and icon source; the native schema test accepts the displays.
+- **Not yet checked in game:** that the icons show the spells' art.
 
 ## 0.13.17 (prerelease) — Shadow Ward left out of the Utility wing
 
