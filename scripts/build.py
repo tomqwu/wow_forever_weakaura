@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.20"
+VERSION = "0.13.21"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -109,8 +109,13 @@ SUGGEST_GLOW = dict(type='subglow', glow=True, glowType='buttonOverlay', useGlow
 # mana under the Mana bar's outer end, pet under the Pet bar's, and a target
 # execute cue in a fixed slot at the far end of the rotation row.
 CUE_SIZE = 22
-MANA_CUE = (218, -28)
-PET_CUE = (-218, -28)
+# 0.13.21 (user: "recommendation for pet healing is too close and overlapping
+# with frame"): with its painted frame (8 px past the icon) a cue at
+# (-218, -28) covered the Pet bar's end and its label. The frame's outer box
+# now starts just past the bar's outer end (+-228) and below the bar row
+# (bottom -16.5): centre 18 px further out and 8 px lower.
+MANA_CUE = (246, -36)
+PET_CUE = (-246, -36)
 EXECUTE_CUE = (-228 + SUGGEST_SIZE // 2, SUGGEST_Y)
 # 0.10: one priority list per spec (the companion's detected or chosen
 # school), plus 'Leveling' for no talent points. Highest priority first.

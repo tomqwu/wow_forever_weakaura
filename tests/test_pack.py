@@ -696,8 +696,14 @@ class PackTests(unittest.TestCase):
         mana=by_id['ForeverHUD | Warlock | Suggest | Life Tap']
         pet=by_id['ForeverHUD | Warlock | Suggest | Health Funnel']
         burn=by_id['ForeverHUD | Warlock | Suggest | Destruction | Shadowburn']
-        self.assertEqual((mana['parent'],mana['xOffset'],mana['yOffset'],mana['width']),(cues['id'],218,-28,22),'Life Tap under the Mana bar')
-        self.assertEqual((pet['parent'],pet['xOffset'],pet['yOffset'],pet['width']),(cues['id'],-218,-28,22),'Health Funnel under the Pet bar')
+        self.assertEqual((mana['parent'],mana['xOffset'],mana['yOffset'],mana['width']),(cues['id'],246,-36,22),'Life Tap past the Mana side')
+        self.assertEqual((pet['parent'],pet['xOffset'],pet['yOffset'],pet['width']),(cues['id'],-246,-36,22),'Health Funnel past the Pet bar')
+        # 0.13.21: the cue's painted frame (8 px past the icon) clears the Pet
+        # bar and its label: outside the bar's outer end, below its row.
+        bar=by_id['ForeverHUD | Warlock | Pet health']
+        frame=pet['width']//2+8
+        self.assertLessEqual(pet['xOffset']+frame,bar['xOffset']-bar['width']//2+1,'Frame ends at the bar end')
+        self.assertLessEqual(pet['yOffset']+frame,bar['yOffset']-bar['height']/2,'Frame sits below the bar row')
         self.assertEqual((burn['parent'],burn['xOffset'],burn['yOffset']),(row['id'],0,0),'Shadowburn sits in the row')
         conflag=by_id['ForeverHUD | Warlock | Suggest | Destruction | Conflagrate']
         self.assertEqual((conflag['triggers'][1]['trigger']['event'],conflag['triggers'][1]['trigger']['spellName']),('Action Usable',1293817))

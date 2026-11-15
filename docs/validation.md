@@ -1,6 +1,12 @@
-# Validation for 0.13.20
+# Validation for 0.13.21
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.21 (prerelease) — threshold cues clear the Pet bar
+
+- **Evidence:** the user's screenshot shows the Health Funnel cue's frame over the Pet bar's left end and its label.
+- **Change and test:** `PET_CUE` (-246, -36) and `MANA_CUE` (246, -36). `test_warlock_spell_suggestions` checks that the cue's frame box (icon plus 8 px) ends at the Pet bar's outer end and below its row, measured from the generated displays.
+- **Not yet checked in game:** that nothing else sits in the new spot.
 
 ## 0.13.20 (prerelease) — charges in the centre, expiry burst
 
