@@ -40,4 +40,18 @@ installed['ForeverHUD | Warlock'].url='https://wago.io/forever-hud-warlock/'..wa
 E.RefreshOptions()
 check(not E.panel.install.shown and E.panel.auraStatus.text=='光环已是最新','Current auras: no button, localized all-clear')
 check(E.panel.checks.suggest and E.panel.checks.tray,'New modules have controls')
+-- 0.13.19: /fhud perf reads the client's add-on profiler and the counters.
+do
+    local lines,oldPrint={},print
+    print=function(text)lines[#lines+1]=text end
+    Enum=Enum or {};Enum.AddOnProfilerMetric={SessionAverageTime=0,RecentAverageTime=1,PeakTime=3}
+    C_AddOnProfiler={GetAddOnMetric=function(name,metric)return name=='ForeverHUD' and ({[0]=.05,[1]=.04,[3]=2.5})[metric] or .5 end}
+    E.perf.refresh,E.perf.notify,E.perf.skipped,E.perf.events=3,7,40,{SPELLS_CHANGED=2,PLAYER_EQUIPMENT_CHANGED=1}
+    SlashCmdList.FOREVERHUD('perf')
+    print=oldPrint
+    local text=table.concat(lines,'\n')
+    check(text:find('ForeverHUD',1,true) and text:find('ForeverAuras',1,true) and text:find('3',1,true) and text:find('SPELLS_CHANGED 2',1,true),'/fhud perf prints CPU time, counters and the events behind rescans')
+    check(E.perf.refresh==0 and E.perf.notify==0 and not next(E.perf.events),'Each report starts a new count')
+    C_AddOnProfiler=nil
+end
 print('Settings/locale checks passed: '..checks)

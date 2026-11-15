@@ -108,5 +108,24 @@ do
     combat=false
     ForeverAuras.GetRegion,ForeverAuras.GetData=oldRegion,oldData
 end
+-- 0.13.19: bursts of unit-flag, faction and target events that change
+-- nothing skip the full HUD update; settings changes still notify.
+exists,attack,dead,combat,preview=false,false,false,false,false
+S.Stop();S.Start();S.Update(false)
+local notifies,skips=E.perf.notify,E.perf.skipped
+for _=1,20 do S.events.scripts.OnEvent(nil,'UNIT_FLAGS','player') end
+S.events.scripts.OnEvent(nil,'PLAYER_TARGET_CHANGED')
+check(E.perf.notify==notifies and E.perf.skipped==skips+21 and not S.open,'Unchanged folded events skip the HUD update')
+E.Set('unfoldSound',not E.Profile().unfoldSound)
+check(E.perf.notify>notifies,'A settings change still updates the HUD')
+notifies=E.perf.notify
+exists=true;attack=false;S.events.scripts.OnEvent(nil,'PLAYER_TARGET_CHANGED')
+S.events.scripts.OnEvent(nil,'UNIT_FLAGS','target')
+check(E.perf.notify==notifies and not S.open,'A friendly target changes nothing shown: skipped')
+attack=true;S.events.scripts.OnEvent(nil,'UNIT_FLAGS','target')
+check(E.perf.notify>notifies and S.open,'A target turning hostile still opens and updates the HUD')
+notifies=E.perf.notify;S.Update(true)
+check(E.perf.notify>notifies,'Explicit silent updates still notify')
+exists=false;S.Update(true)
 S.Stop()
 print('HUD state checks passed: '..checks)

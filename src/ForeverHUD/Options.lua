@@ -406,6 +406,41 @@ function E.Dump(what, text)
     end
     print(('ForeverHUD: '..E.L('Recorded %s. Type /reload to save it.')):format(table.concat(counts, ', ')))
 end
+-- 0.13.19: /fhud perf. The client's add-on profiler (the one /fa pprint
+-- reads) gives ForeverHUD's and ForeverAuras' CPU time per frame; the
+-- companion's own counters say how often it rescanned spells, updated the
+-- HUD, and which events asked for the rescans. Each report starts a new count.
+local function metric(name, key)
+    if not (C_AddOnProfiler and C_AddOnProfiler.GetAddOnMetric and Enum and Enum.AddOnProfilerMetric) then return end
+    local id = Enum.AddOnProfilerMetric[key]
+    if id == nil then return end
+    local ok, value = pcall(C_AddOnProfiler.GetAddOnMetric, name, id)
+    if ok and type(value) == 'number' then return value end
+end
+function E.Perf()
+    local perf = E.perf
+    local now = type(GetTime) == 'function' and GetTime() or 0
+    print('ForeverHUD: '..E.L('Performance since the last report (%d s)'):format(math.floor(now - (perf.since or now) + .5)))
+    local profiled = false
+    for _, name in ipairs({'ForeverHUD', 'ForeverAuras'}) do
+        local recent, average, peak = metric(name, 'RecentAverageTime'), metric(name, 'SessionAverageTime'), metric(name, 'PeakTime')
+        if recent or average or peak then
+            profiled = true
+            print(E.L('%s: %.2f ms per frame lately, %.2f ms on average, %.1f ms at the worst frame.'):format(name, recent or 0, average or 0, peak or 0))
+        end
+    end
+    if not profiled then print(E.L("The game's add-on profiler is not available on this client.")) end
+    print(E.L('%d spell rescans, %d HUD updates, %d unchanged updates skipped.'):format(perf.refresh, perf.notify, perf.skipped))
+    local rows = {}
+    for event, count in pairs(perf.events) do rows[#rows+1] = {event, count} end
+    table.sort(rows, function(a, b) return a[2] > b[2] or (a[2] == b[2] and a[1] < b[1]) end)
+    if #rows > 0 then
+        local parts = {}
+        for i = 1, math.min(#rows, 6) do parts[i] = rows[i][1]..' '..rows[i][2] end
+        print(E.L('Rescans asked for by:')..' '..table.concat(parts, ', '))
+    end
+    perf.refresh, perf.notify, perf.skipped, perf.events, perf.since = 0, 0, 0, {}, now
+end
 SLASH_FOREVERHUD1 = "/fhud"
 SLASH_FOREVERHUD2 = "/foreverhud"
 SlashCmdList.FOREVERHUD = function(message)
@@ -420,6 +455,7 @@ SlashCmdList.FOREVERHUD = function(message)
     elseif install and E.InstallBundled then E.InstallBundled(install=="force")
     elseif message and message:match("^%s*spells%s*$") and E.ReportSpells then E.ReportSpells()
     elseif message and message:match("^%s*inspect%s*$") and E.state then E.state.Inspect()
+    elseif message and message:match("^%s*perf%s*$") then E.Perf()
     else E.ToggleOptions() end
 end
 -- 0.13.10: an entry in the minimap's addon list (TOC AddonCompartmentFunc),

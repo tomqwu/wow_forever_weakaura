@@ -77,10 +77,27 @@ check(D.eligible.rank.name=="腐蚀术" and D.eligible.override.name=="强化恐
 trained[103]=true; info[103]={"Corruption","腐蚀术"}
 items[#items+1]={spellID=103,actionID=103,isPassive=false,isOffSpec=false}
 C_SpellBook.GetSpellBookItemLevelLearned=function(i)return i==#items and 30 or i==2 and 22 or 1 end
+local clock=100; GetTime=function()return clock end
+D.events.scripts.OnEvent(nil,"SPELLS_CHANGED"); local first=D.timer
 D.events.scripts.OnEvent(nil,"SPELLS_CHANGED"); local timer=D.timer
-D.events.scripts.OnEvent(nil,"SPELLS_CHANGED")
-check(D.timer==timer,"Learning events coalesce")
+check(first.cancelled and timer.delay==D.DELAY and not timer.cancelled,"Learning events coalesce into one refresh after a quiet half second")
+clock=103; D.events.scripts.OnEvent(nil,"SPELLS_CHANGED")
+check(D.timer==timer and not timer.cancelled,"A steady stream cannot postpone the refresh past two seconds")
+local before=E.perf.refresh
 timer.callback(); check(D.eligible.rank.id==103,"New learned rank discovered without reimport")
+check(E.perf.refresh==before+1 and E.perf.events.SPELLS_CHANGED>=3,"Rescans and their events are counted for /fhud perf")
+for _,noisy in ipairs({"SPELL_TEXT_UPDATE","GET_ITEM_INFO_RECEIVED","UNIT_INVENTORY_CHANGED"})do
+    local listed=false
+    for _,event in ipairs(D.refreshEvents)do if event==noisy then listed=true end end
+    check(not listed,noisy.." no longer asks for spell rescans")
+end
+check(not D.timer,"Refresh leaves no timer behind")
+D.events.scripts.OnEvent(nil,"SPELL_DATA_LOAD_RESULT",999999,true)
+check(not D.timer,"Spell data another addon asked for does not rescan")
+D.awaiting=D.awaiting or {};D.awaiting[777]=true
+D.events.scripts.OnEvent(nil,"SPELL_DATA_LOAD_RESULT",777,true)
+check(D.timer and not D.awaiting[777],"Spell data discovery asked for rescans once")
+D.timer.callback()
 combat=true; D.Schedule(); check(D.pending and not D.timer,"No combat spell discovery")
 combat=false; D.Schedule(); timer=D.timer; D.Stop()
 check(timer.cancelled and not D.timer and not next(D.eligible),"Stop cancels scheduled work and forgets identities")

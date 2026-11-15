@@ -66,6 +66,7 @@ ForeverHUD reads the game's Cooldown Manager.
 - **Nothing shows:** check that both ForeverAuras and ForeverHUD are enabled, then run `/fhud install` out of combat.
 - **The bars sit in the middle of the screen and can't be dragged:** an import stopped partway. ForeverHUD warns at login and lists the loose groups. Delete them in `/fa`, run `/fhud install`, and `/reload` after the import finishes.
 - **A spell is missing from the rows:** run **`/fhud spells`** out of combat. It lists what ForeverHUD found.
+- **The game feels slower:** type **`/fhud perf`**, play for a minute, and type it again. It shows the CPU time ForeverHUD and ForeverAuras use per frame, and how often ForeverHUD rechecked your spells.
 - **Report a problem:** https://github.com/tomqwu/wow_forever_weakaura/issues. Lua errors are in `_forever_/Logs/General.log`.
 
 Source and full documentation: https://github.com/tomqwu/wow_forever_weakaura

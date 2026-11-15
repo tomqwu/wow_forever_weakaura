@@ -19,8 +19,22 @@ end
 function S.Visible()
     return S.world and (S.open or S.transition or S.Preview())
 end
-function S.Goal(open,silent)
+-- 0.13.19 (performance): unit flags, faction and target events arrive in
+-- bursts. When one of them leaves everything the HUD shows exactly as it was,
+-- a silent goal skips the full notification instead of re-running every
+-- display's gate. Explicit callers (settings, preview, loading) still notify.
+local function flag(v) return v==true and '1' or '0' end
+function S.Signature(open)
+    return table.concat({flag(open),flag(S.world),flag(S.loading),flag(S.hidden),flag(S.preview),flag(S.inspected),
+        flag(S.manualFold),flag(E.inspectingSettings),flag(E.peeking),flag(S.combat),flag(E.InCombat()),
+        flag(E.Call(UnitIsDeadOrGhost,'player')),flag(S.HostileTarget())})
+end
+function S.Goal(open,silent,fromEvent)
     if S.open==open and not silent then return end
+    if fromEvent and S.open==open and not S.transition and S.notified==S.Signature(open) then
+        if E.perf then E.perf.skipped=E.perf.skipped+1 end
+        return
+    end
     local edge=not S.open and open
     S.open=open
     if E.motion then E.motion.Change(open,silent) end
@@ -29,13 +43,14 @@ function S.Goal(open,silent)
         if p and p.unfoldSound and PlaySound and SOUNDKIT then PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON,'Master') end
     end
     E.Notify()
+    S.notified=S.Signature(open)
 end
-function S.Update(silent,combatExit)
+function S.Update(silent,combatExit,fromEvent)
     local p=E.Profile()
     local unavailable=not p or not p.enabled or not S.world or S.loading or S.hidden or E.Call(UnitIsDeadOrGhost,'player')~=false
     if unavailable then
         cancel('closeTimer'); cancel('inspectTimer'); S.inspected=false;S.manualFold=false
-        S.Goal(false,true); return
+        S.Goal(false,true,fromEvent); return
     end
     local preview=S.Preview()
     if preview~=S.preview then silent=true; S.preview=preview end
@@ -44,13 +59,13 @@ function S.Update(silent,combatExit)
     local want=preview or (p.expandCombat and combat)
         or (not S.manualFold and (S.inspected or E.inspectingSettings or S.HostileTarget()))
         or E.peeking == true
-    if want then cancel('closeTimer'); S.Goal(true,silent)
-    elseif combatExit then cancel('closeTimer');S.Goal(false,silent)
+    if want then cancel('closeTimer'); S.Goal(true,silent,fromEvent)
+    elseif combatExit then cancel('closeTimer');S.Goal(false,silent,fromEvent)
     elseif S.open and not silent then
         if not S.closeTimer then
             S.closeTimer=C_Timer.NewTimer(5,function() S.closeTimer=nil; S.Goal(false,false) end)
         end
-    else cancel('closeTimer'); S.Goal(false,true) end
+    else cancel('closeTimer'); S.Goal(false,true,fromEvent) end
 end
 function S.Inspect()
     local p=E.Profile();if not p or not p.enabled or not S.world then return end
@@ -82,7 +97,7 @@ end
 function S.Stop()
     cancel('closeTimer'); cancel('inspectTimer'); cancel('previewTimer')
     for _,event in ipairs(watch) do events:UnregisterEvent(event) end
-    S.world=false; S.open=false; S.transition=false; S.inspected=false; S.preview=false;S.combat=nil;S.manualFold=false
+    S.notified=nil;S.world=false; S.open=false; S.transition=false; S.inspected=false; S.preview=false;S.combat=nil;S.manualFold=false
     if E.motion then E.motion.Stop() end
 end
 function S.ObservePreview(preview)
@@ -97,7 +112,7 @@ events:SetScript('OnEvent',function(_,event,unit)
     if event=='PLAYER_TARGET_CHANGED' then S.manualFold=false end
     if event=='PLAYER_REGEN_DISABLED' then S.combat=true;S.manualFold=false
     elseif event=='PLAYER_REGEN_ENABLED' then S.combat=false end
-    S.Update(event=='LOADING_SCREEN_DISABLED' or event=='PLAYER_ALIVE' or event=='PLAYER_UNGHOST',event=='PLAYER_REGEN_ENABLED')
+    S.Update(event=='LOADING_SCREEN_DISABLED' or event=='PLAYER_ALIVE' or event=='PLAYER_UNGHOST',event=='PLAYER_REGEN_ENABLED',true)
 end)
 function E.LayoutVisible() return not E.state or E.state.Visible() end
 if UIParent.HookScript then

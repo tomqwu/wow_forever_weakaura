@@ -1,6 +1,12 @@
-# Validation for 0.13.18
+# Validation for 0.13.19
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.19 (prerelease) — fewer rechecks and HUD updates, `/fhud perf`
+
+- **Evidence:** a static read of the companion (no in-game measurement). It has no `OnUpdate` or repeating timer. `Discovery.lua` refreshed on four noisy events with a 0.1 s window; `State.lua` `S.Goal` ran `E.Notify()` on every silent call, so each folded-HUD `UNIT_FLAGS`, `UNIT_FACTION` or `PLAYER_TARGET_CHANGED` re-ran the 751-entry flag pass and `ScanEvents("FOREVERHUD_UPDATE")`.
+- **Change and tests:** `tests/discovery.lua` checks that a burst gives one refresh after `D.DELAY`, a stream cannot postpone it past `D.MAX_WAIT`, the three events are not registered, and only requested spell data rescans (32 checks). `tests/state.lua` checks that 21 unchanged events skip the update, while a settings change, a target turning hostile and explicit silent updates still notify (46 checks). `tests/options.lua` checks `/fhud perf` output and that each report resets the counters (43 checks).
+- **Not yet checked in game:** the CPU numbers, and that the profiler metrics exist on this client.
 
 ## 0.13.18 (prerelease) — reminder icons from the spell
 
