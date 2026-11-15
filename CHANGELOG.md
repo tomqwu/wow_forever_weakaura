@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.20 — 2026-11-15 (prerelease)
+
+User, with a screenshot of a buff icon showing 0 in the middle and 2 in the corner: "middle number should be the count down of the hit number, not count down of the remaining time, both number should be swapped?", then "disappearing effect when hit count is 0 should be a bit more visible, maybe like explosive effect and enlarge it, to let player know you need to renew this".
+
+- **Charges in the middle.** On the player's buff row (the Cooldown Manager row and the class buff row), the centre text is now the stack or charge count (`%s`) and the corner text the remaining time (`%p`). Other icons keep the time in the centre.
+- **A burst when a buff ends.** The native finish animation on the Cooldown Manager buff row now also scales: the icon throbs to 1.3x on each of its two dips, then grows to 2.4x as it fades, over 1.1 s (was 0.9 s, fade only). A row that is closing (fold, HUD off) still just disappears.
+- Update the Core in `/fa`, choosing **Update Auras**.
+
 ## 0.13.19 — 2026-11-14 (prerelease)
 
 User: "can we do a perference analysis and see our addon slows GUI down", then "Fix and add /fhud perf". The analysis read the code; nothing was measured in game.

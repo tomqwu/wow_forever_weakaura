@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.19"
+VERSION = "0.13.20"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -269,8 +269,20 @@ EXPIRE_ALPHA = ('function(progress, start) '
     'if not (ForeverHUD and ForeverHUD.Gate("buffs","CORE")) then return 0 end '
     'if progress < 0.45 then return start*(0.6+0.4*math.cos(progress/0.45*4*math.pi)) end '
     'return start*(1-(progress-0.45)/0.55) end')
-EXPIRE_FLASH = dict(type='custom', duration_type='seconds', duration=0.9, easeType='none', easeStrength=3,
-    use_alpha=True, alpha=0, alphaType='custom', alphaFunc=EXPIRE_ALPHA)
+# 0.13.20 (user: "disappearing effect when hit count is 0 should be a bit more
+# visible, maybe like explosive effect and enlarge it, to let player know you
+# need to renew this"): the icon throbs with each dip, then bursts to 2.4x
+# its size as it fades. Native custom Scale (Animations.lua:307-313); a
+# closing row keeps its size and just goes.
+EXPIRE_SCALE = ('function(progress, startX, startY, scaleX, scaleY) '
+    'if not (ForeverHUD and ForeverHUD.Gate("buffs","CORE")) then return startX, startY end '
+    'local s '
+    'if progress < 0.45 then s = 1+0.3*math.abs(math.sin(progress/0.45*2*math.pi)) '
+    'else local t=(progress-0.45)/0.55; s = 1+1.4*(1-(1-t)*(1-t)) end '
+    'return startX*s, startY*s end')
+EXPIRE_FLASH = dict(type='custom', duration_type='seconds', duration=1.1, easeType='none', easeStrength=3,
+    use_alpha=True, alpha=0, alphaType='custom', alphaFunc=EXPIRE_ALPHA,
+    use_scale=True, scalex=1, scaley=1, scaleType='custom', scaleFunc=EXPIRE_SCALE)
 def tray_look(d):
     # An ordinary icon dressed like the native aura buttons beside it: the
     # dark inner ring under a tight frame, no text.
@@ -359,6 +371,16 @@ def subtext(text, point="CENTER", size=12, x=0, y=0):
         text_shadowYOffset=0,rotateText="NONE",text_automaticWidth="Auto",text_fixedWidth=64,text_wordWrap="WordWrap",
         text_text_format_p_format="timed",text_text_format_p_time_format=0,text_text_format_p_time_precision=0,
         text_text_format_p_time_dynamic_threshold=3)
+
+# 0.13.20 (user: "middle number should be the count down of the hit number,
+# not count down of the remaining time"): on the player's buff row the
+# charges or stacks are the big centre number and the remaining time moves
+# to the corner. Only the two texts trade places; size and anchor stay put.
+def stacks_centre(d):
+    for sub in d['subRegions']:
+        if sub.get('type')=='subtext' and sub.get('text_text') in ('%p','%s'):
+            sub['text_text']='%s' if sub['text_text']=='%p' else '%p'
+    return d
 
 def border(cls):
     return dict(type="subborder",border_visible=True,border_color=rgba(CLASSES[cls]["color"],.8),
@@ -512,6 +534,7 @@ def generate():
     entries=icon(p,native_effects+' | Entries',native_effects,CORE,'buffs',dict(type='cdm',event='Blizzard CDM Buff',
         cdmSource='buff',cdmSpells=dict(multi={}),cdmBuffShow='active',cdmTrack='auto',
         use_cdmShowGCD=False,cdmHideGCDText=True,use_ignoreSpellKnown=False),DOT_SIZE)
+    stacks_centre(entries)
     entries['animation']['finish']=dict(EXPIRE_FLASH)
     tracked=CORE_ID+' | Native tracked bars'
     # Tracked bars carry DoT and proc durations: the damage side, left.
@@ -657,6 +680,7 @@ def generate():
         for i,(seed,name) in enumerate(c['buffs']):
             d=icon(p,effects+" | "+name,effects,cls,'buffs',
                 aura_trigger(seed if isinstance(seed,list) else [seed]),DOT_SIZE,modern=True)
+            stacks_centre(d)
             # Curated class buffs show only in Class plan mode; Cooldown
             # Manager mode shows the player's tracked buffs at the same spot.
             p.eligibility[d['id']].update(effect=True)
