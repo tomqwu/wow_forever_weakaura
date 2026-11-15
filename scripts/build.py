@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.17"
+VERSION = "0.13.18"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -703,6 +703,18 @@ def generate():
             # tray) and only while its own module is on.
             d['triggers'][2]['trigger']['custom']=(f'function() return ForeverHUD and ForeverHUD.Gate("{place}","{cls}") '
                 f'and ForeverHUD.Gate("{module}","{cls}") or false end')
+            if known:
+                # 0.13.18 (user, showing the in-game Firestone art beside the
+                # reminder: "this should be firestone icon?"): the icon is the
+                # learned spell's own (Create Firestone, Rockbiter Weapon,
+                # Poisons, Summon Imp, Call Pet) from a native always-active
+                # spell trigger, so it matches the action bar on this client.
+                # The path stays as the fallback for an unreadable icon.
+                # Trigger 2, before the gate, which stays last.
+                art_trigger=cooldown(known);art_trigger.update(use_showgcd=False)
+                d['triggers'][3]=d['triggers'][2]
+                d['triggers'][2]=dict(trigger=art_trigger,untrigger={})
+                d['iconSource']=2
             if known: p.eligibility[name]['requires']=place
             return d
         for module,hand,kind,name,known,art in weapon_enchants(cls):

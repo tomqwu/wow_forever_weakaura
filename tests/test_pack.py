@@ -561,10 +561,11 @@ class PackTests(unittest.TestCase):
             t=d['triggers'][1]['trigger']
             self.assertEqual((t['type'],t['event'],t['unit'],t['use_HasPet'],t['use_mounted']),('unit','Conditions','player',False,False),id)
             place='tray' if ' | Tray | ' in id else 'maintenance'
-            self.assertIn(f'Gate("{place}","{cls}") and ForeverHUD.Gate("petMissing","{cls}")',d['triggers'][2]['trigger']['custom'],id)
+            self.assertIn(f'Gate("{place}","{cls}") and ForeverHUD.Gate("petMissing","{cls}")',d['triggers'][3]['trigger']['custom'],id)
             self.assertEqual((self.eligibility[id]['module'],self.eligibility[id]['requires'],self.eligibility[id]['seeds']),
                 ('petMissing',place,[{'WARLOCK':688,'HUNTER':883}[cls]]),id)
             self.assertEqual((d['animation']['main']['alphaType'],d['animation']['main']['duration']),('alphaPulse',2.4),id)
+            self.assertEqual((d['iconSource'],d['triggers'][2]['trigger']['spellName']),(2,{'WARLOCK':688,'HUNTER':883}[cls]),id)
 
     def test_weapon_enchant_reminders(self):
         # 0.13.10: native Weapon Enchant trigger, Show On Enchant Missing; an
@@ -584,10 +585,16 @@ class PackTests(unittest.TestCase):
                 self.assertEqual(t['enchantKind'],{'imbue':'imbue','oil':'temporary'}[module])
                 self.assertRegex(d['load']['loadFlag'],f'^FOREVERHUD_{cls}_{module}',id)
                 place='tray' if ' | Tray | ' in id else 'maintenance'
-                gate=d['triggers'][2]['trigger']['custom']
+                gate=d['triggers'][max(k for k in d['triggers'] if isinstance(k,int))]['trigger']['custom']
                 self.assertIn(f'Gate("{place}","{cls}")',gate,id);self.assertIn(f'Gate("{module}","{cls}")',gate,id)
                 main=d['animation']['main']
-                self.assertEqual(d['iconSource'],0,id)
+                # 0.13.18: a learned-spell reminder shows that spell's own icon
+                # (trigger 3, always active); the generic oil reminder keeps its path.
+                if id in self.eligibility:
+                    art=d['triggers'][2]['trigger']
+                    self.assertEqual((d['iconSource'],art['event'],art['spellName'],art['genericShowOn']),
+                        (2,'Cooldown Progress (Spell)',self.eligibility[id]['seeds'][0],'showAlways'),id)
+                else: self.assertEqual(d['iconSource'],0,id)
                 # 0.13.11: a real breath (100% -> 40% over 2.4 s), not the 0.5 s Pulse preset.
                 self.assertEqual((main['type'],main['alphaType'],main['alpha'],main['duration']),('custom','alphaPulse',0.4,2.4),id)
                 self.assertTrue(d['displayIcon'].startswith('Interface\\Icons\\'),id)
