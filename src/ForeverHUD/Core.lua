@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.13.18"
+E.releaseVersion = "0.13.19"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -225,9 +225,13 @@ function E.Gate(module, class)
     end
     return true
 end
+-- 0.13.19: counters for /fhud perf. Plain integer increments; nothing is
+-- timed or polled.
+E.perf = {refresh = 0, notify = 0, skipped = 0, events = {}, since = type(GetTime) == "function" and GetTime() or 0}
 function E.Notify()
     local api = E.API()
     local p = E.Profile()
+    E.perf.notify = E.perf.notify + 1
     if api and api.SetLoadFlag then
         for class in pairs(E.classNames) do
             local enabled = p and p.enabled and class == E.class and E.LiveWorld() or false

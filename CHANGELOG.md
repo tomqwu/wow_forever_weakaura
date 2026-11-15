@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.13.19 — 2026-11-14 (prerelease)
+
+User: "can we do a perference analysis and see our addon slows GUI down", then "Fix and add /fhud perf". The analysis read the code; nothing was measured in game.
+
+- **Fewer spell rechecks.** Spell discovery rescanned the spellbook and Cooldown Manager, re-resolved the class catalog and re-applied every load flag on `SPELL_TEXT_UPDATE`, `GET_ITEM_INFO_RECEIVED` and `UNIT_INVENTORY_CHANGED`, which fire constantly while looting, trading, opening bags and changing buffs, and on every `SPELL_DATA_LOAD_RESULT`, including other addons' requests. Those three events are dropped (equipment stays on `PLAYER_EQUIPMENT_CHANGED`), and spell data results count only for spells discovery asked for. A refresh now waits until its events have been quiet for 0.5 s (at most 2 s after the first request), where it used to run every 0.1 s during a stream.
+- **Fewer HUD updates.** A unit-flag, faction or target event that leaves the HUD's state unchanged no longer re-runs the full update (load flags, alerts, effects and the gate trigger of every loaded display). Settings, preview and loading changes still update.
+- **`/fhud perf`.** Prints ForeverHUD's and ForeverAuras' recent, average and worst-frame CPU time from the client's add-on profiler (`C_AddOnProfiler`), and since the last report: spell rechecks, HUD updates, skipped updates and the events behind the rechecks. Counters are integer increments; nothing is polled.
+- Companion only: copy the addon and `/reload`; no aura update needed.
+
 ## 0.13.18 — 2026-11-14 (prerelease)
 
 User, showing the game's Firestone art beside the reminder: "this should be firestone icon?"

@@ -118,7 +118,8 @@ function D.Resolve(seed, kind)
         local rank=D.spells[info.name]
         if rank and (kind=="aura" or not rank.passive) then return rank end
     elseif C_Spell and C_Spell.RequestLoadSpellData and not D.requested[seed] then
-        D.requested[seed]=true; E.Call(C_Spell.RequestLoadSpellData,seed)
+        D.requested[seed]=true; D.awaiting=D.awaiting or {}; D.awaiting[seed]=true
+        E.Call(C_Spell.RequestLoadSpellData,seed)
     end
     -- Proc IDs are not necessarily spellbook abilities. A learned native CDM
     -- identity may qualify them; mere existence of their metadata never does.
@@ -140,7 +141,7 @@ function D.ApplyFlags()
     end
 end
 function D.Refresh()
-    D.timer=nil
+    D.timer=nil;D.firstAsk=nil
     local p=E.Profile()
     if not p or not p.enabled or D.stopped then return end
     if E.InCombat() then D.pending=true; return end
@@ -149,6 +150,7 @@ function D.Refresh()
     if api and api.IsImporting and api.IsImporting() then
         D.pending=true;E.Bind();return
     end
+    if E.perf then E.perf.refresh=E.perf.refresh+1 end
     D.ScanBook(); D.ScanCDM(); D.eligible={}
     for id,entry in pairs(E.catalog or {}) do
         if entry.cls==E.class then
@@ -170,19 +172,33 @@ function D.Refresh()
         D.timer=C_Timer.NewTimer(.25,D.Refresh)
     else D.settleRemaining=nil end
 end
+-- 0.13.19 (performance): a refresh waits until its events have been quiet
+-- for half a second, so a burst costs one rescan. A steady stream still
+-- refreshes once the first request is two seconds old.
+D.DELAY,D.MAX_WAIT=.5,2
+local function now() local t=E.Call(GetTime); return type(t)=='number' and t or 0 end
 function D.Schedule()
-    if D.timer or D.stopped then return end
+    if D.stopped then return end
     local p=E.Profile(); if not p or not p.enabled then return end
     if E.InCombat() then D.pending=true; return end
-    D.timer=C_Timer.NewTimer(.1,D.Refresh)
+    if D.timer then
+        if D.firstAsk and now()-D.firstAsk>=D.MAX_WAIT then return end
+        D.timer:Cancel()
+    else D.firstAsk=now() end
+    D.timer=C_Timer.NewTimer(D.DELAY,D.Refresh)
 end
 local frame=CreateFrame("Frame")
 D.events=frame
-local refreshEvents={"SPELLS_CHANGED","LEARNED_SPELL_IN_SKILL_LINE","SPELL_DATA_LOAD_RESULT","SPELL_TEXT_UPDATE",
+-- 0.13.19: SPELL_TEXT_UPDATE, GET_ITEM_INFO_RECEIVED and UNIT_INVENTORY_CHANGED
+-- fire constantly while looting, trading and changing buffs and never change
+-- what is learned; equipment is PLAYER_EQUIPMENT_CHANGED. Spell data results
+-- count only for the spells discovery itself asked for.
+local refreshEvents={"SPELLS_CHANGED","LEARNED_SPELL_IN_SKILL_LINE","SPELL_DATA_LOAD_RESULT",
     "TRAIT_CONFIG_UPDATED","PLAYER_TALENT_UPDATE","PLAYER_SPECIALIZATION_CHANGED","PLAYER_EQUIPMENT_CHANGED",
-    "GET_ITEM_INFO_RECEIVED","UNIT_INVENTORY_CHANGED","UPDATE_SHAPESHIFT_FORM",
+    "UPDATE_SHAPESHIFT_FORM",
     "LOADING_SCREEN_DISABLED",
     "COOLDOWN_VIEWER_DATA_LOADED","COOLDOWN_VIEWER_SPELL_OVERRIDE_UPDATED","COOLDOWN_VIEWER_TABLE_HOTFIXED"}
+D.refreshEvents=refreshEvents
 function D.Start()
     local p=E.Profile(); if not p or not p.enabled then D.Stop(); return end
     if D.stopped~=false then D.settleRemaining=8 end
@@ -204,13 +220,18 @@ function D.Stop()
     if E.selection then E.selection.Stop() end
     if D.timer then D.timer:Cancel(); D.timer=nil end
     for _,event in ipairs(refreshEvents) do frame:UnregisterEvent(event) end
-    D.eligible,D.spells,D.byID,D.cdm,D.requested,D.cdmOrder={},{},{},{},{},{}
+    D.eligible,D.spells,D.byID,D.cdm,D.requested,D.cdmOrder,D.awaiting={},{},{},{},{},{},{}
+    D.firstAsk=nil
     D.cdmReady=false
     D.cdmRank={}
     D.ApplyFlags()
 end
-frame:SetScript("OnEvent",function(_,event,unit)
-    if event=='UNIT_INVENTORY_CHANGED' and unit~='player' then return end
+frame:SetScript("OnEvent",function(_,event,arg)
+    if event=='SPELL_DATA_LOAD_RESULT' then
+        if not (D.awaiting and D.awaiting[arg]) then return end
+        D.awaiting[arg]=nil
+    end
+    if E.perf then E.perf.events[event]=(E.perf.events[event] or 0)+1 end
     if event=='UPDATE_SHAPESHIFT_FORM' and E.class=='DRUID' and E.selection then
         -- Reuse learned identities in combat. No spellbook/CDM scan or root
         -- ancestry mutation; native module flags switch the ordinary skills.
