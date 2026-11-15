@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.21 — 2026-11-15 (prerelease)
+
+User, with a screenshot of the Health Funnel cue over the Pet bar: "seems like recommendation for pet healing is too close and overlapping with frame?"
+
+- **Threshold cues clear their bar.** The 22 px cue wears a painted frame 8 px past the icon, so at (-218, -28) it covered the Pet bar's outer end and the "Pet" label. The pet cue now sits at (-246, -36), the frame's box just past the bar's outer end and below its row; the mana cue moves to (246, -36) to match. Applies to every class with a threshold cue (Warlock, Mage, Druid, Hunter, Shaman).
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.20 — 2026-11-15 (prerelease)
 
 User, with a screenshot of a buff icon showing 0 in the middle and 2 in the corner: "middle number should be the count down of the hit number, not count down of the remaining time, both number should be swapped?", then "disappearing effect when hit count is 0 should be a bit more visible, maybe like explosive effect and enlarge it, to let player know you need to renew this".
