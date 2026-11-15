@@ -1,6 +1,12 @@
-# Validation for 0.13.19
+# Validation for 0.13.20
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.20 (prerelease) — charges in the centre, expiry burst
+
+- **Evidence:** the user's screenshot of a right-side buff icon shows the remaining time (0) in the centre and the count (2) in the corner.
+- **Change and tests:** `stacks_centre` swaps the two texts on the buff-row icons; `test_buff_row_stacks_in_centre` checks every such icon has `%s` in the centre and `%p` in the corner, and that a primary icon keeps `%p` in the centre. `EXPIRE_FLASH` gains a custom scale curve (`Animations.lua:307-313`); `test_cdm_buffs_flash_then_fade` evaluates it in Lua: 1.0, 1.3, 1.0, 1.3, 1.0, 2.05, 2.4, and 1.0 when the row is closing.
+- **Not yet checked in game:** the burst's look, and where it grows from inside the dynamic row.
 
 ## 0.13.19 (prerelease) — fewer rechecks and HUD updates, `/fhud perf`
 

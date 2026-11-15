@@ -519,12 +519,29 @@ class PackTests(unittest.TestCase):
                 ('PALADIN','Retribution','Hammer of Wrath'),('WARRIOR','Fury','Execute')):
             self.assertEqual(first(cls,spec),name,(cls,spec))
 
+    def test_buff_row_stacks_in_centre(self):
+        # 0.13.20: on the player's buff row the stack/charge count is the big
+        # centre number and the remaining time sits in the corner.
+        rows=[d for d in self.regions if d['id']=='ForeverHUD | Core | Native player effects | Entries'
+            or (d['regionType']=='icon' and ' | Player effects | ' in d['id'])]
+        self.assertGreater(len(rows),1)
+        for d in rows:
+            texts={s['anchor_point']:(s['text_text'],s['text_fontSize']) for s in d['subRegions'] if s['type']=='subtext'}
+            self.assertEqual(texts,{'CENTER':('%s',13),'BOTTOMRIGHT':('%p',10)},d['id'])
+        # Other icons keep the time in the centre.
+        primary=next(d for d in self.regions if d['regionType']=='icon' and ' | Primary | ' in d['id'])
+        centre=[s['text_text'] for s in primary['subRegions'] if s['type']=='subtext' and s['anchor_point']=='CENTER']
+        self.assertEqual(centre,['%p'],primary['id'])
+
     def test_cdm_buffs_flash_then_fade(self):
         # 0.13.11: native Finish animation on the right-side CDM buff icons.
         by_id={d['id']:d for d in self.regions}
         finish=by_id['ForeverHUD | Core | Native player effects | Entries']['animation']['finish']
-        self.assertEqual((finish['type'],finish['use_alpha'],finish['alphaType'],finish['duration']),('custom',True,'custom',0.9))
+        self.assertEqual((finish['type'],finish['use_alpha'],finish['alphaType'],finish['duration']),('custom',True,'custom',1.1))
         self.assertIn('ForeverHUD.Gate("buffs","CORE")',finish['alphaFunc'],'A closing row hides without the flash')
+        # 0.13.20: and bursts larger as it fades.
+        self.assertEqual((finish['use_scale'],finish['scaleType']),(True,'custom'))
+        self.assertIn('ForeverHUD.Gate("buffs","CORE")',finish['scaleFunc'],'A closing row keeps its size')
         # Only that row flashes; the tracked bars and cooldowns do not.
         flashing=[d['id'] for d in self.regions if d['animation']['finish'].get('type')!='none']
         self.assertEqual(flashing,['ForeverHUD | Core | Native player effects | Entries'])
@@ -537,6 +554,12 @@ class PackTests(unittest.TestCase):
                 ' gate=false out[#out+1]=string.format("%.2f",f(0.1,1)) print(table.concat(out," "))')
             got=subprocess.run([lua,'-e',script],capture_output=True,text=True,check=True).stdout.split()
             self.assertEqual(got,['1.00','0.20','1.00','0.20','1.00','0.50','0.00','0.00'])
+            # Scale: throbs to 1.3x on each dip, then bursts to 2.4x.
+            script=('ForeverHUD={Gate=function() return gate end} gate=true local f=' + finish['scaleFunc'] +
+                ' local out={} for _,p in ipairs({0,0.1125,0.225,0.3375,0.45,0.725,1}) do out[#out+1]=string.format("%.2f",(f(p,1,1,1,1))) end'
+                ' gate=false out[#out+1]=string.format("%.2f",(f(0.9,1,1,1,1))) print(table.concat(out," "))')
+            got=subprocess.run([lua,'-e',script],capture_output=True,text=True,check=True).stdout.split()
+            self.assertEqual(got,['1.00','1.30','1.00','1.30','1.00','2.05','2.40','1.00'])
 
     def test_well_fed_reminder(self):
         # 0.13.13: opt-in Well Fed missing, by aura name, every class.
