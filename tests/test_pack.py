@@ -204,7 +204,8 @@ class PackTests(unittest.TestCase):
         for spec,first in (('Leveling','Overpower'),('Arms','Overpower'),('Fury','Execute'),('Protection','Revenge')):
             names=[r['name'] for r in SUGGESTIONS['WARRIOR'][spec]]
             self.assertEqual(names[0],first,spec)
-            self.assertIn('Overpower',names,spec)
+            # 0.13.23: Protection trades Overpower for its target debuffs.
+            if spec!='Protection': self.assertIn('Overpower',names,spec)
             self.assertIn('Victory Rush',names,spec)
         for name,seed in (('Overpower',7384),('Revenge',6572),('Execute',5308),('Victory Rush',402927)):
             d=by_id['ForeverHUD | Warrior | Suggest | '+name]
@@ -519,6 +520,36 @@ class PackTests(unittest.TestCase):
                 ('PALADIN','Retribution','Hammer of Wrath'),('WARRIOR','Fury','Execute')):
             self.assertEqual(first(cls,spec),name,(cls,spec))
 
+    def test_research_rules_added(self):
+        # 0.13.23: the research report's single-check rules, each a native
+        # Action Usable or Show On Missing trigger loaded only once learned.
+        by_id={d['id']:d for d in self.regions}
+        usable=[('Warlock','Affliction','Amplify Curse',18288),('Mage','Arcane','Arcane Power',12042),
+            ('Mage','Fire','Combustion',11129),('Priest','Discipline','Inner Focus',14751),
+            ('Priest','Discipline','Power Infusion',10060),('Priest','Holy','Inner Focus',14751),
+            ('Rogue','Assassination','Cold Blood',14177),('Rogue','Combat','Blade Flurry',13877),
+            ('Rogue','Subtlety','Death Mark',1316709),('Druid','Feral','Shifting Power',1322605),
+            ('Druid','Restoration','Swiftmend',18562),('Druid','Restoration',"Nature's Swiftness",17116),
+            ('Druid','Restoration','Wild Growth',408120),('Hunter','Beast Mastery','Bestial Wrath',19574),
+            ('Hunter','Beast Mastery','Rapid Fire',3045),('Hunter','Marksmanship','Sniper Shot',1310687),
+            ('Hunter','Marksmanship','Rapid Fire',3045),('Hunter','Survival','Strider Kick',1317257),
+            ('Shaman','Enhancement','Rage of the Farseer',425336),('Shaman','Restoration',"Nature's Swiftness",16188),
+            ('Paladin','Holy',"Light's Vigil",1310911),('Paladin','Protection','Swift Judgement',1310994),
+            ('Paladin','Protection','Holy Strike',679),('Paladin','Retribution','Holy Strike',679),
+            ('Warrior','Arms','Spearing Strike',1310222)]
+        for cls,spec,name,seed in usable:
+            d=by_id[f'ForeverHUD | {cls} | Suggest | {spec} | {name}'];t=d['triggers'][1]['trigger']
+            self.assertEqual((t['event'],t['spellName'],d['load']['spellknown']),('Action Usable',seed,seed),name)
+            self.assertIn('ForeverHUD.SuggestTarget()',d['triggers'][2]['trigger']['custom'],name)
+        for cls,spec,name,seed in (('Warlock','Destruction','Bane of Agony',980),('Warlock','Destruction','Corruption',172),
+                ('Druid','Balance','Insect Swarm',5570),('Warrior','Protection','Thunder Clap',6343),
+                ('Warrior','Protection','Demoralizing Shout',1160)):
+            t=by_id[f'ForeverHUD | {cls} | Suggest | {spec} | {name}']['triggers'][1]['trigger']
+            self.assertEqual((t['unit'],t['debuffType'],t['auraRankSpellIDs'],t['secretShowOn']),('target','HARMFUL',[seed],'showOnMissing'),name)
+        names=lambda cls,spec:[r['name'] for r in SUGGESTIONS[cls][spec] if r['kind']!='curve']
+        self.assertEqual(names('WARRIOR','Protection'),['Revenge','Victory Rush','Thunder Clap','Demoralizing Shout','Shield Slam'])
+        self.assertNotEqual(names('HUNTER','Beast Mastery'),names('HUNTER','Marksmanship'),'Hunter specs differ')
+
     def test_buff_row_stacks_in_centre(self):
         # 0.13.20: on the player's buff row the stack/charge count is the big
         # centre number and the remaining time sits in the corner.
@@ -648,7 +679,7 @@ class PackTests(unittest.TestCase):
         self.assertNotIn('ForeverHUD | Mage | Suggest | Fire | Hot Streak',by_id)
         for gone in ('Surge of Light','Backlash'):
             self.assertFalse([id for id in by_id if ' | Suggest | ' in id and id.endswith(' | '+gone)],gone)
-        self.assertEqual([r['name'] for r in SUGGESTIONS['PALADIN']['Holy']],['Holy Shock'])
+        self.assertEqual([r['name'] for r in SUGGESTIONS['PALADIN']['Holy']],['Holy Shock',"Light's Vigil"])
         dead={44445,44544,44401,53817,33151,31884,24398,30482,18095,12574,12575,12576,12577}
         import json
         used=set()
@@ -678,12 +709,13 @@ class PackTests(unittest.TestCase):
         # 0.13.6: procs and conditional strikes lead (Shadow Trance, Backlash, Conflagrate).
         self.assertEqual(names('Leveling'),['Shadow Trance','Life Tap','Corruption','Immolate','Health Funnel'],'Priority order, left to right')
         self.assertTrue(all(id.count(' | ')==3 for id in lists['Leveling']),'Leveling keeps the 0.9 IDs')
-        self.assertEqual(names('Affliction'),['Shadow Trance','Life Tap','Corruption','Bane of Agony','Siphon Life','Searing Pain'])
+        self.assertEqual(names('Affliction'),['Shadow Trance','Life Tap','Corruption','Bane of Agony','Siphon Life','Amplify Curse'])
         self.assertEqual(names('Demonology'),['Life Tap','Searing Pain','Corruption','Immolate','Bane of Agony','Health Funnel'])
-        self.assertEqual(names('Destruction'),['Conflagrate','Life Tap','Searing Pain','Immolate','Shadowburn'])
+        self.assertEqual(names('Destruction'),['Conflagrate','Life Tap','Immolate','Bane of Agony','Corruption','Shadowburn'])
         # 0.13.22: Searing Pain when Demonic Brand is missing on the target,
-        # loaded only with the talent and Searing Pain learned.
-        for spec in ('Affliction','Demonology','Destruction'):
+        # loaded only with the talent and Searing Pain learned. 0.13.23: the
+        # five action slots keep it to Demonology.
+        for spec in ('Demonology',):
             sid=f'ForeverHUD | Warlock | Suggest | {spec} | Searing Pain'
             sp=by_id[sid];trig=sp['triggers'][1]['trigger']
             self.assertEqual((trig['unit'],trig['debuffType'],trig['auraRankSpellIDs'],trig['secretShowOn']),('target','HARMFUL',[1293696],'showOnMissing'),spec)

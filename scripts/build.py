@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.22"
+VERSION = "0.13.23"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -169,53 +169,63 @@ SUGGESTIONS = {
         # 0.9 list, kept with its display IDs for characters without talents.
         'Leveling':[LIFE_TAP,missing('Corruption',172),missing('Immolate',348),
             active('Shadow Trance',17941,[18094]),HEALTH_FUNNEL],
-        # Brand leads the DoTs: the pet spends it in about 6 s. It loads only
-        # with the talent, so a hybrid build sees it in any spec.
+        # 0.13.23: the research lists (reports/WoW Forever rotation engine
+        # research.md). Each added rule is a single native check on an ID from
+        # the client's name table or a guide, and loads only once learned.
+        # Five action slots per list, so Brand stays with Demonology.
         'Affliction':[LIFE_TAP,missing('Corruption',172),missing('Bane of Agony',980),
-            missing('Siphon Life',18265),active('Shadow Trance',17941,[18094]),BRAND],
+            missing('Siphon Life',18265),active('Shadow Trance',17941,[18094]),ready('Amplify Curse',18288)],
+        # Brand leads the DoTs: the pet spends it in about 6 s.
         'Demonology':[LIFE_TAP,BRAND,missing('Corruption',172),missing('Immolate',348),
             missing('Bane of Agony',980),HEALTH_FUNNEL],
         # 0.13.9: Shadowburn is a 15 s cooldown nuke on Forever, not an execute,
         # so it is a plain usable rule. Backlash is in no Forever spell list.
-        'Destruction':[LIFE_TAP,react('Conflagrate',1293817),BRAND,missing('Immolate',348),ready('Shadowburn',17877)],
+        'Destruction':[LIFE_TAP,react('Conflagrate',1293817),missing('Immolate',348),missing('Bane of Agony',980),
+            missing('Corruption',172),ready('Shadowburn',17877)],
     },
     'MAGE': {
-        'Arcane':[EVOCATION,active('Missile Barrage',MISSILE_BARRAGE),MAGE_CLEARCAST],
-        'Fire':[EVOCATION,missing('Improved Scorch',22959),active('Heating Up',HEATING_UP)],
+        'Arcane':[EVOCATION,active('Missile Barrage',MISSILE_BARRAGE),MAGE_CLEARCAST,ready('Arcane Power',12042)],
+        'Fire':[EVOCATION,missing('Improved Scorch',22959),active('Heating Up',HEATING_UP),ready('Combustion',11129)],
         'Frost':[EVOCATION,active('Fingers of Frost',FINGERS_OF_FROST)],
     },
     'PRIEST': {
         # 0.13.9: Surge of Light has no talent node on Forever.
-        'Discipline':[ready('Penance',402174)],
-        'Holy':[ready('Prayer of Mending',401859)],
+        'Discipline':[ready('Penance',402174),ready('Inner Focus',14751),ready('Power Infusion',10060)],
+        'Holy':[ready('Prayer of Mending',401859),ready('Inner Focus',14751)],
         'Shadow':[buff('Shadowform',15473),missing('Shadow Word: Pain',589),missing('Vampiric Embrace',15286),
             missing('Devouring Plague',2944),ready('Mind Blast',8092)],
     },
     'ROGUE': {
-        'Assassination':[buff('Slice and Dice',5171),missing('Rupture',1943)],
-        'Combat':[react('Riposte',14251),buff('Slice and Dice',5171),missing('Rupture',1943)],
-        'Subtlety':[buff('Slice and Dice',5171),missing('Hemorrhage',16511)],
+        'Assassination':[buff('Slice and Dice',5171),missing('Rupture',1943),ready('Cold Blood',14177)],
+        'Combat':[react('Riposte',14251),buff('Slice and Dice',5171),missing('Rupture',1943),ready('Blade Flurry',13877)],
+        'Subtlety':[buff('Slice and Dice',5171),missing('Hemorrhage',16511),ready('Death Mark',1316709)],
     },
     'DRUID': {
-        'Balance':[INNERVATE,missing('Moonfire',8921),missing('Faerie Fire',770),active('Clearcasting',16870)],
-        'Feral':[missing('Faerie Fire',770),missing('Rake',1822),missing('Rip',1079),active('Clearcasting',16870)],
-        'Restoration':[INNERVATE,active('Clearcasting',16870)],
+        'Balance':[INNERVATE,missing('Moonfire',8921),missing('Insect Swarm',5570),missing('Faerie Fire',770),active('Clearcasting',16870)],
+        'Feral':[missing('Faerie Fire',770),missing('Rake',1822),missing('Rip',1079),active('Clearcasting',16870),
+            ready('Shifting Power',1322605)],
+        'Restoration':[INNERVATE,active('Clearcasting',16870),ready('Swiftmend',18562),ready("Nature's Swiftness",17116),
+            ready('Wild Growth',408120)],
     },
     'HUNTER': {
-        'Beast Mastery':[MONGOOSE]+HUNTERS+[MEND_PET],
-        'Marksmanship':[MONGOOSE]+HUNTERS+[MEND_PET],
-        'Survival':[react('Counterattack',19306),MONGOOSE]+HUNTERS+[MEND_PET],
+        'Beast Mastery':[MONGOOSE]+HUNTERS+[ready('Bestial Wrath',19574),ready('Rapid Fire',3045),MEND_PET],
+        'Marksmanship':[MONGOOSE]+HUNTERS+[ready('Sniper Shot',1310687),ready('Rapid Fire',3045),MEND_PET],
+        'Survival':[react('Counterattack',19306),MONGOOSE]+HUNTERS+[ready('Strider Kick',1317257),MEND_PET],
     },
     'SHAMAN': {
         'Elemental':[missing('Flame Shock',8050),buff('Lightning Shield',324)],
-        'Enhancement':[buff('Lightning Shield',324),active('Maelstrom Weapon',MAELSTROM_WEAPON),ready('Stormstrike',17364),missing('Flame Shock',8050)],
-        'Restoration':[curve('Mana Tide Totem',16190,'Spell_Frost_SummonWaterElemental',30),ready('Riptide',408521)],
+        'Enhancement':[buff('Lightning Shield',324),active('Maelstrom Weapon',MAELSTROM_WEAPON),ready('Stormstrike',17364),
+            missing('Flame Shock',8050),ready('Rage of the Farseer',425336)],
+        'Restoration':[curve('Mana Tide Totem',16190,'Spell_Frost_SummonWaterElemental',30),ready('Riptide',408521),
+            ready("Nature's Swiftness",16188)],
     },
     'PALADIN': {
         # 0.13.9: no Forever guide uses Hammer of Wrath for Holy or Protection.
-        'Holy':[ready('Holy Shock',1311606)],
-        'Protection':[buff('Holy Shield',20925),ready('Consecration',26573),ready('Judgement',20271)],
-        'Retribution':[HAMMER,ready('Judgement',20271),ready('Consecration',26573)],
+        'Holy':[ready('Holy Shock',1311606),ready("Light's Vigil",1310911)],
+        # Holy Strike is trained at level 6 and in every Paladin priority list.
+        'Protection':[buff('Holy Shield',20925),ready('Judgement',20271),ready('Swift Judgement',1310994),
+            ready('Holy Strike',679),ready('Consecration',26573)],
+        'Retribution':[HAMMER,ready('Judgement',20271),ready('Holy Strike',679),ready('Consecration',26573)],
     },
     # 0.13.6: the reactive strikes (Overpower, Revenge, Execute, Victory Rush)
     # are suggestions, in the row with the "press me" glow, instead of small
@@ -224,9 +234,12 @@ SUGGESTIONS = {
     # keep their own reminders.
     'WARRIOR': {
         'Leveling':[OVERPOWER,REVENGE,EXECUTE,VICTORY_RUSH],
-        'Arms':[OVERPOWER,EXECUTE,ready('Mortal Strike',12294),VICTORY_RUSH],
+        'Arms':[OVERPOWER,EXECUTE,ready('Mortal Strike',12294),VICTORY_RUSH,ready('Spearing Strike',1310222)],
         'Fury':[EXECUTE,ready('Bloodthirst',23881),ready('Whirlwind',1680),OVERPOWER,VICTORY_RUSH],
-        'Protection':[REVENGE,ready('Shield Slam',23922),OVERPOWER,EXECUTE,VICTORY_RUSH],
+        # 0.13.23: the tank keeps Thunder Clap and Demoralizing Shout on the
+        # target; Overpower and Execute leave this list for the five slots.
+        'Protection':[REVENGE,VICTORY_RUSH,missing('Thunder Clap',6343),missing('Demoralizing Shout',1160),
+            ready('Shield Slam',23922)],
     },
 }
 # Reactive rules first, otherwise the written order (a stable sort).

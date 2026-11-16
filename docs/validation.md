@@ -1,6 +1,12 @@
-# Validation for 0.13.22
+# Validation for 0.13.23
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.23 (prerelease) — fuller spell lists
+
+- **Evidence:** the research report's per-spec tables. Shared-name IDs (Arcane Power, Combustion, Thunder Clap, Demoralizing Shout, Blade Flurry, Bestial Wrath, Rapid Fire, Sniper Shot, Insect Swarm, Nature's Swiftness, Wild Growth, Holy Strike, Swift Judgement, Light's Vigil) were checked in ForeverAuras `SpellNameData.lua` (client build 70374). Single-name IDs come from the report's sources.
+- **Change and test:** new `ready` and `missing` rules in `SUGGESTIONS`. `test_research_rules_added` checks each trigger, its load and its gate; the existing order tests cover the new lists.
+- **Not yet checked in game:** every class except the Warlock lacks a dump. Healer cooldowns test usability while you target an enemy, as Riptide and Holy Shock already did.
 
 ## 0.13.22 (prerelease) — Searing Pain for Demonic Brand
 
