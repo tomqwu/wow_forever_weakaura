@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.21"
+VERSION = "0.13.22"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -130,7 +130,10 @@ EXECUTE_CUE = (-228 + SUGGEST_SIZE // 2, SUGGEST_Y)
 def curve(name,known,icon,at,unit='player',event='Power',powertype=None):
     variable='percentpower' if event=='Power' else 'percenthealth'
     return dict(kind='curve',name=name,event=event,unit=unit,variable=variable,at=at,known=known,icon=icon,powertype=powertype)
-def missing(name,seed): return dict(kind='missing',name=name,seed=seed)
+# talent/cast/icon: a debuff applied by another spell (Demonic Brand comes
+# from Searing Pain) loads once the talent and the cast spell are learned and
+# shows the spell to press, not the debuff.
+def missing(name,seed,talent=None,cast=None,icon=None): return dict(kind='missing',name=name,seed=seed,talent=talent,cast=cast,icon=icon)
 def buff(name,seed): return dict(kind='buff',name=name,seed=seed)
 # seed: one aura ID or every ID that shares the aura's name. stacks: show only
 # at that many stacks or more (native Stack Count gate). No rule sets stacks
@@ -157,18 +160,24 @@ EXECUTE=react('Execute',5308);VICTORY_RUSH=react('Victory Rush',402927)
 MONGOOSE=react('Mongoose Bite',1495);HAMMER=react('Hammer of Wrath',24275)
 # Arcane Concentration (talent ranks) gives the Mage's Clearcasting.
 MAGE_CLEARCAST=active('Clearcasting',12536,[11213])
+# 0.13.22: Demonic Brand (talent 1293695) marks the target when Searing Pain
+# hits; the first /fhud dump links its target debuff as 1293696. User: "Demonic
+# brand is not up ... you should recommend this spell (searing pain?)".
+BRAND=missing('Searing Pain',1293696,talent=[1293695],cast=5676,icon='Spell_Fire_SoulBurn')
 SUGGESTIONS = {
     'WARLOCK': {
         # 0.9 list, kept with its display IDs for characters without talents.
         'Leveling':[LIFE_TAP,missing('Corruption',172),missing('Immolate',348),
             active('Shadow Trance',17941,[18094]),HEALTH_FUNNEL],
+        # Brand leads the DoTs: the pet spends it in about 6 s. It loads only
+        # with the talent, so a hybrid build sees it in any spec.
         'Affliction':[LIFE_TAP,missing('Corruption',172),missing('Bane of Agony',980),
-            missing('Siphon Life',18265),active('Shadow Trance',17941,[18094])],
-        'Demonology':[LIFE_TAP,missing('Corruption',172),missing('Immolate',348),
+            missing('Siphon Life',18265),active('Shadow Trance',17941,[18094]),BRAND],
+        'Demonology':[LIFE_TAP,BRAND,missing('Corruption',172),missing('Immolate',348),
             missing('Bane of Agony',980),HEALTH_FUNNEL],
         # 0.13.9: Shadowburn is a 15 s cooldown nuke on Forever, not an execute,
         # so it is a plain usable rule. Backlash is in no Forever spell list.
-        'Destruction':[LIFE_TAP,react('Conflagrate',1293817),missing('Immolate',348),ready('Shadowburn',17877)],
+        'Destruction':[LIFE_TAP,react('Conflagrate',1293817),BRAND,missing('Immolate',348),ready('Shadowburn',17877)],
     },
     'MAGE': {
         'Arcane':[EVOCATION,active('Missile Barrage',MISSILE_BARRAGE),MAGE_CLEARCAST],
@@ -911,8 +920,10 @@ def generate():
                         # Own buffs (Slice and Dice, Shadowform...) only come from
                         # the player, so the default cast-by-you filter stays.
                         t=aura_trigger([rule['seed']],'target' if target else 'player',target);t['secretShowOn']='showOnMissing'
-                        d=icon(p,name,suggest,cls,'suggest',t,SUGGEST_SIZE,modern=True)
+                        d=icon(p,name,suggest,cls,'suggest',t,SUGGEST_SIZE,known=rule.get('cast'),modern=True)
                         d['triggers'][2]['trigger']['custom']=in_target
+                        if rule.get('talent'): p.eligibility[d['id']].update(seeds=rule['talent'])
+                        if rule.get('icon'): d.update(iconSource=0,displayIcon='Interface\\Icons\\'+rule['icon'])
                     elif rule['kind']=='ready':
                         d=icon(p,name,suggest,cls,'suggest',dict(type='spell',event='Action Usable',spellName=rule['seed'],
                             use_spellName=True,use_exact_spellName=False,use_ignoreSpellCooldown=False,use_targetRequired=True),

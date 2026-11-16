@@ -678,9 +678,18 @@ class PackTests(unittest.TestCase):
         # 0.13.6: procs and conditional strikes lead (Shadow Trance, Backlash, Conflagrate).
         self.assertEqual(names('Leveling'),['Shadow Trance','Life Tap','Corruption','Immolate','Health Funnel'],'Priority order, left to right')
         self.assertTrue(all(id.count(' | ')==3 for id in lists['Leveling']),'Leveling keeps the 0.9 IDs')
-        self.assertEqual(names('Affliction'),['Shadow Trance','Life Tap','Corruption','Bane of Agony','Siphon Life'])
-        self.assertEqual(names('Demonology'),['Life Tap','Corruption','Immolate','Bane of Agony','Health Funnel'])
-        self.assertEqual(names('Destruction'),['Conflagrate','Life Tap','Immolate','Shadowburn'])
+        self.assertEqual(names('Affliction'),['Shadow Trance','Life Tap','Corruption','Bane of Agony','Siphon Life','Searing Pain'])
+        self.assertEqual(names('Demonology'),['Life Tap','Searing Pain','Corruption','Immolate','Bane of Agony','Health Funnel'])
+        self.assertEqual(names('Destruction'),['Conflagrate','Life Tap','Searing Pain','Immolate','Shadowburn'])
+        # 0.13.22: Searing Pain when Demonic Brand is missing on the target,
+        # loaded only with the talent and Searing Pain learned.
+        for spec in ('Affliction','Demonology','Destruction'):
+            sid=f'ForeverHUD | Warlock | Suggest | {spec} | Searing Pain'
+            sp=by_id[sid];trig=sp['triggers'][1]['trigger']
+            self.assertEqual((trig['unit'],trig['debuffType'],trig['auraRankSpellIDs'],trig['secretShowOn']),('target','HARMFUL',[1293696],'showOnMissing'),spec)
+            self.assertEqual(self.eligibility[sid]['seeds'],[1293695],'Shown once Demonic Brand is learned')
+            self.assertEqual((sp['load']['spellknown'],sp['iconSource'],sp['displayIcon']),(5676,0,'Interface\\Icons\\Spell_Fire_SoulBurn'),'Shows Searing Pain to press')
+            self.assertIn('ForeverHUD.SuggestTarget()',sp['triggers'][2]['trigger']['custom'])
         # The row grows left from the seal, its lead slot's right edge 4 px
         # outside the Health bar's inner end; actions sit at the row origin.
         self.assertEqual((row['blizzardFlow'],row['blizzardFlowGrowth'],row['blizzardFlowSpacing']),(True,'LEFT',4))

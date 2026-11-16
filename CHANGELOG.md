@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.22 — 2026-11-16 (prerelease)
+
+User: "let's say Demonic brand is not up, and I have this spec, you shoudl recommend this spell (searing pain?)"
+
+- **Searing Pain for Demonic Brand.** A new Warlock suggestion shows Searing Pain when your Demonic Brand debuff (1293696, from the first `/fhud dump`) is missing on your hostile target. It is one native check (Show On Missing, cast by you), loads only once the Demonic Brand talent (1293695) and Searing Pain are learned, and sits ahead of the DoTs in all three Warlock specs.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.21 — 2026-11-15 (prerelease)
 
 User, with a screenshot of the Health Funnel cue over the Pet bar: "seems like recommendation for pet healing is too close and overlapping with frame?"
