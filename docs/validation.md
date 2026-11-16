@@ -1,6 +1,12 @@
-# Validation for 0.13.21
+# Validation for 0.13.22
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.22 (prerelease) — Searing Pain for Demonic Brand
+
+- **Evidence:** the first `/fhud dump` (Warlock) lists the Cooldown Manager entry Demonic Brand 1293695 linked to 1293696, and the user's 0.13.15 screenshot shows the debuff on the target.
+- **Change and test:** `missing('Searing Pain',1293696,talent=[1293695],cast=5676)` in the three Warlock spec lists. `test_warlock_spell_suggestions` checks the target HARMFUL Show On Missing trigger, the talent seed, the Searing Pain load and icon.
+- **Not yet checked in game:** that the target debuff ID is 1293696 at every talent rank, and that the debuff counts as cast by you (not by the pet).
 
 ## 0.13.21 (prerelease) — threshold cues clear the Pet bar
 
