@@ -463,6 +463,17 @@ class PackTests(unittest.TestCase):
             self.assertIn(f'ForeverHUD | {cls} | Tray | Row | Upkeep reminder | '+{'Warlock':'Demon armor','Mage':'Arcane Intellect',
                 'Priest':'Fortitude','Druid':'Mark of the Wild'}[cls]+' missing',ids)
         self.assertIn('ForeverHUD | Warlock | Upkeep reminder | Demon armor missing',ids)
+        # 0.13.24: Soul Link reminds when missing (no duration, so no
+        # "expiring" twin), in the row and the tray, once learned.
+        by_id={d['id']:d for d in self.regions}
+        for sid in ('ForeverHUD | Warlock | Upkeep reminder | Soul Link missing',
+                    'ForeverHUD | Warlock | Tray | Row | Upkeep reminder | Soul Link missing'):
+            self.assertIn(sid,ids)
+            t=by_id[sid]['triggers'][1]['trigger']
+            self.assertEqual((t['unit'],t['auraRankSpellIDs'],t['secretShowOn']),('player',[19028,25228],'showOnMissing'),sid)
+            self.assertEqual((self.eligibility[sid]['seeds'],self.eligibility[sid]['kind']),([19028,25228],'aura'),'Loads once learned')
+        self.assertEqual(by_id['ForeverHUD | Warlock | Upkeep reminder | Soul Link missing']['parent'],'ForeverHUD | Warlock | Maintenance')
+        self.assertNotIn('ForeverHUD | Warlock | Upkeep reminder | Soul Link expiring',by_id)
         for d in breathing:
             self.assertTrue(d['id'].endswith(' missing'),d['id'])
             self.assertEqual(d['blizzardAuraDisplay']['auraMain'],dict(type='pulse',duration=2.4))

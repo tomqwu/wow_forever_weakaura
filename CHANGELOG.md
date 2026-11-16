@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.24 — 2026-11-16 (prerelease)
+
+User: "is Soul Link part of the notification too if missing?"; "Yes, add it"
+
+- **Soul Link reminder.** A breathing Soul Link reminder shows in the upkeep row and the folded tray while the buff is missing, like Demon Armor. It is a native Show On Missing aura trigger on 19028 and 25228, the two IDs named Soul Link in `SpellNameData.lua`. It loads only once the talent puts Soul Link in your spellbook. It has no duration, so there is no "expiring" reminder.
+- With no pet out, the pet reminder shows too; a reminder tests one thing, so it cannot also test for the pet.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.23 — 2026-11-16 (prerelease)
 
 User, after a list of spells the research report found missing: "Yes, add them"
