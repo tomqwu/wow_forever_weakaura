@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.13.23 — 2026-11-16 (prerelease)
+
+User, after a list of spells the research report found missing: "Yes, add them"
+
+- **Fuller spell lists.** From the research report (`reports/WoW Forever rotation engine research.md`), each spec gains the single-check rules it was missing. Each is an Action Usable or Show On Missing rule, loaded only once the spell is learned:
+  - Warlock: Amplify Curse (Affliction); Bane of Agony and Corruption (Destruction).
+  - Mage: Arcane Power; Combustion.
+  - Priest: Inner Focus and Power Infusion (Discipline); Inner Focus (Holy).
+  - Rogue: Cold Blood; Blade Flurry; Death Mark.
+  - Druid: Insect Swarm (Balance); Shifting Power (Feral); Swiftmend, Nature's Swiftness and Wild Growth (Restoration).
+  - Hunter: Bestial Wrath and Rapid Fire (Beast Mastery); Sniper Shot and Rapid Fire (Marksmanship); Strider Kick (Survival). The three Hunter lists now differ.
+  - Shaman: Rage of the Farseer (Enhancement); Nature's Swiftness (Restoration).
+  - Paladin: Light's Vigil (Holy); Swift Judgement and Holy Strike (Protection); Holy Strike (Retribution).
+  - Warrior: Spearing Strike (Arms); Thunder Clap and Demoralizing Shout missing on the target (Protection).
+- **Five slots per list.** Protection Warriors no longer get Overpower or Execute, and Searing Pain for Demonic Brand (0.13.22) stays with Demonology only.
+- **Left out on purpose:** Shadow Word: Death, because the Shadow list is full. Lightning Mastery, because its research ID is another spell. Arcane Wrath, because its ID is past the client's known range. Summon Hawk, because it over-suggests. Procs whose aura IDs need a class dump.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.22 — 2026-11-16 (prerelease)
 
 User: "let's say Demonic brand is not up, and I have this spec, you shoudl recommend this spell (searing pain?)"
