@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.13.23"
+VERSION = "0.13.24"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -163,6 +163,7 @@ MAGE_CLEARCAST=active('Clearcasting',12536,[11213])
 # 0.13.22: Demonic Brand (talent 1293695) marks the target when Searing Pain
 # hits; the first /fhud dump links its target debuff as 1293696. User: "Demonic
 # brand is not up ... you should recommend this spell (searing pain?)".
+SOUL_LINK=[19028,25228]
 BRAND=missing('Searing Pain',1293696,talent=[1293695],cast=5676,icon='Spell_Fire_SoulBurn')
 SUGGESTIONS = {
     'WARLOCK': {
@@ -735,6 +736,11 @@ def generate():
             # Demon Skin / Demon Armor / Fel Armor: shown only when none is up,
             # or in its last 15 seconds.
             upkeep_reminders([687,706,28176],'Demon armor')
+            # 0.13.24 (user: "is Soul Link part of the notification too if
+            # missing?"): no duration, so missing only. Its IDs share the name
+            # in SpellNameData.lua; it loads once the talent puts it in the
+            # spellbook.
+            upkeep_reminders(SOUL_LINK,'Soul Link',False)
         def well_fed_reminder(name,parent,place,size):
             # 0.13.13 (user: "Yes, opt-in"): Well Fed missing, by aura name
             # (expanded natively to every ID with that name, as the tray's
@@ -855,7 +861,7 @@ def generate():
             for sub in shards['subRegions']:
                 if sub.get('type')=='subtexture': sub.update(xOffset=TRAY_FRAME_OUTSET,yOffset=TRAY_FRAME_OUTSET)
         upkeeps=[(seeds,name) for seeds,name,missing in UPKEEP.get(cls,[]) if missing]
-        if cls=='WARLOCK': upkeeps.append(([687,706,28176],'Demon armor'))
+        if cls=='WARLOCK': upkeeps+=[([687,706,28176],'Demon armor'),(SOUL_LINK,'Soul Link')]
         for seeds,name in upkeeps:
             trigger=aura_trigger(seeds);trigger.update(nativeFilters={},secretShowOn='showOnMissing')
             breathe(icon(p,f'{row} | Upkeep reminder | {name} missing',row,cls,'tray',trigger,TRAY_ICON,modern=True))

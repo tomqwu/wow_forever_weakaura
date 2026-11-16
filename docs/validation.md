@@ -1,6 +1,12 @@
-# Validation for 0.13.23
+# Validation for 0.13.24
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.13.24 (prerelease) — Soul Link reminder
+
+- **Evidence:** ForeverAuras `SpellNameData.lua` (client build 70374) lists Soul Link as 19028 and 25228. `Discovery.lua` `D.Resolve` makes an aura entry eligible only when its spell is in the spellbook or known.
+- **Change and test:** `upkeep_reminders(SOUL_LINK,'Soul Link',False)` and a tray reminder. `test_missing_upkeep_breathes` checks both triggers, their seeds, and that there is no expiring twin.
+- **Not yet checked in game:** that the buff on the Warlock carries one of these IDs.
 
 ## 0.13.23 (prerelease) — fuller spell lists
 
