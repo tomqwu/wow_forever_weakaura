@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.0 — 2026-11-18 (prerelease)
+
+User: "add addon manager to include all addon into a box around map, it's too crowded, similarly to what I've done in classmate addon"
+
+- **Minimap button tray.** ForeverHUD now has a minimap button with the class crest. Hovering it opens a framed tray of the other addons' minimap buttons, in name order, after a ForeverHUD settings cell. Left-click opens settings, right-click expands or folds the HUD, and dragging moves it around the map.
+- Only named, unprotected addon launchers (LibDBIcon, ForeverCore and similar) are collected. Blizzard controls, map pins and protected frames are never touched, and nothing moves in combat. Turning grouping off or hiding the button returns every button to its spot, strata and dragging.
+- **Settings:** **Position → Minimap button** and **Group addon minimap buttons**, or `/fhud minimap on|off` and `/fhud buttons on|off`. They are account-wide.
+- With Forever Classmate loaded, its own tray does the grouping and the ForeverHUD button joins it.
+- The auras' content is unchanged, but they carry the new version: update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.13.24 — 2026-11-16 (prerelease)
 
 User: "is Soul Link part of the notification too if missing?"; "Yes, add it"

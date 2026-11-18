@@ -22,6 +22,8 @@ function E.RefreshOptions()
     panel.refreshing = true
     panel.classLabel:SetText(E.L(E.classNames[E.class]) .. "  /  " .. E.L("Each class keeps its own settings."))
     for key, box in pairs(panel.checks) do box:SetChecked(p[key]) end
+    local minimap = E.minimapTray and E.minimapTray.Settings()
+    for key, box in pairs(panel.minimapChecks or {}) do box:SetChecked(minimap and minimap[key] ~= false) end
     for key, slider in pairs(panel.sliders) do
         slider:SetValue(p[key]); slider.value:SetText(tostring(p[key]))
         if percentKeys[key] then slider.value:SetText(string.format("%d%%", math.floor(p[key]*100+.5))) end
@@ -140,8 +142,19 @@ local function build()
         local nextChoice={Auto='zhCN',zhCN='enUS',enUS='Auto'}
         E.SetLanguage(nextChoice[ForeverHUDDB.language or 'Auto'])
     end)
+    -- 0.14.0: the minimap button and its addon-button tray. Account-wide, so
+    -- they are kept outside the per-class profile checks.
+    p.minimapChecks={}
+    for i,entry in ipairs({{'show','Minimap button'},{'group','Group addon minimap buttons'}})do
+        local box=CreateFrame('CheckButton',nil,position,'UICheckButtonTemplate')
+        box:SetSize(25,25);box:SetPoint('TOPLEFT',i==1 and 22 or 292,-398)
+        box.Text:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF",11,"")
+        box.Text:SetText(E.L(entry[2]));box.Text:SetTextColor(.88,.86,.94)
+        box:SetScript('OnClick',function(self)if E.minimapTray then E.minimapTray.Set(entry[1],self:GetChecked()==true)end end)
+        p.minimapChecks[entry[1]]=box
+    end
     local inspect=CreateFrame('Button',nil,position,'UIPanelButtonTemplate')
-    inspect:SetSize(506,29);inspect:SetPoint('TOPLEFT',27,-420);inspect:SetText(E.L('Expand for inspection'))
+    inspect:SetSize(506,29);inspect:SetPoint('TOPLEFT',27,-430);inspect:SetText(E.L('Expand for inspection'))
     inspect:SetScript('OnClick',function()if E.state then E.state.Inspect()end end)
     p.notice=label(p,'',11,27,-466,{.65,.61,.73});p.notice:SetWidth(506);p.notice:SetJustifyH('LEFT')
     -- Aura install status: red with an install button when the Core or class
@@ -449,7 +462,15 @@ SlashCmdList.FOREVERHUD = function(message)
     local size=message and message:match("^%s*(%d+%.?%d*)%s*%%?%s*$")
     local language=message and ({zh='zhCN',cn='zhCN',zhcn='zhCN',['中文']='zhCN',en='enUS',english='enUS',enus='enUS',auto='Auto'})[(message:match('^%s*(%S+)%s*$') or ''):lower()]
     local dumping,dumpText=(message or ''):match('^%s*dump%s*(%a*)%s*(.-)%s*$')
-    if dumping then E.Dump(dumping:lower(),dumpText)
+    -- 0.14.0: /fhud minimap on|off shows or hides the minimap button;
+    -- /fhud buttons on|off groups other addons' minimap buttons behind it.
+    local minimapKey,minimapValue=(message or ''):lower():match('^%s*(%a+)%s+(%a+)%s*$')
+    minimapKey=({minimap='show',buttons='group'})[minimapKey or '']
+    minimapValue=({on=true,off=false})[minimapValue or '']
+    if minimapKey and minimapValue~=nil and E.minimapTray then
+        E.minimapTray.Set(minimapKey,minimapValue)
+        print('ForeverHUD: '..E.L(minimapKey=='show' and 'Minimap button' or 'Group addon minimap buttons')..': '..E.L(minimapValue and 'on' or 'off'))
+    elseif dumping then E.Dump(dumping:lower(),dumpText)
     elseif size then E.SetSize(tonumber(size))
     elseif language then E.SetLanguage(language)
     elseif install and E.InstallBundled then E.InstallBundled(install=="force")
