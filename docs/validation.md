@@ -1,6 +1,19 @@
-# Validation for 0.13.24
+# Validation for 0.14.0
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.0 (prerelease) — minimap button tray
+
+- **Basis:** the user's own Forever Classmate `MinimapTray.lua`, ported to ForeverHUD names. The Warlock that showed the crowded minimap has ForeverUtilities disabled in its `AddOns.txt` (read only), so no tray was active there.
+- **Test:** `tests/minimap.lua` (61 checks, mock frames):
+  - which buttons are borrowed;
+  - the 34 px grid;
+  - opening, closing and dragging;
+  - combat deferral;
+  - exact return of points, strata, level and drag handlers;
+  - Classmate precedence;
+  - Chinese labels.
+- **Not yet checked in game:** that the tray collects the buttons in the user's screenshot, and how it looks.
 
 ## 0.13.24 (prerelease) — Soul Link reminder
 
