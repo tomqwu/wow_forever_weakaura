@@ -21,6 +21,12 @@ check(E.Profile().school=='Auto' and not E.panel.swing.shown and not E.panel.che
 E.panel.school.scripts.OnClick();check(E.Profile().school=='Affliction','Warlock has its own three-school selector')
 for _,schools in pairs(E.schools)do for _,name in ipairs(schools)do check(E.L(name)~=name,'Every authored talent-school label is translated')end end
 E.panel.cooldown.scripts.OnClick();check(E.Profile().cooldownLayout=='Class plan' and E.panel.cooldown.text:find('职业方案',1,true),'Cooldown layout has a localized independent control')
+-- 0.14.6: the Display page's frame style button flips Bars and Globes; /fhud style sets it.
+check(E.panel.frameStyle.text:find('条形',1,true),'Frame style shows the localized current style')
+E.panel.frameStyle.scripts.OnClick();check(E.Profile().frameStyle=='Globes' and E.panel.frameStyle.text:find('球形',1,true),'Frame style button switches to Globes')
+E.panel.frameStyle.scripts.OnClick();check(E.Profile().frameStyle=='Bars','and back to Bars')
+SlashCmdList.FOREVERHUD('style globes');check(E.Profile().frameStyle=='Globes','/fhud style globes')
+SlashCmdList.FOREVERHUD('style bars');check(E.Profile().frameStyle=='Bars','/fhud style bars')
 E.Set('castBarMode','Default');E.panel.castChoice.scripts.OnClick()
 check(E.Profile().castBarMode=='ForeverHUD' and E.Profile().hideDefaultCast and E.panel.castChoice.text:find('ForeverHUD',1,true),'Localized cast selector chooses ForeverHUD exclusively')
 E.panel.castChoice.scripts.OnClick();check(E.Profile().castBarMode=='Both' and not E.Profile().hideDefaultCast,'Cast selector explicitly supports both bars')

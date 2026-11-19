@@ -1,6 +1,18 @@
-# Validation for 0.14.5
+# Validation for 0.14.6
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.6 (prerelease) — Globes frame style
+
+- **Evidence:** these ForeverAuras files support the globes:
+  - `RegionTypes/ProgressTexture.lua` (VERTICAL orientation, `foregroundColor` condition property) and `ProgressTextureNative.lua` hand restricted values to a native StatusBar;
+  - `Prototypes.lua` provides the `percenthealth` and `powertype` conditions the bars already use.
+- **Tests:**
+  - `test_globe_frame_style` checks the globe displays, their textures, load flags, draw order, resource-colour conditions, danger ring condition, band gate, and the chassis, shelf and pet-bar flags for every class.
+  - `tests/core.lua` checks the companion's style flags (Bars, Globes, artwork and pet toggles, reset of an unknown style).
+  - `tests/options.lua` checks the Display button and `/fhud style`.
+- **Illustrative only:** `docs/images/mock-0.14.6-globes.png` is drawn from the exported textures at the generated coordinates; it is not a game capture.
+- **Not yet checked in game:** the globes' fill and colours, text placement, the unfold slide, and the danger ring.
 
 ## 0.14.5 (prerelease) — Titan Panel launcher
 

@@ -98,6 +98,22 @@ class="WARLOCK";E.InitDB();E.Notify()
 check(E.Profile().x==135 and not E.Profile().primary,"Returning class restores its settings")
 check(E.Profile().imbue==true and E.Profile().oil==false and flags.FOREVERHUD_WARLOCK_imbue,"An existing Warlock profile gains the Firestone reminder, oil off")
 check(E.Profile().petMissing==true and flags.FOREVERHUD_WARLOCK_petMissing,"Warlock pet reminder is on by default")
+-- 0.14.6 frame style: Bars by default; Globes swaps the bars, chassis and
+-- long pet bar for the globes, band and short pet bar; an unknown value resets.
+check(E.Profile().frameStyle=='Bars' and flags.FOREVERHUD_CORE_resources and not flags.FOREVERHUD_CORE_globes
+    and flags.FOREVERHUD_WARLOCK_chassis and flags.FOREVERHUD_WARLOCK_petBar and not flags.FOREVERHUD_WARLOCK_petGlobe,
+    'The Bars style loads the bars, chassis and long pet bar')
+E.Set('frameStyle','Globes')
+check(E.Globes() and not flags.FOREVERHUD_CORE_resources and flags.FOREVERHUD_CORE_globes and flags.FOREVERHUD_WARLOCK_globes and flags.FOREVERHUD_WARLOCK_globeArt
+    and not flags.FOREVERHUD_WARLOCK_chassis and not flags.FOREVERHUD_WARLOCK_petBar and flags.FOREVERHUD_WARLOCK_petGlobe,
+    'The Globes style loads only the globes, band and short pet bar')
+E.Set('art',false);check(not flags.FOREVERHUD_WARLOCK_globeArt and flags.FOREVERHUD_CORE_globes,'Artwork off drops the band, keeps the globes')
+E.Set('art',true);E.Set('pet',false);check(not flags.FOREVERHUD_WARLOCK_petGlobe,'Pet module off unloads the globe pet bar')
+E.Set('pet',true);E.Profile().frameStyle='Diamonds';E.Set('frameStyle','Bars')
+check(E.Profile().frameStyle=='Bars' and flags.FOREVERHUD_CORE_resources and not flags.FOREVERHUD_CORE_globes
+    and not flags.FOREVERHUD_WARLOCK_globes and not flags.FOREVERHUD_WARLOCK_globeArt,'Back to Bars')
+E.Profile().frameStyle='Diamonds';E.InitDB();check(E.Profile().frameStyle=='Bars','An unknown style resets to Bars')
+E.Notify()
 E.ApplyLayout() -- the Rogue checks above applied that class's layout
 combat=true;E.Set("x",999);E.Set("scale",1.4);E.Set("enabled",false)
 check(E.Profile().x==135 and E.Profile().scale==1.25 and E.Profile().enabled,"Combat changes are deferred")
@@ -238,7 +254,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.14.5','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.14.6','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return ForeverHUD and ForeverHUD.version=="0.3.2" and ForeverHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true

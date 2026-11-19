@@ -7,7 +7,7 @@ margins, resizes proportionally and converts formats.
 import io
 from pathlib import Path
 import cairosvg
-from PIL import Image, ImageOps
+from PIL import Image, ImageDraw, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
 MASTERS = ROOT / 'assets/ai'
@@ -49,6 +49,19 @@ def build(directory,classes):
         export(directory,'crest-'+token.lower(),seal,(256,256),padding=8)
         export(directory,'chassis-'+token.lower(),frame,(1024,256))
     export(directory,'icon-frame',Image.open(MASTERS/'icon-frame.png'),(128,128),trim=False)
+    # 0.14.6 globe style. Masters generated with Figma's image generator on a
+    # flat green background and keyed once by scripts/chroma.py (prompts and
+    # raw downloads beside them). The ring keeps its full canvas so the liquid
+    # opening stays centred; the band is trimmed like the chassis.
+    export(directory,'globe-frame',Image.open(MASTERS/'globe-frame.png'),(256,256),trim=False)
+    export(directory,'globe-band',Image.open(MASTERS/'globe-belt.png'),(1024,256))
+    # The liquid is greyscale (tinted in game); a round alpha makes the
+    # vertical native fill read as a filling orb.
+    liquid=Image.open(MASTERS/'globe-liquid.png').convert('L').resize((256,256),Image.Resampling.LANCZOS)
+    big=Image.new('L',(1024,1024),0)
+    ImageDraw.Draw(big).ellipse((4,4,1019,1019),fill=255)
+    orb=Image.merge('RGBA',(liquid,liquid,liquid,big.resize((256,256),Image.Resampling.LANCZOS)))
+    export(directory,'globe-liquid',orb,(256,256),trim=False)
     # Geometry-only animation accents remain code-native.
     ticks=''.join(f'<path d="m61 7 3-3 3 3-3 3Zm3 4v3" transform="rotate({i*45} 64 64)"/>' for i in range(8))
     vector(directory,'runes','<g fill="none" stroke="#ffffff" stroke-width="1.3"><circle cx="64" cy="64" r="59" stroke-dasharray="34 12 2 12"/><circle cx="64" cy="64" r="56" stroke-dasharray="1 12"/>'+ticks+'</g>',128,128)
@@ -58,6 +71,17 @@ def build(directory,classes):
     vector(directory,'shelf','<defs><linearGradient id="f"><stop offset="0" stop-color="#fff" stop-opacity=".95"/>'
         '<stop offset=".7" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>'
         '<rect x="0" y="3" width="256" height="2" fill="url(#f)"/><rect x="0" y="1" width="256" height="6" fill="url(#f)" opacity=".18"/>',256,8)
+    # 0.14.6: geometric globe accents (allowed as SVG): a glass highlight
+    # over the liquid and a soft red danger ring for the low-health flash.
+    vector(directory,'globe-shine','<defs><radialGradient id="g" cx=".38" cy=".3" r=".55">'
+        '<stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".55" stop-color="#fff" stop-opacity=".08"/>'
+        '<stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>'
+        '<circle cx="64" cy="64" r="62" fill="url(#g)"/>'
+        '<path d="M30 40a40 40 0 0 1 40-22" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="5" stroke-linecap="round"/>',128,128)
+    vector(directory,'globe-danger','<defs><radialGradient id="r" cx=".5" cy=".5" r=".5">'
+        '<stop offset=".62" stop-color="#ff2a1a" stop-opacity="0"/><stop offset=".78" stop-color="#ff2a1a" stop-opacity=".85"/>'
+        '<stop offset="1" stop-color="#ff2a1a" stop-opacity="0"/></radialGradient></defs>'
+        '<circle cx="128" cy="128" r="128" fill="url(#r)"/>',256,256)
     vector(directory,'divider','<path d="M0 16h232l24-8 24 8h232m-280 0 24 8 24-8" stroke="#bb93df" stroke-width="1" fill="none"/>',512,32)
     # Small original geometric flow accent. Native FlipBook playback supplies
     # the clock; this SVG is a 480-frame, 32-column atlas with transparent gaps.
