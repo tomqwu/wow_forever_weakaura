@@ -1,6 +1,15 @@
-# Validation for 0.14.1
+# Validation for 0.14.2
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.2 (prerelease) — low-health flash
+
+- **Evidence:** ForeverAuras `SubRegionTypes/Glow.lua` supports Pixel glows on aurabars, anchored by `anchor_area`. The curve cues already use `percenthealth` conditions.
+- **Test:** `test_low_health_flash` checks:
+  - a single glow on the Core Health bar, off by default;
+  - its red Pixel style, anchored to the bar;
+  - one condition, `percenthealth <= 30` on the player trigger, that turns it on.
+- **Not yet checked in game:** the look, and that the glow turns off above 30%.
 
 ## 0.14.1 (prerelease) — redesigned settings window
 

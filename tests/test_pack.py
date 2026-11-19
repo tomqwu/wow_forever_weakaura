@@ -453,6 +453,21 @@ class PackTests(unittest.TestCase):
         self.assertIn('ForeverHUD | Warlock | Tray | Row | Upkeep reminder | Demon armor missing',by_id)
         self.assertNotIn('ForeverHUD | Warlock | Tray | Row | Food',self.eligibility,'Name-matched icons skip spell discovery')
 
+    def test_low_health_flash(self):
+        # 0.14.2 (user: "when 30% below health, you should flash"): the Core
+        # Health bar's red glow turns on through one native condition at <= 30%.
+        health=next(d for d in self.regions if d['id']==CORE_ID+' | Health')
+        glows=[(i+1,s) for i,s in enumerate(health['subRegions']) if s['type']=='subglow']
+        self.assertEqual(len(glows),1)
+        index,glow=glows[0]
+        self.assertIs(glow['glow'],False)
+        self.assertEqual((glow['glowType'],glow['anchor_area']),('Pixel','bar'))
+        self.assertGreater(glow['glowColor'][0],0.9);self.assertLess(glow['glowColor'][1],0.3)
+        flash=[c for c in health['conditions'] if c['check'].get('variable')=='percenthealth']
+        self.assertEqual(len(flash),1)
+        self.assertEqual(flash[0]['check'],dict(trigger=1,variable='percenthealth',op='<=',value=30))
+        self.assertEqual(flash[0]['changes'],[dict(property=f'sub.{index}.glow',value=True)])
+        self.assertEqual(health['triggers'][1]['trigger']['unit'],'player')
     def test_missing_upkeep_breathes(self):
         # 0.13.1: missing upkeep reminders (tray and HUD) play the native
         # Pulse slowly; nothing else does, and no Gained flash suppresses it.

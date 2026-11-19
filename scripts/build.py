@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.1"
+VERSION = "0.14.2"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -272,6 +272,13 @@ BREATHE = dict(type='pulse', duration=2.4)
 MISSING_GLOW = dict(type='subglow', glow=True, glowType='Pixel', useGlowColor=True,
     glowColor=[1, 0.82, 0.3, 0.9], glowLines=6, glowFrequency=0.2, glowLength=8,
     glowThickness=2, glowScale=1, glowBorder=False, glowXOffset=1, glowYOffset=1, glowDuration=1)
+# 0.14.2: the low-health flash on the Health bar (see generate()). Off until
+# the condition turns it on; fast, thick red lines so it reads as an alarm.
+LOW_HEALTH = 30
+LOW_HEALTH_GLOW = dict(type='subglow', glow=False, glowType='Pixel', useGlowColor=True,
+    glowColor=[1, 0.12, 0.08, 1], glowLines=12, glowFrequency=0.6, glowLength=14,
+    glowThickness=3, glowScale=1, glowBorder=False, glowXOffset=3, glowYOffset=3, glowDuration=1,
+    anchor_area='bar')
 def breathe(d):
     d['blizzardAuraDisplay']['auraMain'] = dict(BREATHE)
     d['subRegions'].append(dict(MISSING_GLOW))
@@ -529,6 +536,14 @@ def generate():
         use_showAbsorb=True,absorbMode='OVERLAY_FROM_END_REVERSE'),
         x=-138,y=13,width=180,height=13,color=rgba(HEALTH_COLOR),label='Health')
     health.update(overlays=[list(ABSORB_COLOR)],overlayclip=True)
+    # 0.14.2 (user: "when 30% below health, you should flash"): a red Pixel
+    # glow races around the Health bar while the native health curve is at or
+    # under LOW_HEALTH. The comparison happens in a native condition, so the
+    # protected percentage is never read in Lua.
+    health['subRegions'].append(dict(LOW_HEALTH_GLOW))
+    glow_index=len(health['subRegions'])
+    health['conditions'].append(dict(check=dict(trigger=1,variable='percenthealth',op='<=',value=LOW_HEALTH),
+        changes=[dict(property=f'sub.{glow_index}.glow',value=True)]))
     # No explicit powertype: Druid forms, Warrior rage and Rogue energy
     # follow the client's current resource automatically.
     bar(p,CORE_ID+" | Resource",resources,CORE,"resources",dict(type="unit",event="Power",unit="player",use_unit=True),
