@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.7"
+VERSION = "0.14.8"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -164,6 +164,12 @@ MAGE_CLEARCAST=active('Clearcasting',12536,[11213])
 # hits; the first /fhud dump links its target debuff as 1293696. User: "Demonic
 # brand is not up ... you should recommend this spell (searing pain?)".
 SOUL_LINK=[19028,25228]
+# 0.14.8 (user: "I am missing this buff, why I don't see it from
+# notification"): Demonic Sacrifice (18788) grants one of four buffs, linked to
+# it by the client's own CDM TrackedBuff entry (18792, 18789, 18790, 18791 in
+# the user's /fhud dump). The reminder loads once 18788 is learned.
+DEMONIC_SACRIFICE=18788
+SACRIFICE_BUFFS=[18789,18790,18791,18792]
 BRAND=missing('Searing Pain',1293696,talent=[1293695],cast=5676,icon='Spell_Fire_SoulBurn')
 SUGGESTIONS = {
     'WARLOCK': {
@@ -836,9 +842,10 @@ def generate():
             # Manager mode shows the player's tracked buffs at the same spot.
             p.eligibility[d['id']].update(effect=True)
 
-        def upkeep_reminders(seeds,name,expires=True):
+        def upkeep_reminders(seeds,name,expires=True,learned=None):
             # Native Show On: Aura(s) Missing / Remaining Time; nothing inferred.
             # A buff with no duration (an aspect) gets no "expiring" reminder.
+            # learned: the spell that grants the buff, when its ID differs.
             upkeep=aura_trigger(seeds);upkeep['nativeFilters']={}
             for expiring in ((False,True) if expires else (False,)):
                 reminder=copy.deepcopy(upkeep)
@@ -846,6 +853,7 @@ def generate():
                     secretUseRem=expiring,secretRem=15,secretRemOperator='<=')
                 d=icon(p,prefix+' | Upkeep reminder | '+name+(' expiring' if expiring else ' missing'),maintenance,cls,'maintenance',
                     reminder,24,modern=True)
+                if learned: p.eligibility[d['id']]['seeds']=learned
                 if not expiring: breathe(d)
         for i,(seeds,name,missing) in enumerate(UPKEEP.get(cls,[])):
             if missing:
@@ -864,6 +872,16 @@ def generate():
             # in SpellNameData.lua; it loads once the talent puts it in the
             # spellbook.
             upkeep_reminders(SOUL_LINK,'Soul Link',False)
+            # 2 hours, cancelled by any summon: missing only.
+            upkeep_reminders(SACRIFICE_BUFFS,'Demonic Sacrifice',False,[DEMONIC_SACRIFICE])
+        def quiet_after_sacrifice(d):
+            # A sacrificed demon is not a missing pet: one more native trigger
+            # (no sacrifice buff) before the gate, which stays last.
+            if cls!='WARLOCK': return
+            gate=max(k for k in d['triggers'] if isinstance(k,int))
+            no_buff=aura_trigger(SACRIFICE_BUFFS);no_buff.update(nativeFilters={},secretShowOn='showOnMissing')
+            d['triggers'][gate+1]=d['triggers'][gate]
+            d['triggers'][gate]=dict(trigger=no_buff,untrigger={})
         def well_fed_reminder(name,parent,place,size):
             # 0.13.13 (user: "Yes, opt-in"): Well Fed missing, by aura name
             # (expanded natively to every ID with that name, as the tray's
@@ -907,6 +925,7 @@ def generate():
             d=class_reminder(prefix+' | Pet missing',maintenance,'petMissing','maintenance',pet_missing_trigger(),known,art,24)
             for sub in d['subRegions']:
                 if sub.get('type')=='subtext': sub['text_visible']=False
+            quiet_after_sacrifice(d)
             breathe_plain(d)
         well_fed_reminder(prefix+' | Well Fed missing',maintenance,'maintenance',24)
         if cls=='WARRIOR':
@@ -987,16 +1006,19 @@ def generate():
             shards['subRegions'].append(dict(LOW_SHARD_GLOW))
             shards.setdefault('conditions',[]).append(dict(check=dict(trigger=1,variable='stacks',op='<',value=LOW_SHARDS),
                 changes=[dict(property=f'sub.{len(shards["subRegions"])}.glow',value=True)]))
-        upkeeps=[(seeds,name) for seeds,name,missing in UPKEEP.get(cls,[]) if missing]
-        if cls=='WARLOCK': upkeeps+=[([687,706,28176],'Demon armor'),(SOUL_LINK,'Soul Link')]
-        for seeds,name in upkeeps:
+        upkeeps=[(seeds,name,None) for seeds,name,missing in UPKEEP.get(cls,[]) if missing]
+        if cls=='WARLOCK': upkeeps+=[([687,706,28176],'Demon armor',None),(SOUL_LINK,'Soul Link',None),
+            (SACRIFICE_BUFFS,'Demonic Sacrifice',[DEMONIC_SACRIFICE])]
+        for seeds,name,learned in upkeeps:
             trigger=aura_trigger(seeds);trigger.update(nativeFilters={},secretShowOn='showOnMissing')
-            breathe(icon(p,f'{row} | Upkeep reminder | {name} missing',row,cls,'tray',trigger,TRAY_ICON,modern=True))
+            d=breathe(icon(p,f'{row} | Upkeep reminder | {name} missing',row,cls,'tray',trigger,TRAY_ICON,modern=True))
+            if learned: p.eligibility[d['id']]['seeds']=learned
         for module,hand,kind,name,known,art in weapon_enchants(cls):
             breathe_plain(tray_look(class_reminder(f'{row} | Weapon reminder | {name} missing',row,module,'tray',enchant_trigger(hand,kind),known,art,TRAY_ICON)))
         if cls in PET_REMINDER:
             known,art=PET_REMINDER[cls]
-            breathe_plain(tray_look(class_reminder(f'{row} | Pet missing',row,'petMissing','tray',pet_missing_trigger(),known,art,TRAY_ICON)))
+            d=tray_look(class_reminder(f'{row} | Pet missing',row,'petMissing','tray',pet_missing_trigger(),known,art,TRAY_ICON))
+            quiet_after_sacrifice(d);breathe_plain(d)
         for name in ('Food','Drink','Well Fed'):
             # Aura names expand natively to every spell ID with that name
             # (ForeverAuras BlizzardAuraDisplay GetSpellIDs), so no ID list.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.8 — 2026-11-19 (prerelease)
+
+User: "I am missing this buff, why I don't see it from notification" (Demonic Sacrifice tooltip).
+
+- **Demonic Sacrifice reminder.** Once Demonic Sacrifice (18788) is learned, a breathing reminder shows in the upkeep row and the folded tray while none of its four buffs (18789, 18790, 18791, 18792, linked to 18788 by the client's own Cooldown Manager entry) is up. Missing only: the buff lasts two hours and ends when a demon is summoned.
+- **Pet missing stays quiet after a sacrifice.** The Warlock "pet missing" reminder has one more native trigger, "no sacrifice buff", so sacrificing the demon is not reported as a missing pet.
+- Update Warlock in `/fa`, choosing **Update Auras**.
+
 ## 0.14.7 — 2026-11-19 (prerelease)
 
 User: screenshot of `/fa` stuck at "Importing...." while updating ForeverHUD | Warlock to 0.14.6.
