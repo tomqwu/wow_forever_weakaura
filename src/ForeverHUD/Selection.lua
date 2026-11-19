@@ -80,7 +80,11 @@ end
 -- not a cooldown to watch. The game's Cooldown Manager files it under
 -- Utility; ForeverHUD leaves it out of the Utility wing and its overflow row.
 -- All four ranks (SpellNameData.lua: 6229, 11739, 11740, 28610).
-S.SKIP_UTILITY={[6229]=true,[11739]=true,[11740]=true,[28610]=true}
+S.SKIP_UTILITY={[6229]=true,[11739]=true,[11740]=true,[28610]=true,
+    -- 0.14.12 (user, after asking twice: "why howl of horror still there!!!!"):
+    -- Howl of Terror, both ranks (SpellNameData.lua: 5484, 17928). The game
+    -- files it under Utility; the player does not want it on the HUD.
+    [5484]=true,[17928]=true}
 local function skipped(entry)
     for spell in pairs(entry.identities or {}) do if S.SKIP_UTILITY[spell] then return true end end
     return false

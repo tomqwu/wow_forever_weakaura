@@ -215,6 +215,14 @@ D.cdm[29]={cdmID=29,name='Shadow Ward',category='Utility',identities={[6229]=tru
 table.insert(D.cdmOrder.Utility,1,29);S.Refresh()
 check(S.nativeSlots[5]==30 and not S.nativeUsed[29] and not trigger(' | Native utility | Entries').cdmSpells.multi[29],'Shadow Ward stays out of the Utility wing and its row')
 table.remove(D.cdmOrder.Utility,1);D.cdm[29]=nil;S.Refresh()
+-- 0.14.12: Howl of Terror (both ranks) is left out the same way.
+D.cdm[28]={cdmID=28,name='Howl of Terror',category='Utility',identities={[5484]=true}}
+D.cdm[27]={cdmID=27,name='Howl of Terror',category='Utility',identities={[17928]=true}}
+table.insert(D.cdmOrder.Utility,1,28);table.insert(D.cdmOrder.Utility,1,27);S.Refresh()
+check(S.nativeSlots[5]==30 and not S.nativeUsed[28] and not S.nativeUsed[27]
+    and not trigger(' | Native utility | Entries').cdmSpells.multi[28] and not trigger(' | Native utility | Entries').cdmSpells.multi[27],
+    'Howl of Terror stays out of the Utility wing and its row')
+table.remove(D.cdmOrder.Utility,1);table.remove(D.cdmOrder.Utility,1);D.cdm[28]=nil;D.cdm[27]=nil;S.Refresh()
 E.Profile().utility=false;S.Refresh()
 check(not S.nativeSlots[5] and not next(trigger(' | Primary | Native 5 | Entry').cdmSpells.multi),'With utility abilities off, the right wing stays empty')
 E.Profile().utility=true;S.Refresh()

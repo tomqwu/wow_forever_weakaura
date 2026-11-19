@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.12 — 2026-11-19 (prerelease)
+
+User, with an in-combat screenshot showing Howl of Terror alone on the bar: "why howl of horror still there!!!!" (asked before at 0.14.3).
+
+- **Howl of Terror left out.** The game's Cooldown Manager files Howl of Terror under Utility, so it showed in the Utility wing (in combat since 0.14.4) and, in the Globes style, alone on the skill bar. Both ranks (5484, 17928) join Shadow Ward in `S.SKIP_UTILITY`, so neither the Utility wing nor the Utility row shows it; the next Utility entry takes its slot.
+- The change is in the companion. The auras only carry the new version number, but update your class and **ForeverHUD | Core** in `/fa` so the update cue clears.
+
 ## 0.14.11 — 2026-11-19 (prerelease)
 
 User: in-game screenshot of 0.14.10 (round globes, both values, Soul Shards under the mana globe), "it's too long".

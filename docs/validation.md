@@ -1,6 +1,13 @@
-# Validation for 0.14.11
+# Validation for 0.14.12
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.12 (prerelease) — Howl of Terror left out
+
+- **Game evidence:** the user's in-combat 0.14.10 screenshot showed Howl of Terror alone in the right wing on the rail. The earlier `/fhud dump` listed it first in Cooldown Manager Utility; `SpellNameData.lua` gives its ranks as 5484 and 17928.
+- **Change:** both ranks added to `S.SKIP_UTILITY` (Selection.lua), which already leaves Shadow Ward out of the Utility wing and row.
+- **Tests:** `tests/selection.lua` puts both Howl of Terror ranks first in Utility and checks that neither takes a wing slot or appears in the Utility row.
+- **Not yet checked in game.**
 
 ## 0.14.11 (prerelease) — shorter Globes bar
 
