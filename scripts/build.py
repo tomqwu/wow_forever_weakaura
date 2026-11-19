@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.12"
+VERSION = "0.14.13"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -321,6 +321,12 @@ GLOBE_SHADE_Y = 55
 # Soul Shards text sits under the resource globe in the Globes style, like
 # the pet bar under the Health globe (the companion moves it).
 GLOBE_SHARDS = (GLOBE_X, GLOBE_Y - GLOBE_SIZE // 2 - 12)
+# 0.14.13: the pet globe (ring 60, liquid 55) sits against the Health globe's
+# lower left, its centre on the 225 degree line just past the big ring
+# (65 + 30 - 10 px overlap = 85 from the centre).
+PET_GLOBE_SIZE = 60
+PET_GLOBE_FILL = 55
+PET_GLOBE_AT = (-GLOBE_X - 60, GLOBE_Y - 60)
 # The upkeep reminder row (x=286, y=13 in the data, beside the resource bar)
 # sits above the resource globe in the Globes style, its first 24 px icon
 # 12 px over the ring.
@@ -567,6 +573,25 @@ def art_sub(asset,outset):
         textureBlendMode='BLEND',textureDesaturate=False,textureMirror=False,textureRotation=0,
         texture_alpha=1,anchor_mode='area',anchor_area='ALL',xOffset=outset,yOffset=outset)
 
+def globe(p,name,parent,cls,module,x,y,fill,ring,trigger,color,text,font):
+    """One globe: FA's native vertical progress texture (restricted-value
+    capable) with the liquid, its glass shine and the slim ring as sub-textures,
+    and one combined text."""
+    d=p.add(name,'progresstexture',parent,cls,module,x,y,
+        width=fill,height=fill,progressSource=[-1,''],adjustedMax='',adjustedMin='',
+        foregroundTexture=MEDIA+'globe-liquid.tga',backgroundTexture=MEDIA+'globe-liquid.tga',
+        desaturateBackground=False,desaturateForeground=False,sameTexture=True,compress=False,
+        blendMode='BLEND',textureWrapMode='CLAMPTOBLACKADDITIVE',backgroundOffset=0,
+        orientation='VERTICAL',inverse=False,foregroundColor=rgba(color),
+        backgroundColor=[.05,.04,.08,.92],startAngle=0,endAngle=360,user_x=0,user_y=0,crop_x=GLOBE_CROP,crop_y=GLOBE_CROP,
+        rotation=0,auraRotation=0,mirror=False,slantMode='INSIDE',
+        subRegions=[art_sub('globe-shine',0),art_sub('globe-frame',(ring-fill)//2),
+            number_text(subtext(text,'CENTER',font))])
+    if '%percenthealth' in text:
+        d['subRegions'][-1].update(text_text_format_percenthealth_format='Number',text_text_format_percenthealth_decimal_precision=0)
+    p.triggers(d,[dict(trigger)],cls,module)
+    return d
+
 def globe_section(p):
     """0.14.6 Globes frame style: native progress textures fill round globes.
 
@@ -583,26 +608,15 @@ def globe_section(p):
     health=dict(type='unit',event='Health',unit='player',use_unit=True)
     power=dict(type='unit',event='Power',unit='player',use_unit=True)
     for name,trigger,x in (('Health',health,-GLOBE_X),('Resource',power,GLOBE_X)):
-        d=p.add(f'{globes} | {name}','progresstexture',globes,CORE,'resources',x,GLOBE_Y,
-            width=GLOBE_FILL,height=GLOBE_FILL,progressSource=[-1,''],adjustedMax='',adjustedMin='',
-            foregroundTexture=MEDIA+'globe-liquid.tga',backgroundTexture=MEDIA+'globe-liquid.tga',
-            desaturateBackground=False,desaturateForeground=False,sameTexture=True,compress=False,
-            blendMode='BLEND',textureWrapMode='CLAMPTOBLACKADDITIVE',backgroundOffset=0,
-            orientation='VERTICAL',inverse=False,
-            foregroundColor=rgba(HEALTH_COLOR) if name=='Health' else rgba(UNKNOWN_RESOURCE_COLOR),
-            backgroundColor=[.05,.04,.08,.92],startAngle=0,endAngle=360,user_x=0,user_y=0,crop_x=GLOBE_CROP,crop_y=GLOBE_CROP,
-            rotation=0,auraRotation=0,mirror=False,slantMode='INSIDE',
-            # 0.14.9: one two-line text per globe. In game the 0.14.6 lone
-            # "%p" text stayed blank on the globe while the Health bar's
-            # combined "%percenthealth%%  %p" text shows both values, so each
-            # globe now uses a single combined text like the bar's.
-            subRegions=[art_sub('globe-shine',0),art_sub('globe-frame',(GLOBE_SIZE-GLOBE_FILL)//2),
-                number_text(subtext('%percenthealth%%\n%p' if name=='Health' else '%p\n%c','CENTER',15))])
+        # 0.14.9: one two-line text per globe. In game the 0.14.6 lone
+        # "%p" text stayed blank on the globe while the Health bar's
+        # combined "%percenthealth%%  %p" text shows both values, so each
+        # globe now uses a single combined text like the bar's.
+        d=globe(p,f'{globes} | {name}',globes,CORE,'resources',x,GLOBE_Y,GLOBE_FILL,GLOBE_SIZE,trigger,
+            HEALTH_COLOR if name=='Health' else UNKNOWN_RESOURCE_COLOR,
+            '%percenthealth%%\n%p' if name=='Health' else '%p\n%c',15)
         d['load']['loadFlag']=GLOBE_FLAG
-        p.triggers(d,[dict(trigger)],CORE,'resources')
-        if name=='Health':
-            d['subRegions'][-1].update(text_text_format_percenthealth_format='Number',text_text_format_percenthealth_decimal_precision=0)
-        else:
+        if name!='Health':
             # Same native resource identity as the Resource bar: the client's
             # current power type picks the colour, including form switches.
             d['customTextUpdate']='event'
@@ -1158,9 +1172,12 @@ def generate():
             pet_bar=bar(p,prefix+" | Pet health",resources,cls,"pet",dict(type="unit",event="Health",unit="pet",use_unit=True),
                 x=-138,y=-13,width=180,height=7,color=rgba(PET_HEALTH_COLOR),text="%p",label='Pet')
             pet_bar['load']['loadFlag']=f'FOREVERHUD_{cls}_petBar'
-            # 0.14.6 Globes style: a short pet bar tucked under the Health globe.
-            pet_globe=bar(p,prefix+" | Pet health | Globe",resources,cls,"pet",dict(type="unit",event="Health",unit="pet",use_unit=True),
-                x=-GLOBE_X,y=GLOBE_Y-GLOBE_SIZE//2-4,width=112,height=7,color=rgba(PET_HEALTH_COLOR),text="%p",label='Pet')
+            # 0.14.13 (user: "pet bar is invisiable to me, too small, maybe a
+            # smaller globe under big globe? left bottom corner?"): a small pet
+            # globe against the Health globe's lower left, same ID as the
+            # 0.14.6 short pet bar it replaces.
+            pet_globe=globe(p,prefix+" | Pet health | Globe",resources,cls,"pet",*PET_GLOBE_AT,PET_GLOBE_FILL,PET_GLOBE_SIZE,
+                dict(type="unit",event="Health",unit="pet",use_unit=True),PET_HEALTH_COLOR,'%percenthealth%%',11)
             pet_globe['load']['loadFlag']=f'FOREVERHUD_{cls}_petGlobe'
         if c.get('extra')=="shards":
             d=p.add(prefix+" | Soul Shards","text",resources,cls,"pet",x=138,y=-13,displayText="%c: %s  |TInterface\\Icons\\INV_Misc_Gem_Amethyst_02:12|t",

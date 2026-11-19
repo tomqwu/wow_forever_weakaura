@@ -1,6 +1,14 @@
-# Validation for 0.14.12
+# Validation for 0.14.13
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.13 (prerelease) — pet globe
+
+- **Game evidence (0.14.12):** the user's screenshot showed the shorter bar working (both groups updated) and the 112x7 pet bar under the Health globe, which the user could not see.
+- **Change:** `Pet health | Globe` is now a progress texture (pet Health trigger, vertical fill, crop 0.41, shine and ring sub-textures, `%percenthealth%%` text) at (-365, -60), 55 px with a 60 px ring.
+- **Tests:** `test_globe_frame_style` checks the pet globe's type, trigger, position, size, crop, text and art for Warlock and Hunter.
+- **Illustrative only:** `docs/images/mock-0.14.13-globes.png` is drawn from the exported textures at the generated coordinates; it is not a game capture.
+- **Not yet checked in game:** the pet globe's fill, text and placement.
 
 ## 0.14.12 (prerelease) — Howl of Terror left out
 
