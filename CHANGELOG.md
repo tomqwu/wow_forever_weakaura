@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.3 — 2026-11-19 (prerelease)
+
+User: "shard warning when it's lower than 10"
+
+- **Low Soul Shard warning (Warlock).** With fewer than 10 Soul Shards in your bags, the HUD shard count turns red and the tray shard icon glows red. Both return to normal at 10 or more.
+- Each is one native condition on the existing Item Count trigger (`stacks < 10`); bank shards are not counted.
+- Includes the unreleased 0.14.2 low-health flash.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.14.2 — 2026-11-18 (prerelease)
 
 User: "when 30% below health, you should flash"
