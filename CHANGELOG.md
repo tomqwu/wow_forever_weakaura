@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.2 — 2026-11-18 (prerelease)
+
+User: "when 30% below health, you should flash"
+
+- **Low-health flash.** At 30% health or less, a red Pixel glow races around the Core Health bar, and it stops once you are above 30%.
+- It is one native condition on the bar's own health trigger (`percenthealth <= 30` turns the glow on), so the protected percentage is never read in Lua.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.14.1 — 2026-11-18 (prerelease)
 
 User: "can you make the addon config UI a better better? layout/categories/icon?"
