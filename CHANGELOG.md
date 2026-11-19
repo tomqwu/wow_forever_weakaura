@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.4 — 2026-11-19 (prerelease)
+
+User, with a screenshot of Howl of Terror above the seal out of combat: "why howl of error shows here in non combat?", then "Wing combat-only"
+
+- **Utility wing in combat only.** Since 0.13.16 the right-hand Utility wing (Cooldown Manager Utility entries 1 to 4) and its overflow row are always shown. A newly learned Howl of Terror went to the top of the Utility list, so it sat above the seal out of combat. Those displays now carry ForeverAuras' native **In Combat** load, so they appear when combat starts and leave when it ends.
+- The damage wing over Health and the item row are unchanged (cooldown-only, in or out of combat). Your Cooldown Manager settings are not changed.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.14.3 — 2026-11-19 (prerelease)
 
 User: "shard warning when it's lower than 10"

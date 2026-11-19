@@ -1,135 +1,135 @@
 {
-  "version": "0.14.3",
+  "version": "0.14.4",
   "imports": [
     {
       "classToken": "CORE",
       "name": "Core",
       "file": "ForeverHUD-Core.txt",
-      "characters": 6566,
-      "bytes": 6567,
-      "sha256": "f0e3f13d17e3a48273b342d2fcc15823f91aaee2a4efc1e51788b394828d1e09",
+      "characters": 6596,
+      "bytes": 6597,
+      "sha256": "45d7a48f7ea83f741b5444c0f70b92b95601f789dd799c133990a933418173ef",
       "displays": 17,
       "rootID": "ForeverHUD | Core",
       "rootUID": "b3ddbb53d03",
       "updateSlug": "forever-hud-core",
-      "updateBuild": 1403
+      "updateBuild": 1404
     },
     {
       "classToken": "WARLOCK",
       "name": "Warlock",
       "file": "ForeverHUD-Warlock.txt",
-      "characters": 17864,
-      "bytes": 17865,
-      "sha256": "d652ea78600cfd721ed79b4f9af67bbdfc673fd01ba3b4aef0b63fc2031ae94c",
+      "characters": 17901,
+      "bytes": 17902,
+      "sha256": "a145316df1655e881a4063e8bf7cd2c2bb40d988f7885074ce0ef0d039049fd1",
       "displays": 159,
       "rootID": "ForeverHUD | Warlock",
       "rootUID": "465a303d63e",
       "updateSlug": "forever-hud-warlock",
-      "updateBuild": 1403
+      "updateBuild": 1404
     },
     {
       "classToken": "WARRIOR",
       "name": "Warrior",
       "file": "ForeverHUD-Warrior.txt",
-      "characters": 19254,
-      "bytes": 19255,
-      "sha256": "b2e3c6bf81ff46604157d0bdd5d9ff1e6f30ccae1a94c695a74960297536248f",
+      "characters": 19278,
+      "bytes": 19279,
+      "sha256": "ba6aab1ea131f5e2dded4a1f4c166bdb3fda1fdc46a3c85b7f0b6ca506af3615",
       "displays": 184,
       "rootID": "ForeverHUD | Warrior",
       "rootUID": "15eff965efa",
       "updateSlug": "forever-hud-warrior",
-      "updateBuild": 1403
+      "updateBuild": 1404
     },
     {
       "classToken": "MAGE",
       "name": "Mage",
       "file": "ForeverHUD-Mage.txt",
-      "characters": 13913,
-      "bytes": 13914,
-      "sha256": "3b4f7738e4051a616a4f1a76bfe16647e7efe93945fe74a06325f32f11d07bb0",
+      "characters": 13940,
+      "bytes": 13941,
+      "sha256": "6b516d27f4a62417e06bd8fd3b6edd2ee869e21e002678df751a72c3df387c1c",
       "displays": 117,
       "rootID": "ForeverHUD | Mage",
       "rootUID": "557975edb26",
       "updateSlug": "forever-hud-mage",
-      "updateBuild": 1403
+      "updateBuild": 1404
     },
     {
       "classToken": "PRIEST",
       "name": "Priest",
       "file": "ForeverHUD-Priest.txt",
-      "characters": 13826,
-      "bytes": 13827,
-      "sha256": "033d40b929dfeba9faa8c8104d8da4c24fdc69f320b67b6e8a8b6f6dcd632528",
+      "characters": 13846,
+      "bytes": 13847,
+      "sha256": "1e790f2fad3b9b994186088ea11cabec1fef5ea685157328e6d39242595d995f",
       "displays": 116,
       "rootID": "ForeverHUD | Priest",
       "rootUID": "768d7852378",
       "updateSlug": "forever-hud-priest",
-      "updateBuild": 1403
+      "updateBuild": 1404
     },
     {
       "classToken": "ROGUE",
       "name": "Rogue",
       "file": "ForeverHUD-Rogue.txt",
-      "characters": 14428,
-      "bytes": 14429,
-      "sha256": "248fb4d33f2bf5432080b6fa83e636eb8e4160e1bf07c9752d5e4038d9ba7c50",
+      "characters": 14464,
+      "bytes": 14465,
+      "sha256": "f3455928ba16a2884ac926abde2dfa935efe46974045bcca2b39f7e6612acdc4",
       "displays": 118,
       "rootID": "ForeverHUD | Rogue",
       "rootUID": "4b89d664c82",
       "updateSlug": "forever-hud-rogue",
-      "updateBuild": 1403
+      "updateBuild": 1404
     },
     {
       "classToken": "DRUID",
       "name": "Druid",
       "file": "ForeverHUD-Druid.txt",
-      "characters": 15361,
-      "bytes": 15362,
-      "sha256": "9e5b4ccc7f5debc2d11112ef2374c0e01405ed46e14bc46e34ed807fbbb10c32",
+      "characters": 15393,
+      "bytes": 15394,
+      "sha256": "5b84495c55ce64cab9bed7d3f58f0a7092bc375f5c5b26517f115347c24c5975",
       "displays": 131,
       "rootID": "ForeverHUD | Druid",
       "rootUID": "b5fbb718ee2",
       "updateSlug": "forever-hud-druid",
-      "updateBuild": 1403
+      "updateBuild": 1404
     },
     {
       "classToken": "HUNTER",
       "name": "Hunter",
       "file": "ForeverHUD-Hunter.txt",
-      "characters": 15700,
-      "bytes": 15701,
-      "sha256": "5a70f74eb8a4aeff721c13dec70e18210b2bd52c42937a143ed32b599b657492",
+      "characters": 15728,
+      "bytes": 15729,
+      "sha256": "12c6d7f68768d6d0c50c1a96b1de3f44a23499ab447aa6254eb7407689c0d4f5",
       "displays": 132,
       "rootID": "ForeverHUD | Hunter",
       "rootUID": "db9e01c7897",
       "updateSlug": "forever-hud-hunter",
-      "updateBuild": 1403
+      "updateBuild": 1404
     },
     {
       "classToken": "SHAMAN",
       "name": "Shaman",
       "file": "ForeverHUD-Shaman.txt",
-      "characters": 14038,
-      "bytes": 14039,
-      "sha256": "0422cb5b499b51e0bcbdfbdeda38debf35caa559a4de79bd88ce572bd59c7a55",
+      "characters": 14068,
+      "bytes": 14069,
+      "sha256": "00300a713cfee03ed12d9af77ea321b1ad0a4d26b2a84268be476cf48c933238",
       "displays": 114,
       "rootID": "ForeverHUD | Shaman",
       "rootUID": "d73c5f4d161",
       "updateSlug": "forever-hud-shaman",
-      "updateBuild": 1403
+      "updateBuild": 1404
     },
     {
       "classToken": "PALADIN",
       "name": "Paladin",
       "file": "ForeverHUD-Paladin.txt",
-      "characters": 13780,
-      "bytes": 13781,
-      "sha256": "66b9ab079bf3c2d48f43fc124e462eadff157e2b9870c6933ec78e55ac910a67",
+      "characters": 13809,
+      "bytes": 13810,
+      "sha256": "288ead2b1c403dbf3dccf3f70eaa863d059bb56c89323c65f637ee90a26be189",
       "displays": 115,
       "rootID": "ForeverHUD | Paladin",
       "rootUID": "316a43069bc",
       "updateSlug": "forever-hud-paladin",
-      "updateBuild": 1403
+      "updateBuild": 1404
     }
   ]
 }
