@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.10 — 2026-11-19 (prerelease)
+
+User: in-game screenshot of 0.14.9 (square liquid, upkeep icon on the mana globe), "lmao", then "just make it like latest diablo".
+
+- **Action-RPG layout in the Globes style.** The globes sit at the ends of one skill bar: the companion lowers both cooldown wings from y=80 onto the rail at y=0 (`S.ApplyLayout`, the same runtime offset it already used to lift the left wing), so up to eight spells sit in one row between the globes. Target effects, buffs and suggestions stay above the bar. Original art; no assets or layout copied from any game.
+- **Room for everything.** The globes moved from x=+-312 to +-400 and down to the bar (y=0), the rail is longer, and the shade covers the bar and the rows above. The upkeep reminder row (from x=286) now sits between the bar and the resource globe instead of on it, and the Soul Shards line moves under the resource globe, like the pet bar under the Health globe.
+- **Round liquid.** ForeverAuras scales progress-texture coordinates by sqrt(2) and divides by 1 + crop, so its default crop 0.41 shows the whole texture. The globes used 1, which showed only the middle 71% of the liquid: a square of swirl with no round edge. They now use 0.41.
+- Bars style is unchanged. Update your class and **ForeverHUD | Core** in `/fa`, choosing **Update Auras**.
+
 ## 0.14.9 — 2026-11-19 (prerelease)
 
 User: in-game screenshot of the 0.14.6 globes, "can you redesign it? looks ugly", then chose "Slim dark rail".

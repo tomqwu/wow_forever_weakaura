@@ -232,15 +232,32 @@ function S.SyncCDM()
         elseif region and region.SortUpdatedChildren then region:SortUpdatedChildren() end
     end
 end
+-- 0.14.10 (user: "just make it like latest diablo"): in the Globes style both
+-- cooldown wings come down from PRIMARY_Y onto the rail at GLOBE_Y, one skill
+-- bar between the globes; the Soul Shards text moves under the resource globe.
+-- Matches GLOBE_X, GLOBE_Y, PRIMARY_Y and GLOBE_SHARDS in scripts/build.py.
+S.PRIMARY_Y,S.GLOBE_X,S.GLOBE_Y=80,400,0
+S.SHARDS_BARS,S.SHARDS_GLOBES={138,-13},{400,-87}
+function S.Globes()
+    local p=E.Profile()
+    return p and p.frameStyle=='Globes' or false
+end
 function S.ApplyLayout()
     local api=E.API(); if not api or not api.GetRegion then return end
+    local globes=S.Globes()
     local lift=S.LeftLift()
     for id,position in pairs(S.positions) do
         local region=api.GetRegion(id)
         -- Ordinary spell displays only, never root ancestry or native aura
         -- buttons. Cached form selection can reposition these ordinary icons.
-        if region and region.SetOffset then region:SetOffset(position.x,position.x<0 and lift or 0) end
+        local y=globes and S.GLOBE_Y-S.PRIMARY_Y or (position.x<0 and lift or 0)
+        if region and region.SetOffset then region:SetOffset(position.x,y) end
     end
+    -- An ordinary text display (no aura buttons).
+    local shards=E.DisplayID and E.DisplayID('Soul Shards')
+    local region=shards and api.GetRegion(shards)
+    local at=globes and S.SHARDS_GLOBES or S.SHARDS_BARS
+    if region and region.SetOffset then region:SetOffset(at[1],at[2]) end
 end
 function S.Refresh()
     local available={}

@@ -43,6 +43,17 @@ do
     check(region('Shadow Bolt').y==0,'With suggestions off, the left wing stays at its normal height')
     E.Profile().suggest=true;S.Refresh()
     check(region('Shadow Bolt').y==42,'Turning suggestions back on lifts it again')
+    -- 0.14.10: the Globes style lowers both wings onto the rail (y 0, one
+    -- skill bar) and moves the shard text under the resource globe; Bars
+    -- puts everything back.
+    E.DisplayID=E.DisplayID or function(name)return 'ForeverHUD | Warlock | '..name end
+    local shards=ForeverAuras.GetRegion(E.DisplayID('Soul Shards'))
+    E.Profile().frameStyle='Globes';S.ApplyLayout()
+    check(region('Shadow Bolt').y==-80 and region('Life Tap').y==-80 and region('Shadow Bolt').x<0 and region('Life Tap').x>0,
+        'Globes: both wings sit on the rail, on their own sides')
+    check(shards.x==400 and shards.y==-87,'Globes: Soul Shards under the resource globe')
+    E.Profile().frameStyle='Bars';S.ApplyLayout()
+    check(region('Shadow Bolt').y==42 and region('Life Tap').y==0 and shards.x==138 and shards.y==-13,'Bars restores the wings and the shard text')
     -- 0.10: the current spec picks its suggestion list; Leveling without talents.
     local function allowed(id)return S.Allowed(id,E.catalog[id])end
     local leveling,affliction='ForeverHUD | Warlock | Suggest | Corruption','ForeverHUD | Warlock | Suggest | Affliction | Corruption'

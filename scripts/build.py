@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.9"
+VERSION = "0.14.10"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -295,15 +295,28 @@ LOW_HEALTH = 30
 # opening is 91% of the trimmed canvas) holds a much larger liquid, and a thin
 # rail (globe-band, 4:1 canvas, the rail ~1/29 of its length) joins the
 # globes behind the seal, its end caps tucked under the rings.
-GLOBE_X = 312
-GLOBE_Y = 13
+# 0.14.10 (user: "just make it like latest diablo"): the action-RPG layout.
+# The globes sit at the ends of one skill bar: the companion lowers both
+# cooldown wings onto the rail at GLOBE_Y (Selection.lua, S.GLOBE_Y), auras
+# and suggestions stay above it. The globes moved out to +-400 so the bar
+# (x up to +-233) and the upkeep row (from x=286) sit between them.
+GLOBE_X = 400
+GLOBE_Y = 0
 GLOBE_SIZE = 150
 GLOBE_FILL = 138
-GLOBE_BAND = (504, 126)
-# 0.14.9 (user: "hard to see with background"): the shade under the rows,
-# from just below the rail to above the lifted left wing.
-GLOBE_SHADE = (560, 220)
-GLOBE_SHADE_Y = 62
+GLOBE_BAND = (676, 169)
+# FA scales progress-texture coordinates by sqrt(2) and divides by 1+crop
+# (TextureCoords.lua, ProgressTexture.lua SetCropX), so its default 0.41 shows
+# the whole texture. 0.14.6 used 1, which showed only the middle 71% of the
+# liquid: a square of swirl with no round edge, seen in game in 0.14.9.
+GLOBE_CROP = 0.41
+# 0.14.9 (user: "hard to see with background"): the shade under the bar and
+# the rows above it.
+GLOBE_SHADE = (720, 230)
+GLOBE_SHADE_Y = 55
+# Soul Shards text sits under the resource globe in the Globes style, like
+# the pet bar under the Health globe (the companion moves it).
+GLOBE_SHARDS = (GLOBE_X, GLOBE_Y - GLOBE_SIZE // 2 - 12)
 # 0.14.3: Warlocks are warned when they carry fewer than LOW_SHARDS Soul
 # Shards. One native condition on the Item Count trigger's stacks.
 LOW_SHARDS = 10
@@ -569,7 +582,7 @@ def globe_section(p):
             blendMode='BLEND',textureWrapMode='CLAMPTOBLACKADDITIVE',backgroundOffset=0,
             orientation='VERTICAL',inverse=False,
             foregroundColor=rgba(HEALTH_COLOR) if name=='Health' else rgba(UNKNOWN_RESOURCE_COLOR),
-            backgroundColor=[.05,.04,.08,.92],startAngle=0,endAngle=360,user_x=0,user_y=0,crop_x=1,crop_y=1,
+            backgroundColor=[.05,.04,.08,.92],startAngle=0,endAngle=360,user_x=0,user_y=0,crop_x=GLOBE_CROP,crop_y=GLOBE_CROP,
             rotation=0,auraRotation=0,mirror=False,slantMode='INSIDE',
             # 0.14.9: one two-line text per globe. In game the 0.14.6 lone
             # "%p" text stayed blank on the globe while the Health bar's
