@@ -30,7 +30,8 @@ function Frame:GetChecked()return self.checked end
 function Frame:SetValue(value)self.valueNumber=value;if self.scripts.OnValueChanged then self.scripts.OnValueChanged(self,value)end end
 function Frame:GetCenter()return self.x or 1000,self.y or 600 end
 function Frame:StopMovingOrSizing()self.stopped=true end
-for _,key in ipairs({"RegisterForClicks","RegisterForDrag","SetFrameStrata","SetAllPoints","SetColorTexture","SetMovable","SetClampedToScreen","SetBackdrop","SetBackdropColor","SetBackdropBorderColor","StartMoving","SetFont","SetTextColor","SetWidth","SetJustifyH","EnableMouse","SetMinMaxValues","SetValueStep","SetObeyStepOnDrag","SetTexture","SetTexCoord"})do Frame[key]=function()end end
+for _,key in ipairs({"RegisterForClicks","RegisterForDrag","SetFrameStrata","SetAllPoints","SetColorTexture","SetMovable","SetClampedToScreen","SetBackdrop","SetBackdropColor","SetBackdropBorderColor","StartMoving","SetFont","SetTextColor","SetWidth","SetJustifyH","EnableMouse","SetMinMaxValues","SetValueStep","SetObeyStepOnDrag","SetTexCoord"})do Frame[key]=function()end end
+function Frame:SetTexture(value)self.texture=value end
 function CreateFrame(_,name,parent,template)
     local frame=setmetatable({scripts={},events={},parent=parent},Frame)
     if template=="UICheckButtonTemplate" then frame.Text=frame:CreateFontString()end
@@ -237,7 +238,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.14.0','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.14.1','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return ForeverHUD and ForeverHUD.version=="0.3.2" and ForeverHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true
