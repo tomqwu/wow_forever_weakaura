@@ -1,6 +1,13 @@
-# Validation for 0.14.6
+# Validation for 0.14.7
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.7 (prerelease) — class import fix
+
+- **Game evidence:** BugSack after the stalled Warlock update recorded `attempt to perform numeric conversion on a secret number value` in `SetAnimAlpha` (`RegionPrototype.lua:885`), reached from `CancelAnimation` (`Animations.lua:435`) during `Add` in the import's `UpdatePhase2`. Only the Globe danger texture combined an alpha condition on a restricted value with an alpha animation.
+- **Fix:** the danger ring has no main animation; the existing resource-intensity texture uses the same condition-only pattern without error.
+- **Tests:** `test_globe_frame_style` asserts the danger ring has no alpha animation.
+- **Not yet checked in game:** the re-import of the class group and the steady ring.
 
 ## 0.14.6 (prerelease) — Globes frame style
 
