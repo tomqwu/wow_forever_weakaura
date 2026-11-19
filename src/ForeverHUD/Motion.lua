@@ -59,8 +59,9 @@ function M.Gather()
     -- 0.14.6 Globes style: each globe slides out with its liquid, shine, ring
     -- and danger ring together; the band behaves like the chassis.
     if p and p.frameStyle=='Globes' then
-        rows={{'Soul Shards',138,'pet'},{'Globe band',0,'art'},{'Globe shade',0,'art'},{'Pet health | Globe',-312,'pet'},
-            {'Globes | Health',-312,'resources'},{'Globes | Resource',312,'resources'},{'Globe danger',-312,'resources'}}
+        local gx=E.selection and E.selection.GLOBE_X or 400
+        rows={{'Soul Shards',gx,'pet'},{'Globe band',0,'art'},{'Globe shade',0,'art'},{'Pet health | Globe',-gx,'pet'},
+            {'Globes | Health',-gx,'resources'},{'Globes | Resource',gx,'resources'},{'Globe danger',-gx,'resources'}}
     end
     for _,row in ipairs(rows) do
         local id=E.DisplayID(row[1])

@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.14.9"
+E.releaseVersion = "0.14.10"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -325,6 +325,8 @@ function E.ApplyLayout()
     handle:SetShown(#regions > 0 and E.Gate("base", E.class) and (p.art or not p.locked))
     outline:SetShown(not p.locked)
     E.ApplyCastScale()
+    -- 0.14.10: the frame style moves the cooldown wings and the shard text.
+    if E.selection and E.selection.ApplyLayout then E.selection.ApplyLayout() end
     E.pending = nil
 end
 local function finishBind()

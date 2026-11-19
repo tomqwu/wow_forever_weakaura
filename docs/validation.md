@@ -1,6 +1,14 @@
-# Validation for 0.14.9
+# Validation for 0.14.10
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.10 (prerelease) — action-RPG Globes layout
+
+- **Game evidence (0.14.9):** the user's screenshot showed the new slim ring and both values on the globes, but the liquid filled a square past the ring with no rim darkening, and the upkeep reminder sat on the mana globe. The installed `globe-liquid.tga` has transparent black corners, so the swirl in the corners meant the texture was shown zoomed in: `BaseRegions/TextureCoords.lua` multiplies coordinates by 1.4142 and divides by the region's crop, which `RegionTypes/ProgressTexture.lua` sets to 1 + crop (default 0.41).
+- **Change:** crop 0.41 on both globes; globes at x=+-400, y=0; rail 676x169; shade 720x230 at y=55; in the Globes style `S.ApplyLayout` sets both wings' y offset to -80 (onto the rail) and moves the Soul Shards text to (400, -87); `E.ApplyLayout` runs it so a style change applies at once.
+- **Tests:** `test_globe_frame_style` checks the crop, the new positions, that the companion's constants match the generator, and that the upkeep row clears the resource ring; `tests/selection.lua` checks both wings on the rail and the shard text moving in the Globes style and coming back in Bars.
+- **Illustrative only:** `docs/images/mock-0.14.10-globes.png` is drawn from the exported textures at the generated coordinates; it is not a game capture.
+- **Not yet checked in game:** the round liquid, the skill bar on the rail, the shard text position, and the slide when the HUD unfolds.
 
 ## 0.14.9 (prerelease) — slimmer Globes style
 
