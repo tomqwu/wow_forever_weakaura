@@ -1,6 +1,14 @@
-# Validation for 0.14.10
+# Validation for 0.14.11
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.11 (prerelease) — shorter Globes bar
+
+- **Game evidence (0.14.10):** the user's screenshot, after reinstalling the Warlock group under its own name, showed round liquid, both values, the pet bar and Soul Shards under the globes, and an empty rail between globes at +-400, which the user called too long.
+- **Change:** globes 130/120 px at x=+-305; rail 512x128; shade 600x230; Soul Shards (305, -77); in the Globes style the upkeep group moves to (305, 89), out of combat only.
+- **Tests:** `test_globe_frame_style` checks the new sizes and positions, that four spells per side end inside the liquid edge, and that the companion's upkeep spots match the generator; `tests/selection.lua` checks the upkeep row moving with the style and staying put in combat while the spell wings still move.
+- **Illustrative only:** `docs/images/mock-0.14.11-globes.png` is drawn from the exported textures at the generated coordinates; it is not a game capture.
+- **Not yet checked in game:** the shorter bar, the upkeep row above the resource globe, and the skill bar in combat.
 
 ## 0.14.10 (prerelease) — action-RPG Globes layout
 

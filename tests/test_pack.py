@@ -531,7 +531,7 @@ class PackTests(unittest.TestCase):
         by_id={d['id']:d for d in self.regions}
         G=CORE_ID+' | Globes'
         self.assertEqual(by_id[G]['controlledChildren'],[f'{G} | Health',f'{G} | Resource'])
-        for name,x,event in (('Health',-400,'Health'),('Resource',400,'Power')):
+        for name,x,event in (('Health',-305,'Health'),('Resource',305,'Power')):
             globe=by_id[f'{G} | {name}']
             self.assertEqual((globe['regionType'],globe['orientation'],globe['xOffset'],globe['yOffset'],globe['frameStrata']),
                 ('progresstexture','VERTICAL',x,0,1))
@@ -543,9 +543,9 @@ class PackTests(unittest.TestCase):
             trig=globe['triggers'][1]['trigger']
             self.assertEqual((trig['event'],trig['unit']),(event,'player'))
             art=[(s['textureTexture'].rsplit('\\',1)[-1],s['xOffset']) for s in globe['subRegions'] if s['type']=='subtexture']
-            # 0.14.9: the slim ring sits 6 px past the 138 px liquid.
-            self.assertEqual(art,[('globe-shine.tga',0),('globe-frame.tga',6)],'Shine, then the ring 6 px past the liquid')
-            self.assertEqual((globe['width'],globe['height']),(138,138))
+            # 0.14.11: the slim ring sits 5 px past the 120 px liquid (130 px globes).
+            self.assertEqual(art,[('globe-shine.tga',0),('globe-frame.tga',5)],'Shine, then the ring 5 px past the liquid')
+            self.assertEqual((globe['width'],globe['height']),(120,120))
             for s in globe['subRegions']:
                 if s['type']=='subtexture':
                     self.assertTrue((ROOT/'src/ForeverHUD/Media'/s['textureTexture'].rsplit('\\',1)[-1]).is_file())
@@ -571,11 +571,11 @@ class PackTests(unittest.TestCase):
             # 0.14.9: a dark shade under everything between the globes.
             shade=by_id[prefix+' | Globe shade']
             self.assertEqual((shade['load']['loadFlag'],shade['frameStrata'],shade['width'],shade['yOffset']),
-                (f'FOREVERHUD_{token}_globeArt',ART_STRATA,720,55))
+                (f'FOREVERHUD_{token}_globeArt',ART_STRATA,600,55))
             self.assertTrue(shade['texture'].endswith('globe-shade.tga') if 'texture' in shade else True)
             self.assertLess(frame.index(prefix+' | Globe shade'),frame.index(prefix+' | Globe band'),'The shade draws first')
             danger=by_id[prefix+' | Globe danger']
-            self.assertEqual((danger['load']['loadFlag'],danger['alpha'],danger['xOffset']),(f'FOREVERHUD_{token}_globes',0,-400))
+            self.assertEqual((danger['load']['loadFlag'],danger['alpha'],danger['xOffset']),(f'FOREVERHUD_{token}_globes',0,-305))
             self.assertEqual(danger['conditions'],[dict(check=dict(trigger=1,variable='percenthealth',op='<=',value=30),
                 changes=[dict(property='alpha',value=1)])])
             self.assertEqual(danger['triggers'][1]['trigger']['unit'],'player')
@@ -587,9 +587,10 @@ class PackTests(unittest.TestCase):
             token=cls.upper()
             self.assertEqual(by_id[f'ForeverHUD | {cls} | Pet health']['load']['loadFlag'],f'FOREVERHUD_{token}_petBar')
             pet=by_id[f'ForeverHUD | {cls} | Pet health | Globe']
-            self.assertEqual((pet['load']['loadFlag'],pet['xOffset']),(f'FOREVERHUD_{token}_petGlobe',-400))
+            self.assertEqual((pet['load']['loadFlag'],pet['xOffset']),(f'FOREVERHUD_{token}_petGlobe',-305))
         # Outer cooldown icons (x=+-233) stay inside each ring's inner edge.
-        self.assertLess(72+3*47+20,400-150//2)
+        from build import GLOBE_FILL, GLOBE_MAINT
+        self.assertLess(72+3*47+20,305-GLOBE_FILL//2,'Four spells per side end inside the liquid edge')
         # 0.14.10: the companion lowers both wings onto the rail and moves the
         # shard text under the resource globe, with the generator's numbers.
         from build import GLOBE_X, GLOBE_Y, PRIMARY_Y, GLOBE_SHARDS
@@ -598,8 +599,10 @@ class PackTests(unittest.TestCase):
         self.assertIn(f'S.SHARDS_BARS,S.SHARDS_GLOBES={{138,-13}},{{{GLOBE_SHARDS[0]},{GLOBE_SHARDS[1]}}}',selection)
         shards=by_id['ForeverHUD | Warlock | Soul Shards']
         self.assertEqual((shards['xOffset'],shards['yOffset']),(138,-13),'Bars position stays in the data')
-        # The upkeep row (from x=286) sits between the bar and the resource ring.
-        self.assertLess(286+12,GLOBE_X-150//2)
+        # 0.14.11: the upkeep row moves above the resource globe (out of combat).
+        self.assertIn(f'S.MAINT_BARS,S.MAINT_GLOBES={{286,13}},{{{GLOBE_MAINT[0]},{GLOBE_MAINT[1]}}}',selection)
+        maint=by_id['ForeverHUD | Warlock | Maintenance']
+        self.assertEqual((maint['xOffset'],maint['yOffset']),(286,13),'Bars position stays in the data')
     def test_missing_upkeep_breathes(self):
         # 0.13.1: missing upkeep reminders (tray and HUD) play the native
         # Pulse slowly; nothing else does, and no Gained flash suppresses it.
