@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.13 — 2026-11-19 (prerelease)
+
+User, with an in-game screenshot of the shorter 0.14.12 bar: "pet bar is invisiable to me, too small, maybe a smaller globe under big globe? left bottom corner?"
+
+- **Pet globe.** In the Globes style the pet's health is a small globe (60 px ring, 55 px liquid) against the lower left of the Health globe, centred at (-365, -60), with the pet's health percentage inside. It is the same native vertical fill, liquid, shine and slim ring as the big globes, in the pet health colour, and keeps the display ID of the 0.14.6 short pet bar it replaces.
+- The big globes now share one `globe()` recipe in `scripts/build.py`; their data is unchanged.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.14.12 — 2026-11-19 (prerelease)
 
 User, with an in-combat screenshot showing Howl of Terror alone on the bar: "why howl of horror still there!!!!" (asked before at 0.14.3).

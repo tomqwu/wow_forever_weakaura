@@ -587,7 +587,14 @@ class PackTests(unittest.TestCase):
             token=cls.upper()
             self.assertEqual(by_id[f'ForeverHUD | {cls} | Pet health']['load']['loadFlag'],f'FOREVERHUD_{token}_petBar')
             pet=by_id[f'ForeverHUD | {cls} | Pet health | Globe']
-            self.assertEqual((pet['load']['loadFlag'],pet['xOffset']),(f'FOREVERHUD_{token}_petGlobe',-305))
+            self.assertEqual((pet['load']['loadFlag'],pet['xOffset']),(f'FOREVERHUD_{token}_petGlobe',-365))
+            # 0.14.13: a small pet globe (native fill, slim ring) against the Health
+            # globe's lower left, replacing the thin 0.14.6 pet bar.
+            self.assertEqual((pet['regionType'],pet['orientation'],pet['yOffset'],pet['width'],pet['crop_x']),('progresstexture','VERTICAL',-60,55,0.41))
+            self.assertEqual((pet['triggers'][1]['trigger']['event'],pet['triggers'][1]['trigger']['unit']),('Health','pet'))
+            self.assertEqual([s['text_text'] for s in pet['subRegions'] if s['type']=='subtext'],['%percenthealth%%'])
+            self.assertEqual([(s['textureTexture'].rsplit('\\',1)[-1],s['xOffset']) for s in pet['subRegions'] if s['type']=='subtexture'],
+                [('globe-shine.tga',0),('globe-frame.tga',2)])
         # Outer cooldown icons (x=+-233) stay inside each ring's inner edge.
         from build import GLOBE_FILL, GLOBE_MAINT
         self.assertLess(72+3*47+20,305-GLOBE_FILL//2,'Four spells per side end inside the liquid edge')
