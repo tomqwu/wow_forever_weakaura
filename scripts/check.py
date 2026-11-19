@@ -68,7 +68,7 @@ with zipfile.ZipFile(archive) as z:
     for folder in ('docs/images','preview/classes','preview/states','preview/casting'):
         for path in (ROOT/folder).glob('*.png'):
             assert z.read(path.relative_to(ROOT).as_posix())==path.read_bytes(),str(path)
-    assert len([name for name in names if name.endswith('.tga')])==29  # 0.14.6: five globe textures (0.12.1: the drawn shelf)
+    assert len([name for name in names if name.endswith('.tga')])==30  # 0.14.9: globe shade; 0.14.6: five globe textures (0.12.1: the drawn shelf)
     assert not any('Guos' in name or name.startswith('vendor/') for name in names)
     for path in (ROOT/'src/ForeverHUD').rglob('*'):
         if path.suffix in ('.toc','.lua','.tga','.wav'):

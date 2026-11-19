@@ -37,12 +37,12 @@ do
     -- 0.9.7: suggestions stay right above the DoT row; the left (attack)
     -- wing rises above them, the right wing stays put.
     local function region(name)return ForeverAuras.GetRegion('ForeverHUD | Warlock | Primary | '..name)end
-    check(region('Shadow Bolt').y==34 and region('Life Tap').y==0,'Left wing lifts above the suggestions; right wing unchanged')
+    check(region('Shadow Bolt').y==42 and region('Life Tap').y==0,'Left wing lifts above the suggestions; right wing unchanged')
     check(not frames['ForeverHUD | Warlock | Suggest'],'The suggestion row itself is never moved')
     E.Profile().suggest=false;S.Refresh()
     check(region('Shadow Bolt').y==0,'With suggestions off, the left wing stays at its normal height')
     E.Profile().suggest=true;S.Refresh()
-    check(region('Shadow Bolt').y==34,'Turning suggestions back on lifts it again')
+    check(region('Shadow Bolt').y==42,'Turning suggestions back on lifts it again')
     -- 0.10: the current spec picks its suggestion list; Leveling without talents.
     local function allowed(id)return S.Allowed(id,E.catalog[id])end
     local leveling,affliction='ForeverHUD | Warlock | Suggest | Corruption','ForeverHUD | Warlock | Suggest | Affliction | Corruption'
@@ -54,7 +54,7 @@ do
     loadout('MAGE',{})
     check(S.suggestSpec==nil and S.LeftLift()==0,'A class without a Leveling list shows none and keeps its wing down')
     E.Profile().school='Fire';S.Refresh()
-    check(S.suggestSpec=='Fire' and S.LeftLift()==34,'Mage Fire list loads and lifts the wing')
+    check(S.suggestSpec=='Fire' and S.LeftLift()==42,'Mage Fire list loads and lifts the wing')
     loadout('WARLOCK',{'Shadow Bolt','Corruption','Immolate','Drain Life','Drain Soul','Life Tap','Fear','Health Funnel'})
 end
 do

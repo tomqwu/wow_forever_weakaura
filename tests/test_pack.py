@@ -153,7 +153,7 @@ class PackTests(unittest.TestCase):
             self.assertNotIn(forbidden,code)
     def test_wow_texture_format(self):
         files=list((ROOT/'src/ForeverHUD/Media').glob('*.tga'))
-        self.assertEqual(len(files),29,'0.14.6: globe ring, band, liquid, shine and danger halo (0.12.1: the drawn shelf)')
+        self.assertEqual(len(files),30,'0.14.9: globe shade; 0.14.6: globe ring, band, liquid, shine and danger halo (0.12.1: the drawn shelf)')
         for path in files:
             header=path.read_bytes()[:18]
             self.assertEqual(header[2],2,'Uncompressed true-color TGA')
@@ -540,13 +540,18 @@ class PackTests(unittest.TestCase):
             trig=globe['triggers'][1]['trigger']
             self.assertEqual((trig['event'],trig['unit']),(event,'player'))
             art=[(s['textureTexture'].rsplit('\\',1)[-1],s['xOffset']) for s in globe['subRegions'] if s['type']=='subtexture']
-            self.assertEqual(art,[('globe-shine.tga',0),('globe-frame.tga',25)],'Shine, then the ring 25 px past the liquid')
+            # 0.14.9: the slim ring sits 6 px past the 138 px liquid.
+            self.assertEqual(art,[('globe-shine.tga',0),('globe-frame.tga',6)],'Shine, then the ring 6 px past the liquid')
+            self.assertEqual((globe['width'],globe['height']),(138,138))
             for s in globe['subRegions']:
                 if s['type']=='subtexture':
                     self.assertTrue((ROOT/'src/ForeverHUD/Media'/s['textureTexture'].rsplit('\\',1)[-1]).is_file())
+        # 0.14.9: one combined two-line text per globe, never a lone %p
+        # (blank on the 0.14.6 globes in game).
         texts=[s['text_text'] for s in by_id[f'{G} | Health']['subRegions'] if s['type']=='subtext']
-        self.assertEqual(texts,['%p','%percenthealth%%'])
+        self.assertEqual(texts,['%percenthealth%%\n%p'])
         resource=by_id[f'{G} | Resource']
+        self.assertEqual([s['text_text'] for s in resource['subRegions'] if s['type']=='subtext'],['%p\n%c'])
         self.assertEqual({c['check']['value'] for c in resource['conditions']},set(RESOURCE_STYLES))
         self.assertTrue(all(c['changes'][0]['property']=='foregroundColor' for c in resource['conditions']))
         # The bars keep FOREVERHUD_CORE_resources, which the companion turns
@@ -560,6 +565,12 @@ class PackTests(unittest.TestCase):
             self.assertEqual((band['load']['loadFlag'],band['frameStrata'],band['yOffset']),(f'FOREVERHUD_{token}_globeArt',ART_STRATA,13))
             self.assertIn('LayoutVisible()',band['triggers'][2]['trigger']['custom'])
             self.assertLess(frame.index(prefix+' | Globe band'),frame.index(prefix+' | Seal'),'The band draws under the seal')
+            # 0.14.9: a dark shade under everything between the globes.
+            shade=by_id[prefix+' | Globe shade']
+            self.assertEqual((shade['load']['loadFlag'],shade['frameStrata'],shade['width'],shade['yOffset']),
+                (f'FOREVERHUD_{token}_globeArt',ART_STRATA,560,62))
+            self.assertTrue(shade['texture'].endswith('globe-shade.tga') if 'texture' in shade else True)
+            self.assertLess(frame.index(prefix+' | Globe shade'),frame.index(prefix+' | Globe band'),'The shade draws first')
             danger=by_id[prefix+' | Globe danger']
             self.assertEqual((danger['load']['loadFlag'],danger['alpha'],danger['xOffset']),(f'FOREVERHUD_{token}_globes',0,-312))
             self.assertEqual(danger['conditions'],[dict(check=dict(trigger=1,variable='percenthealth',op='<=',value=30),
@@ -875,7 +886,8 @@ class PackTests(unittest.TestCase):
         # The row grows left from the seal, its lead slot's right edge 4 px
         # outside the Health bar's inner end; actions sit at the row origin.
         self.assertEqual((row['blizzardFlow'],row['blizzardFlowGrowth'],row['blizzardFlowSpacing']),(True,'LEFT',4))
-        self.assertEqual((row['xOffset']+16,row['yOffset']),(-52,74))
+        # 0.14.9: 8 px above the DoT row (top y=54), so y=78.
+        self.assertEqual((row['xOffset']+16,row['yOffset']),(-52,78))
         for spec,ids in lists.items():
             actions=[id for id in ids if by_id[id]['parent']==row['id']]
             self.assertEqual(actions,[id for id in row['controlledChildren'] if id in ids],f'{spec}: row in priority order')
@@ -904,11 +916,12 @@ class PackTests(unittest.TestCase):
         self.assertIn('ForeverHUD.SuggestTarget()',burn['triggers'][2]['trigger']['custom'],'Only in combat on a hostile target')
         # 0.9.6: on the damage side, right above the DoT row.
         dots=by_id['ForeverHUD | Warlock | Target effects']
-        self.assertEqual(row['yOffset']-16,dots['yOffset']+14+4,'4 px above the 28 px DoT row')
+        # 0.14.9: 8 px gaps (user: "all stacking together").
+        self.assertEqual(row['yOffset']-16,dots['yOffset']+14+8,'8 px above the 28 px DoT row')
         selection=(ROOT/'src/ForeverHUD/Selection.lua').read_text(encoding='utf-8')
-        # 0.9.7: the left wing (40 px at y=80) rises 4 px clear of the suggestions.
-        lift=row['yOffset']+16+4+20-80
-        self.assertEqual(lift,34)
+        # 0.9.7: the left wing (40 px at y=80) rises clear of the suggestions (8 px since 0.14.9).
+        lift=row['yOffset']+16+8+20-80
+        self.assertEqual(lift,42)
         self.assertIn(f"S.WING_LIFT={lift}",selection,'Companion wing lift matches the generator')
         tap=by_id['ForeverHUD | Warlock | Suggest | Life Tap']
         self.assertEqual(tap['alpha'],0)

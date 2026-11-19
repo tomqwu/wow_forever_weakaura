@@ -4,7 +4,7 @@ Figma's image generator cannot return transparent PNGs, so the globe-style
 masters were generated on flat #00FF00 and keyed once with this script. The
 raw downloads are kept next to the keyed masters in assets/ai/ as *-source.png.
 
-    python scripts/chroma.py assets/ai/globe-frame-source.png assets/ai/globe-frame.png
+    python scripts/chroma.py assets/ai/globe-ring-source.png assets/ai/globe-ring.png
 
 A pixel's "greenness" is how far green exceeds the stronger of red and blue.
 Clearly green pixels become transparent, clearly non-green pixels stay
@@ -33,7 +33,20 @@ def key(image):
             pixels[x, y] = (r, min(g, other), b, round(a * keep))
     return image
 
+def dehaze(image, low=60, high=200):
+    """0.14.9: the rail came back with real alpha plus a wide soft dark haze.
+    Alpha at or under low drops out, at or over high is solid, linear between;
+    colours are untouched."""
+    image = image.convert('RGBA')
+    alpha = image.getchannel('A').point(lambda a: 0 if a <= low else 255 if a >= high else round((a - low) * 255 / (high - low)))
+    image.putalpha(alpha)
+    return image
+
 if __name__ == '__main__':
-    source, target = sys.argv[1], sys.argv[2]
-    key(Image.open(source)).save(target)
-    print('keyed', source, '->', target)
+    # python scripts/chroma.py SOURCE TARGET          key a flat green background
+    # python scripts/chroma.py --dehaze SOURCE TARGET  clean an alpha haze instead
+    args = sys.argv[1:]
+    mode = dehaze if args[0] == '--dehaze' else key
+    source, target = args[-2], args[-1]
+    mode(Image.open(source)).save(target)
+    print('keyed' if mode is key else 'dehazed', source, '->', target)

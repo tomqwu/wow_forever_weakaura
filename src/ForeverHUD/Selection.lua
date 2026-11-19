@@ -9,9 +9,9 @@ S.WING_X=S.SEAL_EDGE+S.ICON/2
 -- 0.9.7: spell suggestions always sit right above the DoT row (fixed in the
 -- import). The left (attack) cooldown wing, whose native icons may appear
 -- only while on cooldown, rises above them instead: 40 px icons centred
--- 34 px higher clear the 32 px suggestion row. Matches WING_LIFT in
--- scripts/build.py.
-S.WING_LIFT=34
+-- 42 px higher clear the 32 px suggestion row (0.14.9: 8 px row gaps).
+-- Matches WING_LIFT in scripts/build.py.
+S.WING_LIFT=42
 function S.FromSeal(sign,rank)
     return sign*(S.WING_X+(rank-1)*S.STEP)
 end

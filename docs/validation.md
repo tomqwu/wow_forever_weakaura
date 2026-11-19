@@ -1,6 +1,14 @@
-# Validation for 0.14.8
+# Validation for 0.14.9
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.9 (prerelease) — slimmer Globes style
+
+- **Game evidence (0.14.6):** the user's screenshot showed the Health globe with only "100%" and the resource globe with only "Mana"; the separate `%p` texts were blank, while the Health bar's combined text showed "97% 1414".
+- **Change:** each globe has one combined two-line text with the bar's number format; the slim ring opening (91% of the trimmed ring, measured on the keyed master) sets the 138 px liquid; the rail replaces the band at the same texture path.
+- **Tests:** `test_globe_frame_style` checks the liquid size, the ring outset (6 px), the single combined text on each globe, and the shade (size, strata, flag, drawn before the rail); the texture count is 30; the wing lift test checks `S.WING_LIFT` 42.
+- **Illustrative only:** `docs/images/mock-0.14.9-globes.png` is drawn from the exported textures at the generated coordinates; it is not a game capture.
+- **Not yet checked in game:** whether the combined texts show both values on the globes, the new ring and rail, and the liquid shading.
 
 ## 0.14.8 (prerelease) — Demonic Sacrifice reminder
 

@@ -28,9 +28,15 @@ Figma AI credits. Figma returns no transparency, so each frame was generated on
 flat `#00FF00` and keyed once by `scripts/chroma.py` into real alpha. The raw
 downloads are kept as `*-source.png`; the prompts are in the `.prompt.txt` files.
 
-- `globe-frame.png`: an ornate round ring with an empty opening for the liquid.
-- `globe-belt.png`: the band between the globes, with concave ends and a central mount for the class seal.
-- `globe-liquid.png`: a greyscale swirling liquid, tinted in game; `scripts/media.py` gives it a round alpha.
+- `globe-liquid.png`: a greyscale swirling liquid, tinted in game; `scripts/media.py` gives it a round alpha and, since 0.14.9, a darker rim.
+
+0.14.9 (user: "looks ugly", then "Slim dark rail"), also generated with the
+Figma image generator on 2026-11-19 with the user's approval. They replace the
+0.14.6 ornate ring and wide band, which are removed from this folder (they stay
+in git history). The exported file names stay `globe-frame` and `globe-band`.
+
+- `globe-ring.png`: a slim blackened-iron ring with four small gems, keyed from green.
+- `globe-rail.png`: a thin iron rail with a central boss. Figma returned this one with real alpha but a wide soft dark haze, so it was cleaned with `scripts/chroma.py --dehaze` instead of keyed.
 
 The glass highlight (`globe-shine`) and the low-health danger ring
 (`globe-danger`) are small geometric SVG accents drawn in `scripts/media.py`.
