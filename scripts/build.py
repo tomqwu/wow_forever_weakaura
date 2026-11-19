@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.6"
+VERSION = "0.14.7"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -586,8 +586,11 @@ def globe_class_art(p,cls,prefix,frame):
     p.triggers(danger,[dict(type='unit',event='Health',unit='player',use_unit=True)],cls,'resources')
     danger['conditions']=[dict(check=dict(trigger=1,variable='percenthealth',op='<=',value=LOW_HEALTH),
         changes=[dict(property='alpha',value=1)])]
-    danger['animation']['main']=dict(type='custom',duration_type='seconds',duration=.7,use_alpha=True,
-        alphaType='alphaPulse',alpha=.25,easeType='none',easeStrength=3)
+    # 0.14.7: the halo is steady, not pulsing. Its alpha comes from a condition
+    # on the restricted health percentage, so the region's alpha is a secret
+    # value; cancelling an alpha animation (Animations.lua:435) makes
+    # SetAnimAlpha call max() on it while /fa is open
+    # (RegionPrototype.lua:885), which killed the 0.14.6 class import.
 
 def cooldown(seed, secondary=False):
     return dict(type="spell",event="Cooldown Progress (Spell)",unit="player",spellName=seed,

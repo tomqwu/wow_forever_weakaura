@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.7 — 2026-11-19 (prerelease)
+
+User: screenshot of `/fa` stuck at "Importing...." while updating ForeverHUD | Warlock to 0.14.6.
+
+- **Fixed: class imports stopped part way.** The Globes style's danger ring took its alpha from a condition on the protected health percentage and also pulsed. When ForeverAuras cancels an alpha animation with `/fa` open, `SetAnimAlpha` calls `max()` on the region's alpha (`RegionPrototype.lua:885`), which is a secret value there, so the import coroutine errored and the progress bar stayed put. The ring is now steady: it appears at 30% health or less without pulsing.
+- If an earlier update stopped part way, ForeverHUD reports the stray displays in chat. In `/fa`, delete every top-level "ForeverHUD | <class>" entry, then type `/fhud install`.
+
 ## 0.14.6 — 2026-11-19 (prerelease)
 
 User: "design a 2nd style of frame like diablo, with globe types , make sure redesign spell/icon/recommendation/buff/cdm integration too on left and right", then "Build this layout"

@@ -31,6 +31,22 @@ class PackTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.pack,cls.eligibility=generate();cls.regions=[cls.pack['d']]+cls.pack['c']
+    def test_restricted_alpha_is_never_animated(self):
+        # 0.14.7: a condition on a restricted Health/Power value makes the
+        # region's alpha a secret; FA's SetAnimAlpha then calls max() on it
+        # when an alpha animation is cancelled with /fa open, which aborted
+        # the 0.14.6 class import.
+        checked=0
+        for d in self.regions:
+            restricted={k for k,t in d.get('triggers',{}).items() if isinstance(k,int) and t['trigger'].get('type')=='unit'
+                and t['trigger'].get('event') in ('Health','Power')}
+            secret=any(ch.get('property')=='alpha' and c.get('check',{}).get('trigger') in restricted
+                for c in d.get('conditions',[]) for ch in c.get('changes',[]))
+            if not secret: continue
+            checked+=1
+            for phase,anim in d.get('animation',{}).items():
+                self.assertFalse(anim.get('type')!='none' and anim.get('use_alpha'),(d['id'],phase))
+        self.assertGreater(checked,0)
     def test_class_switch_and_disabled_module_lifecycle(self):
         classes=set()
         for d in self.pack['c']:
@@ -549,6 +565,7 @@ class PackTests(unittest.TestCase):
             self.assertEqual(danger['conditions'],[dict(check=dict(trigger=1,variable='percenthealth',op='<=',value=30),
                 changes=[dict(property='alpha',value=1)])])
             self.assertEqual(danger['triggers'][1]['trigger']['unit'],'player')
+            self.assertFalse(danger['animation']['main'].get('use_alpha'),'0.14.7: the danger halo does not pulse')
             self.assertEqual(by_id[prefix+' | Chassis']['load']['loadFlag'],f'FOREVERHUD_{token}_chassis')
             for side in ('Left','Right'):
                 self.assertEqual(by_id[f'{prefix} | Shelf | {side}']['load']['loadFlag'],f'FOREVERHUD_{token}_chassis')
