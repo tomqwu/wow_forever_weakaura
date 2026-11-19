@@ -10,16 +10,11 @@ local function label(parent, text, size, x, y, color)
     f:SetTextColor(unpack(color or {0.88, 0.86, 0.94}))
     return f
 end
-local function button(parent, text, x, y, width, callback)
-    local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-    b:SetSize(width, 26); b:SetPoint("BOTTOMLEFT", x, y)
-    b:SetText(E.L(text)); b:SetScript("OnClick", callback)
-    return b
-end
 function E.RefreshOptions()
     local panel, p = E.panel, E.Profile()
     if not panel or not p then return end
     panel.refreshing = true
+    panel.crest:SetTexture("Interface\\AddOns\\ForeverHUD\\Media\\crest-"..string.lower(E.class or "warlock"))
     panel.classLabel:SetText(E.L(E.classNames[E.class]) .. "  /  " .. E.L("Each class keeps its own settings."))
     for key, box in pairs(panel.checks) do box:SetChecked(p[key]) end
     local minimap = E.minimapTray and E.minimapTray.Settings()
@@ -48,138 +43,220 @@ function E.RefreshOptions()
     panel.install:SetShown(#problems > 0)
     panel.refreshing = false
 end
+-- 0.14.1 (user: "can you make the addon config UI a better better?
+-- layout/categories/icon?"): a header with the class crest, a sidebar of
+-- icon categories, and one page per category with a title, a one-line
+-- description and grouped controls. Control names and preference keys are
+-- unchanged, so saved settings carry over.
+local W, H, SIDE, CX, CW = 720, 540, 186, 206, 494
+local COL2 = CX + 254
+-- Shown in the sidebar, in this order. Icons are native client icons.
+local categories = {
+    {key='General', icon='Interface\\Icons\\INV_Misc_Gear_01', text='Turn the HUD on, lock it, pick a language and keep the auras current.'},
+    {key='Display', icon='Interface\\Icons\\Spell_Holy_MindVision', text='Choose which parts of the HUD show. Disabled modules unload their trackers.'},
+    {key='Reminders', icon='Interface\\Icons\\INV_Misc_PocketWatch_01', text='Reminders for missing buffs, pets and weapon enchants, and alert sounds.'},
+    {key='Combat', icon='Interface\\Icons\\Ability_Warrior_OffensiveStance', text='How the HUD unfolds and behaves in combat, and the plans it follows.'},
+    {key='Layout', icon='Interface\\Icons\\INV_Misc_Map_01', text='Size, opacity and position. Drag the center seal to move it while unlocked.'},
+    {key='Minimap', icon='Interface\\Icons\\INV_Misc_Spyglass_03', text='The ForeverHUD minimap button and its tray of other addons\' buttons.'},
+}
+local reminderKeys = {imbue=true, oil=true, petMissing=true, fedMissing=true, alerts=true}
 local function build()
     local p = CreateFrame("Frame", "ForeverHUDOptions", UIParent, "BackdropTemplate")
-    p:SetSize(560, 570); p:SetPoint("CENTER"); p:SetFrameStrata("DIALOG")
+    p:SetSize(W, H); p:SetPoint("CENTER"); p:SetFrameStrata("DIALOG")
     p:SetClampedToScreen(true); p:SetMovable(true); p:EnableMouse(true)
     p:RegisterForDrag("LeftButton")
     p:SetScript("OnDragStart", p.StartMoving); p:SetScript("OnDragStop", p.StopMovingOrSizing)
     p:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8", edgeFile="Interface\\Buttons\\WHITE8X8", edgeSize=1})
     p:SetBackdropColor(0.035, 0.03, 0.065, 0.98); p:SetBackdropBorderColor(0.36, 0.26, 0.52, 1)
-    label(p, "F O R E V E R H U D", 22, 24, -23)
-    label(p, "Class Combat HUD", 11, 26, -51, {0.65,0.6,0.73})
-    p.classLabel = label(p, "", 11, 25, -80)
+    table.insert(UISpecialFrames, "ForeverHUDOptions")
+    -- Header: crest, title, class line and version.
+    local header = p:CreateTexture(nil, "BACKGROUND")
+    header:SetPoint("TOPLEFT", 1, -1); header:SetSize(W - 2, 76); header:SetColorTexture(0.075, 0.055, 0.12, 1)
+    p.crest = p:CreateTexture(nil, "ARTWORK")
+    p.crest:SetSize(60, 60); p.crest:SetPoint("TOPLEFT", 14, -9)
+    label(p, "F O R E V E R H U D", 20, 84, -18)
+    p.classLabel = label(p, "", 11, 86, -46, {0.72, 0.66, 0.84})
+    p.version = label(p, "", 10, W - 150, -50, {0.5, 0.46, 0.58})
+    p.version:SetWidth(120); p.version:SetJustifyH("RIGHT")
+    p.version:SetText("v" .. tostring(E.releaseVersion or ""))
+    local rule = p:CreateTexture(nil, "BORDER")
+    rule:SetPoint("TOPLEFT", 1, -77); rule:SetSize(W - 2, 1); rule:SetColorTexture(0.36, 0.26, 0.52, 1)
     local close = CreateFrame("Button", nil, p, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", -4, -4); close:SetScript("OnClick", function() p:Hide() end)
-    table.insert(UISpecialFrames, "ForeverHUDOptions")
-    p.checks, p.sliders, p.sections = {}, {}, {}
-    local function check(parent,key,text,x,y)
+    -- Sidebar.
+    local side = p:CreateTexture(nil, "BACKGROUND")
+    side:SetPoint("TOPLEFT", 1, -78); side:SetSize(SIDE, H - 79); side:SetColorTexture(0.02, 0.018, 0.04, 1)
+    local edge = p:CreateTexture(nil, "BORDER")
+    edge:SetPoint("TOPLEFT", SIDE + 1, -78); edge:SetSize(1, H - 79); edge:SetColorTexture(0.22, 0.16, 0.32, 1)
+    p.checks, p.sliders, p.sections, p.tabs = {}, {}, {}, {}
+    local function select(key)
+        p.current = key
+        for name, frame in pairs(p.sections) do frame:SetShown(name == key) end
+        for name, tab in pairs(p.tabs) do
+            tab.selected:SetShown(name == key); tab.accent:SetShown(name == key)
+            tab.label:SetTextColor(unpack(name == key and {1, 0.94, 0.78} or {0.78, 0.74, 0.86}))
+        end
+    end
+    p.Select = select
+    for i, category in ipairs(categories) do
+        local tab = CreateFrame("Button", nil, p)
+        tab:SetSize(SIDE - 16, 38); tab:SetPoint("TOPLEFT", 9, -88 - (i - 1) * 42)
+        tab.selected = tab:CreateTexture(nil, "BACKGROUND"); tab.selected:SetAllPoints()
+        tab.selected:SetColorTexture(0.36, 0.26, 0.52, 0.35)
+        tab.accent = tab:CreateTexture(nil, "BORDER"); tab.accent:SetPoint("TOPLEFT", 0, 0); tab.accent:SetSize(3, 38)
+        tab.accent:SetColorTexture(0.85, 0.7, 1, 1)
+        local hover = tab:CreateTexture(nil, "HIGHLIGHT"); hover:SetAllPoints(); hover:SetColorTexture(0.75, 0.6, 1, 0.12)
+        tab.icon = tab:CreateTexture(nil, "ARTWORK"); tab.icon:SetSize(26, 26); tab.icon:SetPoint("LEFT", 10, 0)
+        tab.icon:SetTexture(category.icon); tab.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        tab.label = tab:CreateFontString(nil, "OVERLAY")
+        tab.label:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 13, ""); tab.label:SetPoint("LEFT", 46, 0)
+        tab.label:SetText(E.L(category.key))
+        tab:SetScript("OnClick", function() select(category.key) end)
+        p.tabs[category.key] = tab
+        local section = CreateFrame("Frame", nil, p); section:SetAllPoints(); p.sections[category.key] = section
+        label(section, category.key, 16, CX, -94, {1, 0.94, 0.78})
+        local about = label(section, category.text, 11, CX, -118, {0.65, 0.61, 0.73})
+        about:SetWidth(CW); about:SetJustifyH("LEFT")
+    end
+    -- A small heading with a rule, grouping the controls below it.
+    local function group(parent, text, y)
+        label(parent, text, 12, CX, y, {0.85, 0.72, 1})
+        local line = parent:CreateTexture(nil, "BORDER")
+        line:SetPoint("TOPLEFT", CX, y - 18); line:SetSize(CW, 1); line:SetColorTexture(0.36, 0.26, 0.52, 0.6)
+    end
+    local function check(parent, key, text, x, y)
         local box = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
-        box:SetSize(25,25); box:SetPoint("TOPLEFT",x,y)
-        box.Text:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF",11,"")
-        box.Text:SetText(E.L(text));box.Text:SetTextColor(.88,.86,.94)
-        box:SetScript("OnClick",function(self)E.Set(key,self:GetChecked()==true)end)
-        p.checks[key]=box
+        box:SetSize(25, 25); box:SetPoint("TOPLEFT", x, y)
+        box.Text:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 12, "")
+        box.Text:SetText(E.L(text)); box.Text:SetTextColor(.88, .86, .94)
+        box:SetScript("OnClick", function(self) E.Set(key, self:GetChecked() == true) end)
+        p.checks[key] = box
+        return box
     end
-    check(p,'enabled','Enabled',22,-104); check(p,'locked','Lock position',292,-104)
-    for i,title in ipairs({'Modules','Behavior','Position'}) do
-        local section=CreateFrame('Frame',nil,p);section:SetAllPoints();p.sections[title]=section
-        local tab=CreateFrame('Button',nil,p,'UIPanelButtonTemplate')
-        tab:SetSize(163,27);tab:SetPoint('TOPLEFT',25+(i-1)*174,-145);tab:SetText(E.L(title))
-        tab:SetScript('OnClick',function()
-            for key,frame in pairs(p.sections)do frame:SetShown(key==title)end
-        end)
-        section:SetShown(i==1)
+    local function grid(parent, entries, y)
+        for i, entry in ipairs(entries) do
+            check(parent, entry[1], entry[2], i % 2 == 1 and CX - 4 or COL2, y - math.floor((i - 1) / 2) * 30)
+        end
+        return y - math.ceil(#entries / 2) * 30
     end
-    local shown={}
-    for _,entry in ipairs(E.modules)do
-        local only=E.moduleClasses and E.moduleClasses[entry[1]]
-        if not only or only[E.class] then shown[#shown+1]=entry end
+    local function wide(parent, x, y, width, text, callback)
+        local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+        b:SetSize(width, 28); b:SetPoint("TOPLEFT", x, y)
+        if text then b:SetText(E.L(text)) end
+        if callback then b:SetScript("OnClick", callback) end
+        return b
     end
-    for i,entry in ipairs(shown)do
-        check(p.sections.Modules,entry[1],entry[2],i%2==1 and 22 or 292,-190-math.floor((i-1)/2)*25)
-    end
-    label(p.sections.Modules,'Disabled modules unload their trackers.',11,27,-440,{.65,.61,.73})
-    local behavior=p.sections.Behavior
-    for i,entry in ipairs({{'combatOnly','Combat only'},{'hoverUtility','Utility on hover'},
-        {'expandCombat','Expand when combat starts'},{'unfold','Unfold animation'},
-        {'unfoldSound','Unfold sound'},{'resourceFlow','Resource flow'},
-        {'cleave','Prefer Cleave in Fury'}})do
-        check(behavior,entry[1],entry[2],i%2==1 and 22 or 292,-195-math.floor((i-1)/2)*36)
-    end
-    local function cycle(key,values,title,y)
-        local b=CreateFrame('Button',nil,behavior,'UIPanelButtonTemplate')
-        b:SetSize(506,29);b:SetPoint('TOPLEFT',27,y)
-        b:SetScript('OnClick',function()
-            local options=values();local current=E.Profile()[key];local index=0
-            for i,value in ipairs(options)do if value==current then index=i;break end end
-            E.Set(key,options[index%#options+1]);E.RefreshOptions()
-        end)
-        b.title=title;return b
-    end
-    p.castChoice=cycle('castBarMode',function()return {'Default','ForeverHUD','Both'}end,'Cast bar display',-303)
-    p.castChoice:SetSize(241,29);p.castChoice:ClearAllPoints();p.castChoice:SetPoint('TOPLEFT',292,-303)
-    p.school=cycle('school',function()
-        local values={'Auto'};for _,school in ipairs(E.schools and E.schools[E.class] or {})do values[#values+1]=school end
-        return values
-    end,'Talent school',-359)
-    p.swing=cycle('swingMode',function()return {'Auto','Single','Dual'}end,'Swing mode',-397)
-    p.cooldown=cycle('cooldownLayout',function()return {'Forever','Class plan'}end,'Cooldown layout',-435)
-    local position=p.sections.Position
-    local function slider(key,title,minimum,maximum,step,x,y)
-        label(position,title,11,x,y)
-        local s=CreateFrame('Slider',nil,position,'OptionsSliderTemplate')
-        s:SetSize(218,15);s:SetPoint('TOPLEFT',x+2,y-24)
-        s:SetMinMaxValues(minimum,maximum);s:SetValueStep(step);s:SetObeyStepOnDrag(true)
-        if s.Low then s.Low:SetText('')end;if s.High then s.High:SetText('')end;if s.Text then s.Text:SetText('')end
-        s.value=label(position,'',10,x+166,y)
-        s:SetScript('OnValueChanged',function(_,value)
-            if p.refreshing then return end
-            value=math.floor(value/step+.5)*step;E.Set(key,value)
-            s.value:SetText(percentKeys[key] and string.format('%d%%',math.floor(value*100+.5))or tostring(value))
-        end)
-        p.sliders[key]=s
-    end
-    slider('scale','Scale',.6,1.6,.05,27,-205)
-    slider('opacity','Opacity',.25,1,.05,292,-205)
-    slider('x','Horizontal position',-900,900,1,27,-290)
-    slider('y','Vertical position',-600,600,1,292,-290)
-    -- 0.13.7: the ForeverHUD cast bar's own size, and the language choice.
-    slider('castScale','Cast bar size',.6,2,.05,27,-350)
-    p.language=CreateFrame('Button',nil,position,'UIPanelButtonTemplate')
-    p.language:SetSize(241,29);p.language:SetPoint('TOPLEFT',292,-362)
-    p.language:SetScript('OnClick',function()
-        local nextChoice={Auto='zhCN',zhCN='enUS',enUS='Auto'}
+    -- General.
+    local general = p.sections.General
+    group(general, "HUD", -150)
+    check(general, 'enabled', 'Enabled', CX - 4, -176); check(general, 'locked', 'Lock position', COL2, -176)
+    p.language = wide(general, CX, -214, 240, nil, function()
+        local nextChoice = {Auto='zhCN', zhCN='enUS', enUS='Auto'}
         E.SetLanguage(nextChoice[ForeverHUDDB.language or 'Auto'])
     end)
-    -- 0.14.0: the minimap button and its addon-button tray. Account-wide, so
-    -- they are kept outside the per-class profile checks.
-    p.minimapChecks={}
-    for i,entry in ipairs({{'show','Minimap button'},{'group','Group addon minimap buttons'}})do
-        local box=CreateFrame('CheckButton',nil,position,'UICheckButtonTemplate')
-        box:SetSize(25,25);box:SetPoint('TOPLEFT',i==1 and 22 or 292,-398)
-        box.Text:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF",11,"")
-        box.Text:SetText(E.L(entry[2]));box.Text:SetTextColor(.88,.86,.94)
-        box:SetScript('OnClick',function(self)if E.minimapTray then E.minimapTray.Set(entry[1],self:GetChecked()==true)end end)
-        p.minimapChecks[entry[1]]=box
-    end
-    local inspect=CreateFrame('Button',nil,position,'UIPanelButtonTemplate')
-    inspect:SetSize(506,29);inspect:SetPoint('TOPLEFT',27,-430);inspect:SetText(E.L('Expand for inspection'))
-    inspect:SetScript('OnClick',function()if E.state then E.state.Inspect()end end)
-    p.notice=label(p,'',11,27,-466,{.65,.61,.73});p.notice:SetWidth(506);p.notice:SetJustifyH('LEFT')
+    group(general, "Auras", -262)
     -- Aura install status: red with an install button when the Core or class
     -- auras are missing, older than the addon, or need cleaning up.
-    p.auraStatus=label(p,'',11,27,-490);p.auraStatus:SetWidth(335);p.auraStatus:SetJustifyH('LEFT')
-    p.install=CreateFrame('Button',nil,p,'UIPanelButtonTemplate')
-    p.install:SetSize(163,24);p.install:SetPoint('TOPLEFT',373,-486);p.install:SetText(E.L('Install / update auras'))
-    p.install:SetScript('OnClick',function()
-        if E.InCombat()then p.notice:SetText(E.L('Changes apply after combat.'));return end
+    p.auraStatus = label(general, '', 11, CX, -290); p.auraStatus:SetWidth(CW); p.auraStatus:SetJustifyH('LEFT')
+    p.install = wide(general, CX, -330, 240, 'Install / update auras', function()
+        if E.InCombat() then p.notice:SetText(E.L('Changes apply after combat.')); return end
         if E.InstallBundled then E.InstallBundled() end
     end)
-    button(p,'Open aura editor',25,18,163,function()
-        local api=E.API()
-        if E.InCombat()then p.notice:SetText(E.L('Changes apply after combat.'));return end
-        if api and api.OpenOptions then api.OpenOptions(E.GetRootID());p:Hide()end
+    wide(general, COL2, -330, 240, 'Open aura editor', function()
+        local api = E.API()
+        if E.InCombat() then p.notice:SetText(E.L('Changes apply after combat.')); return end
+        if api and api.OpenOptions then api.OpenOptions(E.GetRootID()); p:Hide() end
     end)
-    button(p,'Reset position',199,18,163,E.ResetPosition)
-    button(p,'Reset this class',373,18,163,E.Reset)
-    p:SetScript('OnShow',function()
-        E.inspectingSettings=true;if E.state then E.state.Update(true)end;E.RefreshOptions()
+    -- Display and Reminders: the module list, split by purpose. Modules only
+    -- some classes have are left out elsewhere.
+    local display, reminders = {}, {}
+    for _, entry in ipairs(E.modules) do
+        local only = E.moduleClasses and E.moduleClasses[entry[1]]
+        if not only or only[E.class] then
+            local list = reminderKeys[entry[1]] and reminders or display
+            list[#list + 1] = entry
+        end
+    end
+    group(p.sections.Display, "HUD modules", -150)
+    grid(p.sections.Display, display, -176)
+    group(p.sections.Reminders, "Reminders and alerts", -150)
+    grid(p.sections.Reminders, reminders, -176)
+    -- Combat.
+    local combat = p.sections.Combat
+    group(combat, "Behavior", -150)
+    local after = grid(combat, {{'combatOnly','Combat only'}, {'hoverUtility','Utility on hover'},
+        {'expandCombat','Expand when combat starts'}, {'unfold','Unfold animation'},
+        {'unfoldSound','Unfold sound'}, {'resourceFlow','Resource flow'},
+        {'cleave','Prefer Cleave in Fury'}}, -176)
+    group(combat, "Plans", after - 12)
+    local function cycle(key, values, title, x, y)
+        local b = wide(combat, x, y, 240, nil, function()
+            local options = values(); local current = E.Profile()[key]; local index = 0
+            for i, value in ipairs(options) do if value == current then index = i; break end end
+            E.Set(key, options[index % #options + 1]); E.RefreshOptions()
+        end)
+        b.title = title; return b
+    end
+    local row = after - 40
+    p.school = cycle('school', function()
+        local values = {'Auto'}; for _, school in ipairs(E.schools and E.schools[E.class] or {}) do values[#values + 1] = school end
+        return values
+    end, 'Talent school', CX, row)
+    p.cooldown = cycle('cooldownLayout', function() return {'Forever', 'Class plan'} end, 'Cooldown layout', COL2, row)
+    p.castChoice = cycle('castBarMode', function() return {'Default', 'ForeverHUD', 'Both'} end, 'Cast bar display', CX, row - 36)
+    p.swing = cycle('swingMode', function() return {'Auto', 'Single', 'Dual'} end, 'Swing mode', COL2, row - 36)
+    -- Layout.
+    local position = p.sections.Layout
+    local function slider(key, title, minimum, maximum, step, x, y)
+        label(position, title, 11, x, y)
+        local s = CreateFrame('Slider', nil, position, 'OptionsSliderTemplate')
+        s:SetSize(226, 15); s:SetPoint('TOPLEFT', x + 2, y - 24)
+        s:SetMinMaxValues(minimum, maximum); s:SetValueStep(step); s:SetObeyStepOnDrag(true)
+        if s.Low then s.Low:SetText('') end; if s.High then s.High:SetText('') end; if s.Text then s.Text:SetText('') end
+        s.value = label(position, '', 10, x + 176, y)
+        s:SetScript('OnValueChanged', function(_, value)
+            if p.refreshing then return end
+            value = math.floor(value / step + .5) * step; E.Set(key, value)
+            s.value:SetText(percentKeys[key] and string.format('%d%%', math.floor(value * 100 + .5)) or tostring(value))
+        end)
+        p.sliders[key] = s
+    end
+    group(position, "Size", -150)
+    slider('scale', 'Scale', .6, 1.6, .05, CX, -178)
+    slider('opacity', 'Opacity', .25, 1, .05, COL2, -178)
+    slider('castScale', 'Cast bar size', .6, 2, .05, CX, -234)
+    group(position, "Position", -292)
+    slider('x', 'Horizontal position', -900, 900, 1, CX, -320)
+    slider('y', 'Vertical position', -600, 600, 1, COL2, -320)
+    wide(position, CX, -380, 240, 'Reset position', E.ResetPosition)
+    wide(position, COL2, -380, 240, 'Expand for inspection', function() if E.state then E.state.Inspect() end end)
+    -- Minimap: account-wide, so kept outside the per-class profile checks.
+    local minimap = p.sections.Minimap
+    group(minimap, "Minimap button", -150)
+    p.minimapChecks = {}
+    for i, entry in ipairs({{'show', 'Minimap button'}, {'group', 'Group addon minimap buttons'}}) do
+        local box = CreateFrame('CheckButton', nil, minimap, 'UICheckButtonTemplate')
+        box:SetSize(25, 25); box:SetPoint('TOPLEFT', i == 1 and CX - 4 or COL2, -176)
+        box.Text:SetFont(STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF", 12, "")
+        box.Text:SetText(E.L(entry[2])); box.Text:SetTextColor(.88, .86, .94)
+        box:SetScript('OnClick', function(self) if E.minimapTray then E.minimapTray.Set(entry[1], self:GetChecked() == true) end end)
+        p.minimapChecks[entry[1]] = box
+    end
+    local hint = label(minimap, 'Hover over the ForeverHUD minimap button to open the tray. Left-click opens settings, right-click expands or folds the HUD. These two settings are shared by all your characters.', 11, CX, -218, {.65, .61, .73})
+    hint:SetWidth(CW); hint:SetJustifyH('LEFT')
+    -- Footer: status line and the per-class reset.
+    p.notice = label(p, '', 11, CX, -(H - 34), {.65, .61, .73}); p.notice:SetWidth(CW - 180); p.notice:SetJustifyH('LEFT')
+    local reset = CreateFrame("Button", nil, p, "UIPanelButtonTemplate")
+    reset:SetSize(160, 26); reset:SetPoint("BOTTOMRIGHT", -14, 14)
+    reset:SetText(E.L('Reset this class')); reset:SetScript("OnClick", E.Reset)
+    select(categories[1].key)
+    p:SetScript('OnShow', function()
+        E.inspectingSettings = true; if E.state then E.state.Update(true) end; E.RefreshOptions()
     end)
-    p:SetScript('OnHide',function()
-        E.inspectingSettings=false;if E.state then E.state.Update(false)end
+    p:SetScript('OnHide', function()
+        E.inspectingSettings = false; if E.state then E.state.Update(false) end
     end)
-    p:Hide();E.panel=p;return p
+    p:Hide(); E.panel = p; return p
 end
 function E.ToggleOptions()
     if not E.Profile() then return end

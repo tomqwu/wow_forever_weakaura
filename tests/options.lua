@@ -54,4 +54,26 @@ do
     check(E.perf.refresh==0 and E.perf.notify==0 and not next(E.perf.events),'Each report starts a new count')
     C_AddOnProfiler=nil
 end
+-- 0.14.1: sidebar categories with icons, one page each.
+do
+    local p=E.panel
+    local order={'General','Display','Reminders','Combat','Layout','Minimap'}
+    for _,key in ipairs(order) do
+        check(p.tabs[key] and p.sections[key] and p.tabs[key].icon.texture and p.tabs[key].icon.texture:find('^Interface\\Icons\\'),
+            'Category '..key..' has a sidebar tab with a native icon and a page')
+        check(E.L(key)~=key,'Category '..key..' is translated')
+    end
+    p.Select('Combat')
+    check(p.current=='Combat' and p.sections.Combat.shown and not p.sections.General.shown and p.tabs.Combat.selected.shown
+        and not p.tabs.General.selected.shown,'Choosing a category shows only its page and marks its tab')
+    p.tabs.Minimap.scripts.OnClick(p.tabs.Minimap)
+    check(p.sections.Minimap.shown and p.minimapChecks.show and p.minimapChecks.group,'The Minimap page holds the minimap settings')
+    -- This panel was built for a Warrior, so the Warlock/Hunter-only reminders are absent.
+    check(not p.checks.petMissing and p.checks.oil.parent==p.sections.Reminders and p.checks.fedMissing.parent==p.sections.Reminders
+        and p.checks.alerts.parent==p.sections.Reminders and p.checks.fx.parent==p.sections.Display
+        and p.checks.cleave.parent==p.sections.Combat and p.sliders.scale.parent==p.sections.Layout,
+        'Controls sit on the page for their purpose')
+    check(p.crest.texture=='Interface\\AddOns\\ForeverHUD\\Media\\crest-warlock' and p.version.text=='v'..E.releaseVersion,
+        'The header shows the class crest and the version')
+end
 print('Settings/locale checks passed: '..checks)

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.14.1 — 2026-11-18 (prerelease)
+
+User: "can you make the addon config UI a better better? layout/categories/icon?"
+
+- **Redesigned settings window.** A header shows the class crest, the class and the version. A sidebar lists six categories with native icons:
+  - **General:** enable, lock, language, aura status, install and the aura editor.
+  - **Display:** HUD modules.
+  - **Reminders:** reminders and alert sounds.
+  - **Combat:** behavior, talent school, cooldown layout, cast bar and swing mode.
+  - **Layout:** size, opacity, position, reset and inspection.
+  - **Minimap:** the minimap button and tray.
+- Each page has a title, a one-line description and grouped controls with headings. **Reset this class** stays in the footer.
+- Preference keys and control names are unchanged, so saved settings carry over.
+- The auras carry the new version: update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.14.0 — 2026-11-18 (prerelease)
 
 User: "add addon manager to include all addon into a box around map, it's too crowded, similarly to what I've done in classmate addon"

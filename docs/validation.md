@@ -1,6 +1,17 @@
-# Validation for 0.14.0
+# Validation for 0.14.1
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.1 (prerelease) — redesigned settings window
+
+- **Test:** `tests/options.lua` gains 16 checks:
+  - every category has a sidebar tab with a native icon, a page and a Chinese label;
+  - choosing a category shows only its page;
+  - controls sit on the right page;
+  - the header shows the crest and the version.
+
+  The existing settings checks pass unchanged.
+- **Not yet checked in game:** the look, and that the native icons resolve on this client.
 
 ## 0.14.0 (prerelease) — minimap button tray
 
