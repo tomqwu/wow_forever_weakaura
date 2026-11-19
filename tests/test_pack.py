@@ -493,6 +493,18 @@ class PackTests(unittest.TestCase):
         others=[d['id'] for d in self.regions if any(c['check'].get('variable')=='stacks' and c['check'].get('value')==10
             for c in d.get('conditions',[])) and '| Warlock |' not in d['id']]
         self.assertEqual(others,[])
+    def test_utility_wing_combat_only(self):
+        # 0.14.4 (user: "Wing combat-only"): the always-shown Utility wing
+        # (slots 5-8) and its overflow row load only in combat through the
+        # native In Combat load; the damage wing and items stay as they were.
+        by_id={d['id']:d for d in self.regions}
+        for cls in ('Warlock','Warrior','Mage','Priest','Rogue','Druid','Hunter','Shaman','Paladin'):
+            for slot in range(1,9):
+                load=by_id[f'ForeverHUD | {cls} | Primary | Native {slot} | Entry']['load']
+                self.assertEqual(load.get('use_combat'),True if slot>4 else None,(cls,slot))
+        self.assertIs(by_id[CORE_ID+' | Native utility | Entries']['load']['use_combat'],True)
+        for title in ('Native cooldowns','Native items'):
+            self.assertNotIn('use_combat',by_id[CORE_ID+f' | {title} | Entries']['load'])
     def test_missing_upkeep_breathes(self):
         # 0.13.1: missing upkeep reminders (tray and HUD) play the native
         # Pulse slowly; nothing else does, and no Gained flash suppresses it.

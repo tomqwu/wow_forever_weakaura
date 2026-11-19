@@ -1,6 +1,14 @@
-# Validation for 0.14.3
+# Validation for 0.14.4
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.4 (prerelease) — Utility wing in combat only
+
+- **Evidence:** the user's `/fhud dump` (Warlock) lists Howl of Terror (5484) first in the Cooldown Manager Utility category, after Shadow Ward, which the wing skips. ForeverAuras `Prototypes.lua` defines the `combat` load option (In Combat, tristate).
+- **Test:** `test_utility_wing_combat_only` checks:
+  - every class's right-wing slots 5 to 8 and the Core Utility overflow row carry `use_combat = true`;
+  - the damage wing slots 1 to 4, the Essential overflow row and the item row do not.
+- **Not yet checked in game:** that the wing is empty out of combat and fills when combat starts.
 
 ## 0.14.3 (prerelease) — low Soul Shard warning
 

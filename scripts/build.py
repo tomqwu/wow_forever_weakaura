@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.3"
+VERSION = "0.14.4"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -569,9 +569,11 @@ def generate():
         name=CORE_ID+' | '+title
         extra=p.group(name,rows,CORE,'utility',x=138,y=y,dynamic=True)
         extra.update(grow='GRID',gridType='HD',gridWidth=5,rowSpace=12,columnSpace=8,sort='custom',sortOn='index',customSort=SORT_CDM)
-        icon(p,name+' | Entries',name,CORE,'utility',dict(type='cdm',event=event,
+        entries=icon(p,name+' | Entries',name,CORE,'utility',dict(type='cdm',event=event,
             cdmSource=source,cdmSpells=dict(multi={}),cdmShow='cooldown',use_cdmShowGCD=False,
             cdmTrack='auto',cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
+        # 0.14.4: the always-shown Utility overflow row follows its wing, in combat only.
+        if title=='Native utility': entries['load']['use_combat']=True
     native_auras=CORE_ID+' | Native auras'; p.group(native_auras,CORE_ID,CORE,'base')
     native_effects=CORE_ID+' | Native player effects'
     # Native buffs mirror the DoT row: seated on the rim over the resource
@@ -665,6 +667,10 @@ def generate():
             # The wing is a group, so its layout bind rides on each entry.
             slot_icon['actions']['init']['custom']+=f'\nif ForeverHUD then ForeverHUD.BindAbility("{wing}") end'
             slot_icon['conditions']=[dict(check=dict(trigger=1,variable=variable,value=value),changes=[dict(property=prop,value=color)]) for variable,value,prop,color in [('onCooldown',1,'desaturate',True),('isUsable',0,'desaturate',True),('inRange',0,'color',[1,.3,.3,1])]]
+            # 0.14.4 (user: "Wing combat-only"): the Utility wing (slots 5-8)
+            # shows its entries always, so it loads only in combat (native
+            # In Combat load). The damage wing stays cooldown-only.
+            if slot>4: slot_icon['load']['use_combat']=True
         for seed,name in candidates(cls):
             d=icon(p,primary+" | "+name,primary,cls,"primary",cooldown(seed),40,known=seed)
             d['actions']['init']['custom']+='\nif ForeverHUD then ForeverHUD.BindAbility(aura_env.id) end'

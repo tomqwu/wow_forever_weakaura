@@ -175,7 +175,9 @@ function S.SyncCDM()
     -- every shot. Utility (the right wing over the resource bar and its
     -- overflow row) is always shown instead: nothing appears or disappears,
     -- a real cooldown still shows its countdown. Damage (left) and items
-    -- stay cooldown-only.
+    -- stay cooldown-only. 0.14.4 (user: "Wing combat-only"): those Utility
+    -- displays carry a native In Combat load in the import, so out of combat
+    -- the wing and its row are empty.
     S.UTILITY_SHOW='always'
     syncEntries(api,ID('Native cooldowns | Entries'),selected,'cooldown')
     syncEntries(api,ID('Native utility | Entries'),utility,S.UTILITY_SHOW)
