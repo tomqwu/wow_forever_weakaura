@@ -19,3 +19,18 @@ The live addon uses the exported art. Its spell icons and live bar fills still
 come from the client through ForeverAuras. The HTML preview references Blizzard
 spell icon thumbnails hosted by Wowhead's CDN; these thumbnails are not bundled
 inside the addon.
+
+## Globe style (0.14.6)
+
+Generated on 2026-11-19 with Figma's image generator (the built-in `image_gen`
+tool was not available in that session), with the user's approval to spend
+Figma AI credits. Figma returns no transparency, so each frame was generated on
+flat `#00FF00` and keyed once by `scripts/chroma.py` into real alpha. The raw
+downloads are kept as `*-source.png`; the prompts are in the `.prompt.txt` files.
+
+- `globe-frame.png`: an ornate round ring with an empty opening for the liquid.
+- `globe-belt.png`: the band between the globes, with concave ends and a central mount for the class seal.
+- `globe-liquid.png`: a greyscale swirling liquid, tinted in game; `scripts/media.py` gives it a round alpha.
+
+The glass highlight (`globe-shine`) and the low-health danger ring
+(`globe-danger`) are small geometric SVG accents drawn in `scripts/media.py`.

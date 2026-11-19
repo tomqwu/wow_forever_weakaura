@@ -18,7 +18,8 @@ def sections(c):
         +['Suggest']+(['Suggest cues'] if c['name'] in CUE_CLASSES else [])+['Alerts'])
 # Classes whose suggestion lists include a threshold cue (mana, pet or execute).
 CUE_CLASSES={'Warlock','Mage','Druid','Hunter','Shaman'}
-CORE_SECTIONS=['Resources','Native rows','Native auras']
+# 0.14.6: Globes holds the Globes frame style's two shared globes.
+CORE_SECTIONS=['Resources','Globes','Native rows','Native auras']
 
 def subtree(by_id,root):
     """IDs reachable from root through controlledChildren, independent of load data."""
@@ -136,7 +137,7 @@ class PackTests(unittest.TestCase):
             self.assertNotIn(forbidden,code)
     def test_wow_texture_format(self):
         files=list((ROOT/'src/ForeverHUD/Media').glob('*.tga'))
-        self.assertEqual(len(files),24,'0.12.1: the drawn shelf (it replaced 0.12.0\'s groove)')
+        self.assertEqual(len(files),29,'0.14.6: globe ring, band, liquid, shine and danger halo (0.12.1: the drawn shelf)')
         for path in files:
             header=path.read_bytes()[:18]
             self.assertEqual(header[2],2,'Uncompressed true-color TGA')
@@ -505,6 +506,59 @@ class PackTests(unittest.TestCase):
         self.assertIs(by_id[CORE_ID+' | Native utility | Entries']['load']['use_combat'],True)
         for title in ('Native cooldowns','Native items'):
             self.assertNotIn('use_combat',by_id[CORE_ID+f' | {title} | Entries']['load'])
+    def test_globe_frame_style(self):
+        # 0.14.6 (user: "design a 2nd style of frame like diablo, with globe
+        # types"): native vertical progress textures fill round globes in
+        # Core, each carrying its glass shine and painted ring as sub-textures;
+        # the band and the danger halo are class art. The bar chassis, shelves
+        # and long pet bar move to their own flags.
+        by_id={d['id']:d for d in self.regions}
+        G=CORE_ID+' | Globes'
+        self.assertEqual(by_id[G]['controlledChildren'],[f'{G} | Health',f'{G} | Resource'])
+        for name,x,event in (('Health',-312,'Health'),('Resource',312,'Power')):
+            globe=by_id[f'{G} | {name}']
+            self.assertEqual((globe['regionType'],globe['orientation'],globe['xOffset'],globe['yOffset'],globe['frameStrata']),
+                ('progresstexture','VERTICAL',x,13,1))
+            self.assertTrue(globe['foregroundTexture'].endswith('globe-liquid.tga'))
+            self.assertEqual(globe['load']['loadFlag'],'FOREVERHUD_CORE_globes')
+            trig=globe['triggers'][1]['trigger']
+            self.assertEqual((trig['event'],trig['unit']),(event,'player'))
+            art=[(s['textureTexture'].rsplit('\\',1)[-1],s['xOffset']) for s in globe['subRegions'] if s['type']=='subtexture']
+            self.assertEqual(art,[('globe-shine.tga',0),('globe-frame.tga',25)],'Shine, then the ring 25 px past the liquid')
+            for s in globe['subRegions']:
+                if s['type']=='subtexture':
+                    self.assertTrue((ROOT/'src/ForeverHUD/Media'/s['textureTexture'].rsplit('\\',1)[-1]).is_file())
+        texts=[s['text_text'] for s in by_id[f'{G} | Health']['subRegions'] if s['type']=='subtext']
+        self.assertEqual(texts,['%p','%percenthealth%%'])
+        resource=by_id[f'{G} | Resource']
+        self.assertEqual({c['check']['value'] for c in resource['conditions']},set(RESOURCE_STYLES))
+        self.assertTrue(all(c['changes'][0]['property']=='foregroundColor' for c in resource['conditions']))
+        # The bars keep FOREVERHUD_CORE_resources, which the companion turns
+        # off in the Globes style.
+        for name in ('Health','Resource'):
+            self.assertEqual(by_id[f'{CORE_ID} | {name}']['load']['loadFlag'],'FOREVERHUD_CORE_resources')
+        for cls in ('Warlock','Warrior','Mage','Priest','Rogue','Druid','Hunter','Shaman','Paladin'):
+            token=cls.upper(); prefix=f'ForeverHUD | {cls}'
+            frame=by_id[prefix+' | Frame']['controlledChildren']
+            band=by_id[prefix+' | Globe band']
+            self.assertEqual((band['load']['loadFlag'],band['frameStrata'],band['yOffset']),(f'FOREVERHUD_{token}_globeArt',ART_STRATA,13))
+            self.assertIn('LayoutVisible()',band['triggers'][2]['trigger']['custom'])
+            self.assertLess(frame.index(prefix+' | Globe band'),frame.index(prefix+' | Seal'),'The band draws under the seal')
+            danger=by_id[prefix+' | Globe danger']
+            self.assertEqual((danger['load']['loadFlag'],danger['alpha'],danger['xOffset']),(f'FOREVERHUD_{token}_globes',0,-312))
+            self.assertEqual(danger['conditions'],[dict(check=dict(trigger=1,variable='percenthealth',op='<=',value=30),
+                changes=[dict(property='alpha',value=1)])])
+            self.assertEqual(danger['triggers'][1]['trigger']['unit'],'player')
+            self.assertEqual(by_id[prefix+' | Chassis']['load']['loadFlag'],f'FOREVERHUD_{token}_chassis')
+            for side in ('Left','Right'):
+                self.assertEqual(by_id[f'{prefix} | Shelf | {side}']['load']['loadFlag'],f'FOREVERHUD_{token}_chassis')
+        for cls in ('Warlock','Hunter'):
+            token=cls.upper()
+            self.assertEqual(by_id[f'ForeverHUD | {cls} | Pet health']['load']['loadFlag'],f'FOREVERHUD_{token}_petBar')
+            pet=by_id[f'ForeverHUD | {cls} | Pet health | Globe']
+            self.assertEqual((pet['load']['loadFlag'],pet['xOffset']),(f'FOREVERHUD_{token}_petGlobe',-312))
+        # Outer cooldown icons (x=+-233) stay inside each ring's inner edge.
+        self.assertLess(72+3*47+20,312-150//2+5)
     def test_missing_upkeep_breathes(self):
         # 0.13.1: missing upkeep reminders (tray and HUD) play the native
         # Pulse slowly; nothing else does, and no Gained flash suppresses it.

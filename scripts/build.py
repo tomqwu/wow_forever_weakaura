@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.5"
+VERSION = "0.14.6"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -275,6 +275,18 @@ MISSING_GLOW = dict(type='subglow', glow=True, glowType='Pixel', useGlowColor=Tr
 # 0.14.2: the low-health flash on the Health bar (see generate()). Off until
 # the condition turns it on; fast, thick red lines so it reads as an alarm.
 LOW_HEALTH = 30
+# 0.14.6 (user: "design a 2nd style of frame like diablo, with globe types"):
+# the Globes frame style. Health and resource fill round globes either side
+# of a painted band; the seal, suggestions, cooldown wings and aura rows stay
+# between them. GLOBE_SIZE is the painted ring; the liquid fills its opening
+# (65% of the ring canvas, measured on the keyed master, with a little
+# overlap under the ring). Outer cooldown icons end at x=+-233, inside the
+# ring's inner edge (GLOBE_X - GLOBE_SIZE/2).
+GLOBE_X = 312
+GLOBE_Y = 13
+GLOBE_SIZE = 150
+GLOBE_FILL = 100
+GLOBE_BAND = (520, 130)
 # 0.14.3: Warlocks are warned when they carry fewer than LOW_SHARDS Soul
 # Shards. One native condition on the Item Count trigger's stacks.
 LOW_SHARDS = 10
@@ -503,6 +515,80 @@ def texture(pack,name,parent,cls,module,asset,w,h,x=0,y=0,color=None,level=None)
     d['frameStrata']=ART_STRATA
     return d
 
+GLOBES_ID = CORE_ID + ' | Globes'
+GLOBE_FLAG = 'FOREVERHUD_CORE_globes'   # resources on, Globes style
+
+def number_text(sub):
+    sub.update(text_text_format_p_format='Number',text_text_format_p_decimal_precision=0,
+        text_text_format_p_big_number_format='AbbreviateNumbers')
+    return sub
+
+def art_sub(asset,outset):
+    """A painted layer drawn over its display, outset px past each edge."""
+    return dict(type='subtexture',textureVisible=True,textureTexture=MEDIA+asset+'.tga',textureColor=[1,1,1,1],
+        textureBlendMode='BLEND',textureDesaturate=False,textureMirror=False,textureRotation=0,
+        texture_alpha=1,anchor_mode='area',anchor_area='ALL',xOffset=outset,yOffset=outset)
+
+def globe_section(p):
+    """0.14.6 Globes frame style: native progress textures fill round globes.
+
+    The two globes are shared Core displays with their own load flag (set by
+    the companion from the profile's frameStyle), so the Bars style unloads
+    them and the Globes style unloads the two bars. Values, percentages and
+    the resource type come from ForeverAuras' own Health and Power triggers;
+    the vertical fill is FA's native (restricted-value capable) progress
+    texture. The glass shine and the painted ring are sub-textures of the
+    globe itself, so they always draw over its liquid. The band and the
+    danger halo are class art (see the class Frame section).
+    """
+    globes=GLOBES_ID; p.group(globes,CORE_ID,CORE,'base')
+    health=dict(type='unit',event='Health',unit='player',use_unit=True)
+    power=dict(type='unit',event='Power',unit='player',use_unit=True)
+    for name,trigger,x in (('Health',health,-GLOBE_X),('Resource',power,GLOBE_X)):
+        d=p.add(f'{globes} | {name}','progresstexture',globes,CORE,'resources',x,GLOBE_Y,
+            width=GLOBE_FILL,height=GLOBE_FILL,progressSource=[-1,''],adjustedMax='',adjustedMin='',
+            foregroundTexture=MEDIA+'globe-liquid.tga',backgroundTexture=MEDIA+'globe-liquid.tga',
+            desaturateBackground=False,desaturateForeground=False,sameTexture=True,compress=False,
+            blendMode='BLEND',textureWrapMode='CLAMPTOBLACKADDITIVE',backgroundOffset=0,
+            orientation='VERTICAL',inverse=False,
+            foregroundColor=rgba(HEALTH_COLOR) if name=='Health' else rgba(UNKNOWN_RESOURCE_COLOR),
+            backgroundColor=[.05,.04,.08,.92],startAngle=0,endAngle=360,user_x=0,user_y=0,crop_x=1,crop_y=1,
+            rotation=0,auraRotation=0,mirror=False,slantMode='INSIDE',
+            subRegions=[art_sub('globe-shine',0),art_sub('globe-frame',(GLOBE_SIZE-GLOBE_FILL)//2),
+                number_text(subtext('%p','CENTER',11,y=-12))])
+        d['load']['loadFlag']=GLOBE_FLAG
+        p.triggers(d,[dict(trigger)],CORE,'resources')
+        if name=='Health':
+            d['subRegions'].append(dict(subtext('%percenthealth%%','CENTER',16,y=6),
+                text_text_format_percenthealth_format='Number',text_text_format_percenthealth_decimal_precision=0))
+        else:
+            # Same native resource identity as the Resource bar: the client's
+            # current power type picks the colour, including form switches.
+            d['subRegions'].append(subtext('%c','CENTER',11,y=8))
+            d['customTextUpdate']='event'
+            d['customText']='function() return ForeverHUD and ForeverHUD.ResourceLabel() or "Resource" end'
+            d['conditions']=[dict(check=dict(trigger=1,variable='powertype',op='==',value=kind),
+                changes=[dict(property='foregroundColor',value=rgba(style['color']))]) for kind,style in RESOURCE_STYLES.items()]
+
+def globe_class_art(p,cls,prefix,frame):
+    """The Globes style's class art: the band behind the seal and a red halo
+    that pulses behind the Health globe at LOW_HEALTH or less (the 0.14.2
+    low-health flash in globe form: one native condition, the protected
+    percentage is never read in Lua). Both are class textures in art strata."""
+    band=texture(p,prefix+' | Globe band',frame,cls,'art','globe-band',*GLOBE_BAND,y=GLOBE_Y)
+    band['load']['loadFlag']=f'FOREVERHUD_{cls}_globeArt'
+    # Like the chassis, the band leaves while the HUD is folded.
+    band['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() or false end'
+    danger=texture(p,prefix+' | Globe danger',frame,cls,'resources','globe-danger',
+        GLOBE_SIZE+40,GLOBE_SIZE+40,x=-GLOBE_X,y=GLOBE_Y)
+    danger.update(alpha=0,blendMode='ADD')
+    danger['load']['loadFlag']=f'FOREVERHUD_{cls}_globes'
+    p.triggers(danger,[dict(type='unit',event='Health',unit='player',use_unit=True)],cls,'resources')
+    danger['conditions']=[dict(check=dict(trigger=1,variable='percenthealth',op='<=',value=LOW_HEALTH),
+        changes=[dict(property='alpha',value=1)])]
+    danger['animation']['main']=dict(type='custom',duration_type='seconds',duration=.7,use_alpha=True,
+        alphaType='alphaPulse',alpha=.25,easeType='none',easeStrength=3)
+
 def cooldown(seed, secondary=False):
     return dict(type="spell",event="Cooldown Progress (Spell)",unit="player",spellName=seed,
         use_spellName=True,use_exact_spellName=False,use_ignoreoverride=False,use_ignoreSpellKnown=False,
@@ -555,6 +641,7 @@ def generate():
     # follow the client's current resource automatically.
     bar(p,CORE_ID+" | Resource",resources,CORE,"resources",dict(type="unit",event="Power",unit="player",use_unit=True),
         x=138,y=13,width=180,height=13,label='resource',color=rgba(UNKNOWN_RESOURCE_COLOR))
+    globe_section(p)
     rows=CORE_ID+' | Native rows'; p.group(rows,CORE_ID,CORE,'base')
     overflow=CORE_ID+" | Native cooldowns"
     # Overflow rows follow the sides too: Essential (damage) under Health,
@@ -621,6 +708,10 @@ def generate():
         if c.get('pet') or c.get('extra'): p.group(resources,prefix,cls,'base')
         chassis=texture(p,prefix+" | Chassis",frame,cls,"art","chassis-"+cls.lower(),512,128,y=20)
         chassis['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() or false end'
+        # 0.14.6: the bar chassis and its shelves belong to the Bars style;
+        # the Globes style draws the Core band instead (companion flag).
+        chassis['load']['loadFlag']=f'FOREVERHUD_{cls}_chassis'
+        globe_class_art(p,cls,prefix,frame)
         # 0.12.1: shelf lines under the rows that float above the frame, drawn
         # over the chassis and under every icon; only in combat, when the
         # rows are in use, and never while folded. The texture is bright at
@@ -630,6 +721,7 @@ def generate():
             shelf=texture(p,f'{prefix} | {name}',frame,cls,'art','shelf',GROOVE_W,8,x=x,y=SHELF_Y,color=rgba(c['color'],.85))
             shelf['mirror']=mirror
             shelf['triggers'][2]['trigger']['custom']=in_combat
+            shelf['load']['loadFlag']=f'FOREVERHUD_{cls}_chassis'
         rune=texture(p,prefix+" | Living runes",frame,cls,"motion","runes",112,112,y=13,color=rgba(c['color'],.18))
         rune["animation"]["main"]=dict(type="custom",duration_type="seconds",duration=45,use_rotate=True,rotate=360,
             rotateType="straight",easeType="none",easeStrength=3)
@@ -1001,8 +1093,13 @@ def generate():
             alert['actions']['start']=dict(do_custom=True,custom=f'if ForeverHUD then ForeverHUD.ReadyAlert("{alert["id"]}", {seed}, {priority}) end')
         # A second bar is optional; Blizzard's original cast bar is untouched.
         if c.get('pet'):
-            bar(p,prefix+" | Pet health",resources,cls,"pet",dict(type="unit",event="Health",unit="pet",use_unit=True),
+            pet_bar=bar(p,prefix+" | Pet health",resources,cls,"pet",dict(type="unit",event="Health",unit="pet",use_unit=True),
                 x=-138,y=-13,width=180,height=7,color=rgba(PET_HEALTH_COLOR),text="%p",label='Pet')
+            pet_bar['load']['loadFlag']=f'FOREVERHUD_{cls}_petBar'
+            # 0.14.6 Globes style: a short pet bar tucked under the Health globe.
+            pet_globe=bar(p,prefix+" | Pet health | Globe",resources,cls,"pet",dict(type="unit",event="Health",unit="pet",use_unit=True),
+                x=-GLOBE_X,y=GLOBE_Y-GLOBE_SIZE//2-4,width=112,height=7,color=rgba(PET_HEALTH_COLOR),text="%p",label='Pet')
+            pet_globe['load']['loadFlag']=f'FOREVERHUD_{cls}_petGlobe'
         if c.get('extra')=="shards":
             d=p.add(prefix+" | Soul Shards","text",resources,cls,"pet",x=138,y=-13,displayText="%c: %s  |TInterface\\Icons\\INV_Misc_Gem_Amethyst_02:12|t",
                 font="Friz Quadrata TT",fontSize=11,outline="OUTLINE",color=rgba(c['accent']),justify="CENTER",

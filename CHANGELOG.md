@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.14.6 — 2026-11-19 (prerelease)
+
+User: "design a 2nd style of frame like diablo, with globe types , make sure redesign spell/icon/recommendation/buff/cdm integration too on left and right", then "Build this layout"
+
+- **Globes frame style.** Health fills a round globe on the left and your resource (mana, rage or energy, coloured by the client's power type) one on the right, either side of a painted band that holds the class seal. Each globe has its value; Health also shows its percentage. Suggestions, target and player aura rows, and the Essential and Utility cooldown wings stay between the globes, inside their rings.
+- The fills are ForeverAuras' native vertical progress textures, driven by the same Health and Power triggers as the bars, including restricted values. At 30% health or less a red danger ring pulses around the Health globe (one native condition).
+- Pets: a short pet health bar sits under the Health globe. Soul Shards, combo points and swing bars keep their places.
+- Choose it in `/fhud` → **Display → Frame style**, or `/fhud style globes` / `/fhud style bars`. Per class; Bars stays the default. The bars, bar chassis and shelves unload in the Globes style, and the globes unload in the Bars style.
+- Art: ring, band and liquid generated with Figma's image generator on a flat green background and keyed into alpha with the new `scripts/chroma.py`; prompts and raw downloads are in `assets/ai/`. The glass shine and danger ring are small SVG accents.
+- Update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.14.5 — 2026-11-19 (prerelease)
 
 User: "integration with titan panel"

@@ -26,6 +26,7 @@ local strings = {
     ['Forever cooldown layout']='系统冷却分组与顺序', ['Essential']='主要冷却', ['Utility']='辅助冷却', ['EquipSlotEssential']='装备冷却', ['HiddenActive']='未显示',
     ['Maintenance buffs']='常驻增益',
     ['Cooldown layout']='冷却排列', ['Forever']='系统冷却管理器', ['Class plan']='职业方案',
+    ['Frame style']='框架样式', ['Bars']='条形', ['Globes']='球形',
 
     ['Health']='生命', ['Resource']='资源', ['Mana']='法力', ['Rage']='怒气',
     ['Focus']='集中值', ['Energy']='能量', ['Combo points']='连击点', ['Pet']='宠物', ['Soul Shards']='灵魂碎片',

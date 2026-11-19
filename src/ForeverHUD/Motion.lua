@@ -55,7 +55,14 @@ function M.Gather()
         local item=entry(id,p.x,rank,counts[p.side],false)
         if item then active[id]=true end
     end
-    for _,row in ipairs({{'Health',-138,'resources'},{'Resource',138,'resources'},{'Chassis',0,'art'},{'Pet health',-138,'pet'},{'Soul Shards',138,'pet'}}) do
+    local rows={{'Health',-138,'resources'},{'Resource',138,'resources'},{'Chassis',0,'art'},{'Pet health',-138,'pet'},{'Soul Shards',138,'pet'}}
+    -- 0.14.6 Globes style: each globe slides out with its liquid, shine, ring
+    -- and danger ring together; the band behaves like the chassis.
+    if p and p.frameStyle=='Globes' then
+        rows={{'Soul Shards',138,'pet'},{'Globe band',0,'art'},{'Pet health | Globe',-312,'pet'},
+            {'Globes | Health',-312,'resources'},{'Globes | Resource',312,'resources'},{'Globe danger',-312,'resources'}}
+    end
+    for _,row in ipairs(rows) do
         local id=E.DisplayID(row[1])
         local item=id and p and p[row[3]] and entry(id,row[2],1,1,true)
         if item then active[id]=true end

@@ -27,6 +27,7 @@ function E.RefreshOptions()
         ..(p.school=='Auto' and E.selection and (' ('..E.L(E.selection.mode or 'Leveling')..')') or ''))
     panel.castChoice:SetText(E.L('Cast bar display')..': '..E.L(castLabels[p.castBarMode]))
     panel.cooldown:SetText(E.L('Cooldown layout')..': '..E.L(p.cooldownLayout))
+    panel.frameStyle:SetText(E.L('Frame style')..': '..E.L(p.frameStyle))
     panel.language:SetText('Language / 语言: '..(languageNames[ForeverHUDDB.language] or E.L('Auto')))
     panel.swing:SetText(E.L('Swing mode')..': '..E.L(p.swingMode))
     panel.swing:SetShown(E.class=='WARRIOR')
@@ -178,7 +179,13 @@ local function build()
         end
     end
     group(p.sections.Display, "HUD modules", -150)
-    grid(p.sections.Display, display, -176)
+    local below = grid(p.sections.Display, display, -176)
+    -- 0.14.6: the frame style, Bars or Globes, per class.
+    group(p.sections.Display, "Frame style", below - 8)
+    p.frameStyle = wide(p.sections.Display, CX, below - 36, 240, nil, function()
+        local current = E.Profile().frameStyle
+        E.Set('frameStyle', current == 'Globes' and 'Bars' or 'Globes'); E.RefreshOptions()
+    end)
     group(p.sections.Reminders, "Reminders and alerts", -150)
     grid(p.sections.Reminders, reminders, -176)
     -- Combat.
@@ -544,7 +551,12 @@ SlashCmdList.FOREVERHUD = function(message)
     local minimapKey,minimapValue=(message or ''):lower():match('^%s*(%a+)%s+(%a+)%s*$')
     minimapKey=({minimap='show',buttons='group'})[minimapKey or '']
     minimapValue=({on=true,off=false})[minimapValue or '']
-    if minimapKey and minimapValue~=nil and E.minimapTray then
+    -- 0.14.6: /fhud style bars|globes picks the frame style.
+    local style=({bars='Bars',globes='Globes',globe='Globes'})[((message or ''):lower():match('^%s*style%s+(%a+)%s*$')) or '']
+    if style then
+        E.Set('frameStyle',style); E.RefreshOptions()
+        print('ForeverHUD: '..E.L('Frame style')..': '..E.L(style))
+    elseif minimapKey and minimapValue~=nil and E.minimapTray then
         E.minimapTray.Set(minimapKey,minimapValue)
         print('ForeverHUD: '..E.L(minimapKey=='show' and 'Minimap button' or 'Group addon minimap buttons')..': '..E.L(minimapValue and 'on' or 'off'))
     elseif dumping then E.Dump(dumping:lower(),dumpText)
