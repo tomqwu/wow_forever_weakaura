@@ -597,6 +597,20 @@ class PackTests(unittest.TestCase):
             self.assertEqual((self.eligibility[sid]['seeds'],self.eligibility[sid]['kind']),([19028,25228],'aura'),'Loads once learned')
         self.assertEqual(by_id['ForeverHUD | Warlock | Upkeep reminder | Soul Link missing']['parent'],'ForeverHUD | Warlock | Maintenance')
         self.assertNotIn('ForeverHUD | Warlock | Upkeep reminder | Soul Link expiring',by_id)
+        # 0.14.8: Demonic Sacrifice reminds when none of its four buffs is up,
+        # once the talent (18788) is learned; a sacrificed demon is not a
+        # missing pet.
+        for sid in ('ForeverHUD | Warlock | Upkeep reminder | Demonic Sacrifice missing',
+                    'ForeverHUD | Warlock | Tray | Row | Upkeep reminder | Demonic Sacrifice missing'):
+            t=by_id[sid]['triggers'][1]['trigger']
+            self.assertEqual((t['auraRankSpellIDs'],t['secretShowOn'],t['nativeFilters']),([18789,18790,18791,18792],'showOnMissing',{}),sid)
+            self.assertEqual((self.eligibility[sid]['seeds'],self.eligibility[sid]['kind']),([18788],'aura'),sid)
+        self.assertNotIn('ForeverHUD | Warlock | Upkeep reminder | Demonic Sacrifice expiring',by_id)
+        for sid in ('ForeverHUD | Warlock | Pet missing','ForeverHUD | Warlock | Tray | Row | Pet missing'):
+            ts=by_id[sid]['triggers']
+            self.assertEqual((ts[3]['trigger']['auraRankSpellIDs'],ts[3]['trigger']['secretShowOn']),([18789,18790,18791,18792],'showOnMissing'),sid)
+            self.assertEqual((ts[4]['trigger']['type'],ts['disjunctive']),('custom','all'),'The gate stays last')
+        self.assertEqual(len([k for k in by_id['ForeverHUD | Hunter | Pet missing']['triggers'] if isinstance(k,int)]),3)
         for d in breathing:
             self.assertTrue(d['id'].endswith(' missing'),d['id'])
             self.assertEqual(d['blizzardAuraDisplay']['auraMain'],dict(type='pulse',duration=2.4))
@@ -749,7 +763,9 @@ class PackTests(unittest.TestCase):
             t=d['triggers'][1]['trigger']
             self.assertEqual((t['type'],t['event'],t['unit'],t['use_HasPet'],t['use_mounted']),('unit','Conditions','player',False,False),id)
             place='tray' if ' | Tray | ' in id else 'maintenance'
-            self.assertIn(f'Gate("{place}","{cls}") and ForeverHUD.Gate("petMissing","{cls}")',d['triggers'][3]['trigger']['custom'],id)
+            # 0.14.8: Warlocks have a "no sacrifice buff" trigger before the gate.
+            gate=4 if cls=='WARLOCK' else 3
+            self.assertIn(f'Gate("{place}","{cls}") and ForeverHUD.Gate("petMissing","{cls}")',d['triggers'][gate]['trigger']['custom'],id)
             self.assertEqual((self.eligibility[id]['module'],self.eligibility[id]['requires'],self.eligibility[id]['seeds']),
                 ('petMissing',place,[{'WARLOCK':688,'HUNTER':883}[cls]]),id)
             self.assertEqual((d['animation']['main']['alphaType'],d['animation']['main']['duration']),('alphaPulse',2.4),id)

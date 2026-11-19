@@ -1,6 +1,12 @@
-# Validation for 0.14.7
+# Validation for 0.14.8
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.8 (prerelease) — Demonic Sacrifice reminder
+
+- **Game evidence:** the user's `/fhud dump` lists Demonic Sacrifice 18788 as a learned Demonology spell and as a Cooldown Manager TrackedBuff entry linking 18792, 18789, 18790 and 18791.
+- **Tests:** `test_missing_upkeep_breathes` checks both Demonic Sacrifice reminders (four buff IDs, Show On Missing, any caster, learned-spell eligibility on 18788, no "expiring" twin) and the extra "no sacrifice buff" trigger on both Warlock pet reminders, with the gate still last; Hunter's pet reminder is unchanged.
+- **Not yet checked in game:** the reminder appearing with no sacrifice buff, and the pet reminder staying quiet after a sacrifice.
 
 ## 0.14.7 (prerelease) — class import fix
 
