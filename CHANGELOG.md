@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.14.9 — 2026-11-19 (prerelease)
+
+User: in-game screenshot of the 0.14.6 globes, "can you redesign it? looks ugly", then chose "Slim dark rail".
+
+- **Slimmer Globes style.** A slim blackened-iron ring replaces the heavy ornate ring, so the liquid grows from 100 to 138 px inside the same 150 px ring. A thin iron rail with a central boss replaces the wide band behind the seal; its ends tuck under the rings, and the Soul Shards line no longer sits on the art.
+- **Liquid depth.** The liquid darkens toward the rim so the fill reads as a sphere.
+- **Easier to read** (user: "no color theme, all stacking together hard to see with background"). A soft dark shade (`globe-shade`, an SVG accent) sits behind the icons between the globes. Stacked icon rows now have 8 px gaps instead of 4 in both styles: the suggestion row sits 4 px higher and the lifted left cooldown wing 8 px higher (`S.WING_LIFT` 42).
+- The shade is a new texture file: **fully restart the game** once.
+- **Values back on the globes.** In game the 0.14.6 globes showed only the Health percentage and the resource name: a text holding a lone `%p` stayed blank on the globe, while the Health bar's combined `%percenthealth%%  %p` text shows both values. Each globe now has one combined two-line text: Health shows percentage over value, the resource globe value over type.
+- Art: ring and rail generated with Figma's image generator; the ring keyed from green with `scripts/chroma.py`, the rail (returned with real alpha and a soft haze) cleaned with the new `scripts/chroma.py --dehaze`. Prompts and raw downloads are in `assets/ai/`. The exported file names (`globe-frame`, `globe-band`) are unchanged.
+- Update your class and **ForeverHUD | Core** in `/fa`, choosing **Update Auras**.
+
 ## 0.14.8 — 2026-11-19 (prerelease)
 
 User: "I am missing this buff, why I don't see it from notification" (Demonic Sacrifice tooltip).

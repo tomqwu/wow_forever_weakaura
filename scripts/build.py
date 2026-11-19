@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.8"
+VERSION = "0.14.9"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -79,9 +79,12 @@ SHELF_Y = 54   # its 8 px box tops out at 58, the suggestion row's bottom edge
 # 0.9.7: they stay there; for classes with suggestions the companion lifts
 # the left cooldown wing (40 px icons at PRIMARY_Y) by WING_LIFT so it
 # clears them (Selection.lua, S.WING_LIFT).
+# 0.14.9 (user: "all stacking together"): 8 px between stacked rows, not 4;
+# the icon frames reach past each icon, so 4 px read as touching.
 SUGGEST_SIZE = 32
-SUGGEST_Y = DOT_ROW_Y + DOT_SIZE // 2 + 4 + SUGGEST_SIZE // 2
-WING_LIFT = SUGGEST_Y + SUGGEST_SIZE // 2 + 4 + 40 // 2 - PRIMARY_Y
+ROW_GAP = 8
+SUGGEST_Y = DOT_ROW_Y + DOT_SIZE // 2 + ROW_GAP + SUGGEST_SIZE // 2
+WING_LIFT = SUGGEST_Y + SUGGEST_SIZE // 2 + ROW_GAP + 40 // 2 - PRIMARY_Y
 SUGGEST_STEP = 36
 # 0.11: the rotation row is a Modern Aura Group growing LEFT from the seal:
 # whatever shows closes up with no gaps, and the slot nearest the seal is
@@ -288,11 +291,19 @@ LOW_HEALTH = 30
 # (65% of the ring canvas, measured on the keyed master, with a little
 # overlap under the ring). Outer cooldown icons end at x=+-233, inside the
 # ring's inner edge (GLOBE_X - GLOBE_SIZE/2).
+# 0.14.9 (user: "looks ugly", then "Slim dark rail"): a slim ring (its
+# opening is 91% of the trimmed canvas) holds a much larger liquid, and a thin
+# rail (globe-band, 4:1 canvas, the rail ~1/29 of its length) joins the
+# globes behind the seal, its end caps tucked under the rings.
 GLOBE_X = 312
 GLOBE_Y = 13
 GLOBE_SIZE = 150
-GLOBE_FILL = 100
-GLOBE_BAND = (520, 130)
+GLOBE_FILL = 138
+GLOBE_BAND = (504, 126)
+# 0.14.9 (user: "hard to see with background"): the shade under the rows,
+# from just below the rail to above the lifted left wing.
+GLOBE_SHADE = (560, 220)
+GLOBE_SHADE_Y = 62
 # 0.14.3: Warlocks are warned when they carry fewer than LOW_SHARDS Soul
 # Shards. One native condition on the Item Count trigger's stacks.
 LOW_SHARDS = 10
@@ -560,17 +571,19 @@ def globe_section(p):
             foregroundColor=rgba(HEALTH_COLOR) if name=='Health' else rgba(UNKNOWN_RESOURCE_COLOR),
             backgroundColor=[.05,.04,.08,.92],startAngle=0,endAngle=360,user_x=0,user_y=0,crop_x=1,crop_y=1,
             rotation=0,auraRotation=0,mirror=False,slantMode='INSIDE',
+            # 0.14.9: one two-line text per globe. In game the 0.14.6 lone
+            # "%p" text stayed blank on the globe while the Health bar's
+            # combined "%percenthealth%%  %p" text shows both values, so each
+            # globe now uses a single combined text like the bar's.
             subRegions=[art_sub('globe-shine',0),art_sub('globe-frame',(GLOBE_SIZE-GLOBE_FILL)//2),
-                number_text(subtext('%p','CENTER',11,y=-12))])
+                number_text(subtext('%percenthealth%%\n%p' if name=='Health' else '%p\n%c','CENTER',15))])
         d['load']['loadFlag']=GLOBE_FLAG
         p.triggers(d,[dict(trigger)],CORE,'resources')
         if name=='Health':
-            d['subRegions'].append(dict(subtext('%percenthealth%%','CENTER',16,y=6),
-                text_text_format_percenthealth_format='Number',text_text_format_percenthealth_decimal_precision=0))
+            d['subRegions'][-1].update(text_text_format_percenthealth_format='Number',text_text_format_percenthealth_decimal_precision=0)
         else:
             # Same native resource identity as the Resource bar: the client's
             # current power type picks the colour, including form switches.
-            d['subRegions'].append(subtext('%c','CENTER',11,y=8))
             d['customTextUpdate']='event'
             d['customText']='function() return ForeverHUD and ForeverHUD.ResourceLabel() or "Resource" end'
             d['conditions']=[dict(check=dict(trigger=1,variable='powertype',op='==',value=kind),
@@ -581,10 +594,13 @@ def globe_class_art(p,cls,prefix,frame):
     that pulses behind the Health globe at LOW_HEALTH or less (the 0.14.2
     low-health flash in globe form: one native condition, the protected
     percentage is never read in Lua). Both are class textures in art strata."""
+    # 0.14.9: a dark shade under the rows between the globes (drawn first),
+    # then the rail. Both leave while the HUD is folded, like the chassis.
+    shade=texture(p,prefix+' | Globe shade',frame,cls,'art','globe-shade',*GLOBE_SHADE,y=GLOBE_SHADE_Y)
     band=texture(p,prefix+' | Globe band',frame,cls,'art','globe-band',*GLOBE_BAND,y=GLOBE_Y)
-    band['load']['loadFlag']=f'FOREVERHUD_{cls}_globeArt'
-    # Like the chassis, the band leaves while the HUD is folded.
-    band['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() or false end'
+    for d in (shade,band):
+        d['load']['loadFlag']=f'FOREVERHUD_{cls}_globeArt'
+        d['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() or false end'
     danger=texture(p,prefix+' | Globe danger',frame,cls,'resources','globe-danger',
         GLOBE_SIZE+40,GLOBE_SIZE+40,x=-GLOBE_X,y=GLOBE_Y)
     danger.update(alpha=0,blendMode='ADD')

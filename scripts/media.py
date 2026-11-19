@@ -7,7 +7,7 @@ margins, resizes proportionally and converts formats.
 import io
 from pathlib import Path
 import cairosvg
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageChops, ImageDraw, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
 MASTERS = ROOT / 'assets/ai'
@@ -53,11 +53,19 @@ def build(directory,classes):
     # flat green background and keyed once by scripts/chroma.py (prompts and
     # raw downloads beside them). The ring keeps its full canvas so the liquid
     # opening stays centred; the band is trimmed like the chassis.
-    export(directory,'globe-frame',Image.open(MASTERS/'globe-frame.png'),(256,256),trim=False)
-    export(directory,'globe-band',Image.open(MASTERS/'globe-belt.png'),(1024,256))
+    # 0.14.9 (user: "looks ugly", then "Slim dark rail"): a slim ring and a
+    # thin rail replace the heavy ring and the wide band. The file names stay
+    # (globe-frame, globe-band) so an existing install picks them up without a
+    # new texture path. The ring is trimmed to its own circle so the liquid
+    # opening is a fixed share of the canvas (GLOBE_FILL / GLOBE_SIZE).
+    export(directory,'globe-frame',Image.open(MASTERS/'globe-ring.png'),(256,256))
+    export(directory,'globe-band',Image.open(MASTERS/'globe-rail.png'),(1024,256))
     # The liquid is greyscale (tinted in game); a round alpha makes the
-    # vertical native fill read as a filling orb.
+    # vertical native fill read as a filling orb. 0.14.9: darker toward the
+    # rim so the flat fill reads as a sphere.
     liquid=Image.open(MASTERS/'globe-liquid.png').convert('L').resize((256,256),Image.Resampling.LANCZOS)
+    depth=Image.radial_gradient('L').resize((256,256),Image.Resampling.LANCZOS).point(lambda g: round(255*(1-.55*(g/255)**2)))
+    liquid=ImageChops.multiply(liquid,depth)
     big=Image.new('L',(1024,1024),0)
     ImageDraw.Draw(big).ellipse((4,4,1019,1019),fill=255)
     orb=Image.merge('RGBA',(liquid,liquid,liquid,big.resize((256,256),Image.Resampling.LANCZOS)))
@@ -78,6 +86,12 @@ def build(directory,classes):
         '<stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>'
         '<circle cx="64" cy="64" r="62" fill="url(#g)"/>'
         '<path d="M30 40a40 40 0 0 1 40-22" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="5" stroke-linecap="round"/>',128,128)
+    # 0.14.9 (user: "hard to see with background"): a soft dark shade behind
+    # the icon cluster between the globes in the Globes style.
+    vector(directory,'globe-shade','<defs><radialGradient id="s" cx=".5" cy=".5" r=".5">'
+        '<stop offset="0" stop-color="#08050e" stop-opacity=".72"/><stop offset=".6" stop-color="#08050e" stop-opacity=".5"/>'
+        '<stop offset="1" stop-color="#08050e" stop-opacity="0"/></radialGradient></defs>'
+        '<ellipse cx="256" cy="128" rx="256" ry="128" fill="url(#s)"/>',512,256)
     vector(directory,'globe-danger','<defs><radialGradient id="r" cx=".5" cy=".5" r=".5">'
         '<stop offset=".62" stop-color="#ff2a1a" stop-opacity="0"/><stop offset=".78" stop-color="#ff2a1a" stop-opacity=".85"/>'
         '<stop offset="1" stop-color="#ff2a1a" stop-opacity="0"/></radialGradient></defs>'
