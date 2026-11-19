@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.10"
+VERSION = "0.14.11"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -300,11 +300,15 @@ LOW_HEALTH = 30
 # cooldown wings onto the rail at GLOBE_Y (Selection.lua, S.GLOBE_Y), auras
 # and suggestions stay above it. The globes moved out to +-400 so the bar
 # (x up to +-233) and the upkeep row (from x=286) sit between them.
-GLOBE_X = 400
+# 0.14.11 (user: "it's too long"): smaller globes (130) closer in (+-305),
+# about 22% narrower overall; four 40 px spells per side (to x=+-233) still
+# clear each ring, and the upkeep row moves above the resource globe
+# (GLOBE_MAINT, moved by the companion out of combat).
+GLOBE_X = 305
 GLOBE_Y = 0
-GLOBE_SIZE = 150
-GLOBE_FILL = 138
-GLOBE_BAND = (676, 169)
+GLOBE_SIZE = 130
+GLOBE_FILL = 120
+GLOBE_BAND = (512, 128)
 # FA scales progress-texture coordinates by sqrt(2) and divides by 1+crop
 # (TextureCoords.lua, ProgressTexture.lua SetCropX), so its default 0.41 shows
 # the whole texture. 0.14.6 used 1, which showed only the middle 71% of the
@@ -312,11 +316,15 @@ GLOBE_BAND = (676, 169)
 GLOBE_CROP = 0.41
 # 0.14.9 (user: "hard to see with background"): the shade under the bar and
 # the rows above it.
-GLOBE_SHADE = (720, 230)
+GLOBE_SHADE = (600, 230)
 GLOBE_SHADE_Y = 55
 # Soul Shards text sits under the resource globe in the Globes style, like
 # the pet bar under the Health globe (the companion moves it).
 GLOBE_SHARDS = (GLOBE_X, GLOBE_Y - GLOBE_SIZE // 2 - 12)
+# The upkeep reminder row (x=286, y=13 in the data, beside the resource bar)
+# sits above the resource globe in the Globes style, its first 24 px icon
+# 12 px over the ring.
+GLOBE_MAINT = (GLOBE_X, GLOBE_Y + GLOBE_SIZE // 2 + 12 + 12)
 # 0.14.3: Warlocks are warned when they carry fewer than LOW_SHARDS Soul
 # Shards. One native condition on the Item Count trigger's stacks.
 LOW_SHARDS = 10

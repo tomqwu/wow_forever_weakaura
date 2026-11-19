@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.11 — 2026-11-19 (prerelease)
+
+User: in-game screenshot of 0.14.10 (round globes, both values, Soul Shards under the mana globe), "it's too long".
+
+- **Shorter bar.** The globes are 130 px (liquid 120 px) instead of 150 (138), centred at x=+-305 instead of +-400: about 22% narrower overall. Four 40 px spells per side (to x=+-233) still end inside each liquid edge (+-245). The rail is 512x128 and the shade 600x230.
+- **Upkeep reminders above the resource globe.** Their row (x=286 in the data, beside the resource bar) would now sit on the globe, so in the Globes style the companion moves it to (305, 89), above the globe. It holds native aura buttons, so it is moved only out of combat; Bars puts it back.
+- Soul Shards follows the globe to (305, -77). Bars style is unchanged.
+- Update your class and **ForeverHUD | Core** in `/fa`, choosing **Update Auras**.
+
 ## 0.14.10 — 2026-11-19 (prerelease)
 
 User: in-game screenshot of 0.14.9 (square liquid, upkeep icon on the mana globe), "lmao", then "just make it like latest diablo".

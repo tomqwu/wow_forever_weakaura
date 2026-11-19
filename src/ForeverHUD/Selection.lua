@@ -236,8 +236,13 @@ end
 -- cooldown wings come down from PRIMARY_Y onto the rail at GLOBE_Y, one skill
 -- bar between the globes; the Soul Shards text moves under the resource globe.
 -- Matches GLOBE_X, GLOBE_Y, PRIMARY_Y and GLOBE_SHARDS in scripts/build.py.
-S.PRIMARY_Y,S.GLOBE_X,S.GLOBE_Y=80,400,0
-S.SHARDS_BARS,S.SHARDS_GLOBES={138,-13},{400,-87}
+S.PRIMARY_Y,S.GLOBE_X,S.GLOBE_Y=80,305,0
+S.SHARDS_BARS,S.SHARDS_GLOBES={138,-13},{305,-77}
+-- 0.14.11 (user: "it's too long"): the upkeep row goes above the resource
+-- globe in the Globes style. It holds native aura buttons, so its group is
+-- moved only out of combat (E.ApplyLayout runs then; a call during combat
+-- leaves it where it is until the next one).
+S.MAINT_BARS,S.MAINT_GLOBES={286,13},{305,89}
 function S.Globes()
     local p=E.Profile()
     return p and p.frameStyle=='Globes' or false
@@ -258,6 +263,12 @@ function S.ApplyLayout()
     local region=shards and api.GetRegion(shards)
     local at=globes and S.SHARDS_GLOBES or S.SHARDS_BARS
     if region and region.SetOffset then region:SetOffset(at[1],at[2]) end
+    if not E.InCombat() then
+        local maint=E.DisplayID and E.DisplayID('Maintenance')
+        local group=maint and api.GetRegion(maint)
+        local spot=globes and S.MAINT_GLOBES or S.MAINT_BARS
+        if group and group.SetOffset then group:SetOffset(spot[1],spot[2]) end
+    end
 end
 function S.Refresh()
     local available={}

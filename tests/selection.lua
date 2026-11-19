@@ -51,9 +51,17 @@ do
     E.Profile().frameStyle='Globes';S.ApplyLayout()
     check(region('Shadow Bolt').y==-80 and region('Life Tap').y==-80 and region('Shadow Bolt').x<0 and region('Life Tap').x>0,
         'Globes: both wings sit on the rail, on their own sides')
-    check(shards.x==400 and shards.y==-87,'Globes: Soul Shards under the resource globe')
+    check(shards.x==305 and shards.y==-77,'Globes: Soul Shards under the resource globe')
+    local maint=ForeverAuras.GetRegion(E.DisplayID('Maintenance'))
+    check(maint.x==305 and maint.y==89,'Globes: the upkeep row sits above the resource globe (out of combat)')
     E.Profile().frameStyle='Bars';S.ApplyLayout()
-    check(region('Shadow Bolt').y==42 and region('Life Tap').y==0 and shards.x==138 and shards.y==-13,'Bars restores the wings and the shard text')
+    check(region('Shadow Bolt').y==42 and region('Life Tap').y==0 and shards.x==138 and shards.y==-13 and maint.x==286 and maint.y==13,
+        'Bars restores the wings, the shard text and the upkeep row')
+    -- In combat the upkeep row (native aura buttons) is left where it is.
+    local inCombat=E.InCombat;E.InCombat=function()return true end
+    E.Profile().frameStyle='Globes';S.ApplyLayout()
+    check(maint.x==286 and region('Shadow Bolt').y==-80,'In combat the upkeep row stays; the spell wings still move')
+    E.InCombat=inCombat;E.Profile().frameStyle='Bars';S.ApplyLayout()
     -- 0.10: the current spec picks its suggestion list; Leveling without talents.
     local function allowed(id)return S.Allowed(id,E.catalog[id])end
     local leveling,affliction='ForeverHUD | Warlock | Suggest | Corruption','ForeverHUD | Warlock | Suggest | Affliction | Corruption'
