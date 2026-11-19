@@ -1,6 +1,17 @@
-# Validation for 0.14.4
+# Validation for 0.14.5
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.5 (prerelease) — Titan Panel launcher
+
+- **Evidence:** LibDataBroker-1.1 is the data-object API that Titan Panel reads; Titan bundles it behind LibStub. Titan Panel is not installed in the test client, so the launcher is mock-tested only.
+- **Test:** `tests/broker.lua` (12 checks) covers:
+  - no launcher without LibDataBroker;
+  - registration at login as a `launcher` labelled ForeverHUD with the class crest;
+  - left-click opens settings and right-click expands or folds the HUD;
+  - the tooltip and its Chinese line;
+  - reusing an already registered name.
+- **Not yet checked in game:** with Titan Panel installed.
 
 ## 0.14.4 (prerelease) — Utility wing in combat only
 

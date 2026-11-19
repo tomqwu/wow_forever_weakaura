@@ -34,7 +34,7 @@ assert first and first.group(1)==VERSION,f'Newest CHANGELOG entry must be {VERSI
 assert re.search(rf'name: ForeverHUD-v{version}$',text('.github/workflows/check.yml'),re.M),'Workflow artifact name'
 
 for path in sorted((ROOT/'src/ForeverHUD').glob('*.lua')):run(['luac','-p',str(path)])
-for suite in ('core','bridge','discovery','selection','state','motion','presentation','casting','alerts','effects','options','bundle','minimap'):
+for suite in ('core','bridge','discovery','selection','state','motion','presentation','casting','alerts','effects','options','bundle','minimap','broker'):
     run(['lua',f'tests/{suite}.lua'])
 run([sys.executable,'-m','unittest','discover','-s','tests','-v'])
 run(['lua','scripts/codec.lua','verify','dist/ForeverHUD-All-Classes.txt','dist/ForeverHUD-All-Classes.lua'])

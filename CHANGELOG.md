@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.5 — 2026-11-19 (prerelease)
+
+User: "integration with titan panel"
+
+- **Titan Panel launcher.** New `Broker.lua` registers a LibDataBroker-1.1 launcher named ForeverHUD with your class crest. Titan Panel bundles LibDataBroker and lists it; other Broker displays (ChocolateBar, Bazooka) do too.
+- Left-click opens settings; right-click expands or folds the HUD, as on the minimap button. Titan may show its own plugin menu on right-click instead.
+- ForeverHUD ships no library: without a Broker display loaded, nothing is created.
+- Companion only: copy the addon and `/reload`; no aura update needed.
+
 ## 0.14.4 — 2026-11-19 (prerelease)
 
 User, with a screenshot of Howl of Terror above the seal out of combat: "why howl of error shows here in non combat?", then "Wing combat-only"
