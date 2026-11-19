@@ -468,6 +468,31 @@ class PackTests(unittest.TestCase):
         self.assertEqual(flash[0]['check'],dict(trigger=1,variable='percenthealth',op='<=',value=30))
         self.assertEqual(flash[0]['changes'],[dict(property=f'sub.{index}.glow',value=True)])
         self.assertEqual(health['triggers'][1]['trigger']['unit'],'player')
+    def test_low_shard_warning(self):
+        # 0.14.3 (user: "shard warning when it's lower than 10"): the HUD
+        # count turns red and the tray icon glows through one native
+        # Item Count condition, stacks < 10.
+        check=dict(trigger=1,variable='stacks',op='<',value=10)
+        by_id={d['id']:d for d in self.regions}
+        text=by_id['ForeverHUD | Warlock | Soul Shards']
+        self.assertEqual(text['triggers'][1]['trigger']['event'],'Item Count')
+        low=[c for c in text['conditions'] if c['check']==check]
+        self.assertEqual(len(low),1)
+        self.assertEqual(low[0]['changes'][0]['property'],'color')
+        self.assertGreater(low[0]['changes'][0]['value'][0],0.9)
+        tray=by_id['ForeverHUD | Warlock | Tray | Row | Soul Shards']
+        self.assertEqual(tray['triggers'][1]['trigger']['event'],'Item Count')
+        glows=[(i+1,s) for i,s in enumerate(tray['subRegions']) if s['type']=='subglow']
+        self.assertEqual(len(glows),1)
+        index,glow=glows[0]
+        self.assertIs(glow['glow'],False)
+        low=[c for c in tray['conditions'] if c['check']==check]
+        self.assertEqual(len(low),1)
+        self.assertEqual(low[0]['changes'],[dict(property=f'sub.{index}.glow',value=True)])
+        # Only the Warlock carries the warning.
+        others=[d['id'] for d in self.regions if any(c['check'].get('variable')=='stacks' and c['check'].get('value')==10
+            for c in d.get('conditions',[])) and '| Warlock |' not in d['id']]
+        self.assertEqual(others,[])
     def test_missing_upkeep_breathes(self):
         # 0.13.1: missing upkeep reminders (tray and HUD) play the native
         # Pulse slowly; nothing else does, and no Gained flash suppresses it.

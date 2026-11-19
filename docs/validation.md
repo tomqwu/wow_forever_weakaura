@@ -1,6 +1,15 @@
-# Validation for 0.14.2
+# Validation for 0.14.3
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.3 (prerelease) — low Soul Shard warning
+
+- **Evidence:** ForeverAuras `Prototypes.lua` Item Count stores `stacks` as a number condition; `RegionTypes/Text.lua` exposes `color` as a condition property; `SubRegionTypes/Glow.lua` toggles `sub.N.glow`.
+- **Test:** `test_low_shard_warning` checks:
+  - the Warlock HUD shard text turns red through one `stacks < 10` condition on its Item Count trigger;
+  - the tray shard icon has one glow, off by default, turned on by the same condition;
+  - no other class carries the warning.
+- **Not yet checked in game:** the look, and that both clear at 10 shards.
 
 ## 0.14.2 (prerelease) — low-health flash
 

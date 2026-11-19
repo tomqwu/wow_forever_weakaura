@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.2"
+VERSION = "0.14.3"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -275,6 +275,13 @@ MISSING_GLOW = dict(type='subglow', glow=True, glowType='Pixel', useGlowColor=Tr
 # 0.14.2: the low-health flash on the Health bar (see generate()). Off until
 # the condition turns it on; fast, thick red lines so it reads as an alarm.
 LOW_HEALTH = 30
+# 0.14.3: Warlocks are warned when they carry fewer than LOW_SHARDS Soul
+# Shards. One native condition on the Item Count trigger's stacks.
+LOW_SHARDS = 10
+LOW_SHARD_COLOR = [1, 0.25, 0.2, 1]
+LOW_SHARD_GLOW = dict(type='subglow', glow=False, glowType='Pixel', useGlowColor=True,
+    glowColor=[1, 0.2, 0.15, 1], glowLines=8, glowFrequency=0.35, glowLength=8,
+    glowThickness=2, glowScale=1, glowBorder=False, glowXOffset=1, glowYOffset=1, glowDuration=1)
 LOW_HEALTH_GLOW = dict(type='subglow', glow=False, glowType='Pixel', useGlowColor=True,
     glowColor=[1, 0.12, 0.08, 1], glowLines=12, glowFrequency=0.6, glowLength=14,
     glowThickness=3, glowScale=1, glowBorder=False, glowXOffset=3, glowYOffset=3, glowDuration=1,
@@ -875,6 +882,10 @@ def generate():
             # so this ordinary icon uses the same tight frame.
             for sub in shards['subRegions']:
                 if sub.get('type')=='subtexture': sub.update(xOffset=TRAY_FRAME_OUTSET,yOffset=TRAY_FRAME_OUTSET)
+            # 0.14.3: a red glow while fewer than LOW_SHARDS are carried.
+            shards['subRegions'].append(dict(LOW_SHARD_GLOW))
+            shards.setdefault('conditions',[]).append(dict(check=dict(trigger=1,variable='stacks',op='<',value=LOW_SHARDS),
+                changes=[dict(property=f'sub.{len(shards["subRegions"])}.glow',value=True)]))
         upkeeps=[(seeds,name) for seeds,name,missing in UPKEEP.get(cls,[]) if missing]
         if cls=='WARLOCK': upkeeps+=[([687,706,28176],'Demon armor'),(SOUL_LINK,'Soul Link')]
         for seeds,name in upkeeps:
@@ -994,6 +1005,9 @@ def generate():
             # Count the carried reagent, not a guessed modern Soul Shard power.
             p.triggers(d,[dict(type="item",event="Item Count",itemName=6265,use_itemName=True,use_exact_itemName=True,
                 use_includeBank=False,use_includeWarBandBank=False,use_includeCharges=False)],cls,"pet")
+            # 0.14.3: the count turns red while fewer than LOW_SHARDS are carried.
+            d.setdefault('conditions',[]).append(dict(check=dict(trigger=1,variable='stacks',op='<',value=LOW_SHARDS),
+                changes=[dict(property='color',value=LOW_SHARD_COLOR)]))
         elif c.get('extra')=="combo":
             combo=bar(p,prefix+" | Combo points",resources,cls,"pet",dict(type="unit",event="Power",unit="player",use_unit=True,
                 use_powertype=True,powertype=4),width=100,height=5,y=-155,color=rgba(RESOURCE_STYLES[4]['color']),text='%p / %t')
