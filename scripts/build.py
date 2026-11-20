@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.13"
+VERSION = "0.14.14"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -316,11 +316,17 @@ GLOBE_BAND = (512, 128)
 GLOBE_CROP = 0.41
 # 0.14.9 (user: "hard to see with background"): the shade under the bar and
 # the rows above it.
+# 0.14.14 (user: "can you have class related texture around globe?"): a
+# painted class ornament (globe-ornament-<class>) behind each globe, 180 px:
+# its opening hides under the liquid and about 25 px of class art shows round
+# the ring. The resource side is the same art mirrored. The Soul Shards text
+# and the upkeep row sit just outside it.
+GLOBE_ORNAMENT = 180
 GLOBE_SHADE = (600, 230)
 GLOBE_SHADE_Y = 55
 # Soul Shards text sits under the resource globe in the Globes style, like
 # the pet bar under the Health globe (the companion moves it).
-GLOBE_SHARDS = (GLOBE_X, GLOBE_Y - GLOBE_SIZE // 2 - 12)
+GLOBE_SHARDS = (GLOBE_X, GLOBE_Y - GLOBE_ORNAMENT // 2 - 10)
 # 0.14.13: the pet globe (ring 60, liquid 55) sits against the Health globe's
 # lower left, its centre on the 225 degree line just past the big ring
 # (65 + 30 - 10 px overlap = 85 from the centre).
@@ -330,7 +336,7 @@ PET_GLOBE_AT = (-GLOBE_X - 60, GLOBE_Y - 60)
 # The upkeep reminder row (x=286, y=13 in the data, beside the resource bar)
 # sits above the resource globe in the Globes style, its first 24 px icon
 # 12 px over the ring.
-GLOBE_MAINT = (GLOBE_X, GLOBE_Y + GLOBE_SIZE // 2 + 12 + 12)
+GLOBE_MAINT = (GLOBE_X, GLOBE_Y + GLOBE_ORNAMENT // 2 + 12 + 4)
 # 0.14.3: Warlocks are warned when they carry fewer than LOW_SHARDS Soul
 # Shards. One native condition on the Item Count trigger's stacks.
 LOW_SHARDS = 10
@@ -633,7 +639,12 @@ def globe_class_art(p,cls,prefix,frame):
     # then the rail. Both leave while the HUD is folded, like the chassis.
     shade=texture(p,prefix+' | Globe shade',frame,cls,'art','globe-shade',*GLOBE_SHADE,y=GLOBE_SHADE_Y)
     band=texture(p,prefix+' | Globe band',frame,cls,'art','globe-band',*GLOBE_BAND,y=GLOBE_Y)
-    for d in (shade,band):
+    # 0.14.14: the class ornament behind each globe (mirrored on the resource
+    # side), drawn after the rail so it covers the rail's end caps.
+    ornaments=[texture(p,prefix+' | Globe ornament | '+side,frame,cls,'art','globe-ornament-'+cls.lower(),
+        GLOBE_ORNAMENT,GLOBE_ORNAMENT,x=x,y=GLOBE_Y) for side,x in (('Health',-GLOBE_X),('Resource',GLOBE_X))]
+    ornaments[1]['mirror']=True
+    for d in (shade,band,*ornaments):
         d['load']['loadFlag']=f'FOREVERHUD_{cls}_globeArt'
         d['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.LayoutVisible() or false end'
     danger=texture(p,prefix+' | Globe danger',frame,cls,'resources','globe-danger',

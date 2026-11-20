@@ -153,7 +153,7 @@ class PackTests(unittest.TestCase):
             self.assertNotIn(forbidden,code)
     def test_wow_texture_format(self):
         files=list((ROOT/'src/ForeverHUD/Media').glob('*.tga'))
-        self.assertEqual(len(files),30,'0.14.9: globe shade; 0.14.6: globe ring, band, liquid, shine and danger halo (0.12.1: the drawn shelf)')
+        self.assertEqual(len(files),39,'0.14.14: nine class globe ornaments; 0.14.9: globe shade; 0.14.6: globe ring, band, liquid, shine and danger halo (0.12.1: the drawn shelf)')
         for path in files:
             header=path.read_bytes()[:18]
             self.assertEqual(header[2],2,'Uncompressed true-color TGA')
@@ -574,6 +574,16 @@ class PackTests(unittest.TestCase):
                 (f'FOREVERHUD_{token}_globeArt',ART_STRATA,600,55))
             self.assertTrue(shade['texture'].endswith('globe-shade.tga') if 'texture' in shade else True)
             self.assertLess(frame.index(prefix+' | Globe shade'),frame.index(prefix+' | Globe band'),'The shade draws first')
+            # 0.14.14: the class ornament behind each globe, mirrored on the
+            # resource side, after the rail and before the seal.
+            for side,x in (('Health',-305),('Resource',305)):
+                orn=by_id[f'{prefix} | Globe ornament | {side}']
+                self.assertTrue(orn['texture'].endswith(f'globe-ornament-{token.lower()}.tga'))
+                self.assertTrue((ROOT/'src/ForeverHUD/Media'/f'globe-ornament-{token.lower()}.tga').is_file())
+                self.assertEqual((orn['xOffset'],orn['yOffset'],orn['width'],orn['frameStrata'],orn['load']['loadFlag'],orn.get('mirror',False)),
+                    (x,0,180,ART_STRATA,f'FOREVERHUD_{token}_globeArt',side=='Resource'))
+                self.assertLess(frame.index(prefix+' | Globe band'),frame.index(orn['id']))
+                self.assertLess(frame.index(orn['id']),frame.index(prefix+' | Seal'))
             danger=by_id[prefix+' | Globe danger']
             self.assertEqual((danger['load']['loadFlag'],danger['alpha'],danger['xOffset']),(f'FOREVERHUD_{token}_globes',0,-305))
             self.assertEqual(danger['conditions'],[dict(check=dict(trigger=1,variable='percenthealth',op='<=',value=30),

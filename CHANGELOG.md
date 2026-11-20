@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.14 — 2026-11-19 (prerelease)
+
+User: "can you have class related texture around globe?", then "All nine classes".
+
+- **Class globe frames.** Each class has a painted ornament (`globe-ornament-<class>`) behind both globes in the Globes style, 180 px across: its open centre hides under the liquid and about 25 px of class art shows round each ring. The resource side is the same art mirrored. Warlock: shadowflame, horns and chains. Warrior: crossed swords, riveted steel and an axe. Mage: silver filigree, runes and frost. Priest: marble, gold, wings and a sunburst. Rogue: leather, daggers and rope. Druid: oak, leaves, antlers and acorns. Hunter: longbow, arrows and feathers. Shaman: carved stone, lightning, beads and feathers. Paladin: gilded wings, plate and a hammer.
+- They load with the class's Globes art (`FOREVERHUD_<CLASS>_globeArt`), draw after the rail and before the seal, and slide with the globes when the HUD unfolds.
+- The upkeep row (now at y=106) and the Soul Shards line (y=-100) sit just outside the frame.
+- Art: generated with Figma's image generator on flat green (Druid on magenta, because of its green leaves) and keyed with `scripts/chroma.py` (new `--magenta` mode); prompts and raw downloads are in `assets/ai/`.
+- The textures are new files: **fully restart the game** once, then update your class in `/fa`, choosing **Update Auras**.
+
 ## 0.14.13 — 2026-11-19 (prerelease)
 
 User, with an in-game screenshot of the shorter 0.14.12 bar: "pet bar is invisiable to me, too small, maybe a smaller globe under big globe? left bottom corner?"

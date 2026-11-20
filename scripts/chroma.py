@@ -33,6 +33,27 @@ def key(image):
             pixels[x, y] = (r, min(g, other), b, round(a * keep))
     return image
 
+def key_magenta(image):
+    """0.14.14: the Druid ornament has green leaves, so it was generated on
+    flat #FF00FF instead. "Magentaness" is how far the weaker of red and
+    blue exceeds green; the ramp matches key(). Magenta spill on the kept
+    edge is removed by clamping red and blue to green plus their difference
+    from each other."""
+    image = image.convert('RGBA')
+    pixels = image.load()
+    for y in range(image.height):
+        for x in range(image.width):
+            r, g, b, a = pixels[x, y]
+            magenta = min(r, b) - g
+            if magenta <= LOW:
+                continue
+            if magenta >= HIGH:
+                pixels[x, y] = (0, 0, 0, 0)
+                continue
+            keep = 1 - (magenta - LOW) / (HIGH - LOW)
+            pixels[x, y] = (min(r, g + abs(r - b)), g, min(b, g + abs(r - b)), round(a * keep))
+    return image
+
 def dehaze(image, low=60, high=200):
     """0.14.9: the rail came back with real alpha plus a wide soft dark haze.
     Alpha at or under low drops out, at or over high is solid, linear between;
@@ -45,8 +66,9 @@ def dehaze(image, low=60, high=200):
 if __name__ == '__main__':
     # python scripts/chroma.py SOURCE TARGET          key a flat green background
     # python scripts/chroma.py --dehaze SOURCE TARGET  clean an alpha haze instead
+    # python scripts/chroma.py --magenta SOURCE TARGET key a flat magenta background
     args = sys.argv[1:]
-    mode = dehaze if args[0] == '--dehaze' else key
+    mode = {'--dehaze': dehaze, '--magenta': key_magenta}.get(args[0], key)
     source, target = args[-2], args[-1]
     mode(Image.open(source)).save(target)
-    print('keyed' if mode is key else 'dehazed', source, '->', target)
+    print({key: 'keyed', key_magenta: 'keyed (magenta)', dehaze: 'dehazed'}[mode], source, '->', target)

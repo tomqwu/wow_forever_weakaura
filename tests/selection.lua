@@ -51,9 +51,9 @@ do
     E.Profile().frameStyle='Globes';S.ApplyLayout()
     check(region('Shadow Bolt').y==-80 and region('Life Tap').y==-80 and region('Shadow Bolt').x<0 and region('Life Tap').x>0,
         'Globes: both wings sit on the rail, on their own sides')
-    check(shards.x==305 and shards.y==-77,'Globes: Soul Shards under the resource globe')
+    check(shards.x==305 and shards.y==-100,'Globes: Soul Shards under the resource globe')
     local maint=ForeverAuras.GetRegion(E.DisplayID('Maintenance'))
-    check(maint.x==305 and maint.y==89,'Globes: the upkeep row sits above the resource globe (out of combat)')
+    check(maint.x==305 and maint.y==106,'Globes: the upkeep row sits above the resource globe (out of combat)')
     E.Profile().frameStyle='Bars';S.ApplyLayout()
     check(region('Shadow Bolt').y==42 and region('Life Tap').y==0 and shards.x==138 and shards.y==-13 and maint.x==286 and maint.y==13,
         'Bars restores the wings, the shard text and the upkeep row')

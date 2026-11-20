@@ -36,6 +36,7 @@ Figma image generator on 2026-11-19 with the user's approval. They replace the
 in git history). The exported file names stay `globe-frame` and `globe-band`.
 
 - `globe-ring.png`: a slim blackened-iron ring with four small gems, keyed from green.
+- `globe-ornament-<class>.png` (0.14.14, user: "can you have class related texture around globe?", then "All nine classes"): one painted ornament per class around an empty round opening, keyed from green (Druid from magenta, because of its green leaves, with `scripts/chroma.py --magenta`). `scripts/media.py` cuts each as a square centred on its opening.
 - `globe-rail.png`: a thin iron rail with a central boss. Figma returned this one with real alpha but a wide soft dark haze, so it was cleaned with `scripts/chroma.py --dehaze` instead of keyed.
 
 The glass highlight (`globe-shine`) and the low-health danger ring
