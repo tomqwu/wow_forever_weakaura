@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.15 — 2026-11-19 (prerelease)
+
+User: "can width a bit shorter between both globe?"
+
+- **Globes closer together.** Centred at x=+-285 instead of +-305, and 120 px (110 px liquid) instead of 130 (120): 450 px between the rings instead of 480. The class frames are 166 px (from 180), the rail 472x118, the shade 560x230, and the pet globe, upkeep row (y=99) and Soul Shards line (y=-93) follow. A fourth spell per side now reaches the liquid edge (x=233 against 230).
+- Update your class and **ForeverHUD | Core** in `/fa`, choosing **Update Auras**.
+
 ## 0.14.14 — 2026-11-19 (prerelease)
 
 User: "can you have class related texture around globe?", then "All nine classes".
