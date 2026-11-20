@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.17 — 2026-11-20 (prerelease)
+
+User: "didn't I tell you to make it a bit shorter? Maybe 20%", then chose "Seal above the rail".
+
+- **Globes 20% closer.** The globes sit at x=±240 instead of ±285: 360 px of rail between the rings instead of 450. The rail, shade, class frames, pet globe, Soul Shards text and upkeep row follow.
+- **Seal above the rail.** In the Globes style the companion lifts the in-combat class seal to y=76, just over the rail spells, and moves both cooldown wings 48 px towards the centre, so four 40 px spells per side still end at the liquid edge. The folded seal stays on the rail. The Bars style is unchanged.
+- Update your class and Core in `/fa`, choosing **Update Auras**.
+
 ## 0.14.16 — 2026-11-19 (prerelease)
 
 User: in-game screenshot of the folded HUD with an empty pet bar reading "Pet … inf" and no pet out.

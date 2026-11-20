@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.16"
+VERSION = "0.14.17"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -307,11 +307,20 @@ LOW_HEALTH = 30
 # 0.14.15 (user: "can width a bit shorter between both globe?"): globes at
 # +-285 and 120 px (110 px liquid): 450 px between the rings instead of 480.
 # A fourth spell per side (to x=+-233) meets the liquid edge (+-230).
-GLOBE_X = 285
+# 0.14.17 (user: "make it a bit shorter? Maybe 20%", then "Seal above the
+# rail"): globes at +-240, 360 px between the rings instead of 450. In the
+# Globes style the companion lifts the class seal off the rail (GLOBE_SEAL_Y,
+# its bottom 4 px over the 40 px spells) and the wings close in on the centre
+# (inner edges +-4, GLOBE_WING_SHIFT), so four 40 px spells per side end at
+# x=+-185, the liquid edge.
+GLOBE_X = 240
 GLOBE_Y = 0
 GLOBE_SIZE = 120
 GLOBE_FILL = 110
-GLOBE_BAND = (472, 118)
+GLOBE_WING_SHIFT = SEAL_EDGE - 4
+GLOBE_SEAL_Y = GLOBE_Y + 40 // 2 + 4 + 104 // 2
+# The rail's end caps tuck 11 px under each ring; the art keeps its 4:1 canvas.
+GLOBE_BAND = (2 * (GLOBE_X - GLOBE_SIZE // 2 + 11), (GLOBE_X - GLOBE_SIZE // 2 + 11) // 2)
 # FA scales progress-texture coordinates by sqrt(2) and divides by 1+crop
 # (TextureCoords.lua, ProgressTexture.lua SetCropX), so its default 0.41 shows
 # the whole texture. 0.14.6 used 1, which showed only the middle 71% of the
@@ -325,7 +334,7 @@ GLOBE_CROP = 0.41
 # the ring. The resource side is the same art mirrored. The Soul Shards text
 # and the upkeep row sit just outside it.
 GLOBE_ORNAMENT = 166
-GLOBE_SHADE = (560, 230)
+GLOBE_SHADE = (2 * GLOBE_X - 10, 230)
 GLOBE_SHADE_Y = 55
 # Soul Shards text sits under the resource globe in the Globes style, like
 # the pet bar under the Health globe (the companion moves it).
