@@ -51,12 +51,18 @@ do
     E.Profile().frameStyle='Globes';S.ApplyLayout()
     check(region('Shadow Bolt').y==-80 and region('Life Tap').y==-80 and region('Shadow Bolt').x<0 and region('Life Tap').x>0,
         'Globes: both wings sit on the rail, on their own sides')
-    check(shards.x==285 and shards.y==-93,'Globes: Soul Shards under the resource globe')
+    check(shards.x==240 and shards.y==-93,'Globes: Soul Shards under the resource globe')
     local maint=ForeverAuras.GetRegion(E.DisplayID('Maintenance'))
-    check(maint.x==285 and maint.y==99,'Globes: the upkeep row sits above the resource globe (out of combat)')
+    check(maint.x==240 and maint.y==99,'Globes: the upkeep row sits above the resource globe (out of combat)')
+    -- 0.14.17: the seal rises off the rail and the wings close in by 48 px.
+    local seal=ForeverAuras.GetRegion(E.DisplayID('Seal'))
+    check(seal.x==0 and seal.y==76,'Globes: the seal sits above the rail')
+    check(region('Shadow Bolt').x==selected('Shadow Bolt').x+48 and region('Life Tap').x==selected('Life Tap').x-48
+        and region('Life Tap').x==24,'Globes: both wings close in on the centre')
     E.Profile().frameStyle='Bars';S.ApplyLayout()
     check(region('Shadow Bolt').y==42 and region('Life Tap').y==0 and shards.x==138 and shards.y==-13 and maint.x==286 and maint.y==13,
         'Bars restores the wings, the shard text and the upkeep row')
+    check(seal.y==13 and region('Shadow Bolt').x==selected('Shadow Bolt').x and region('Life Tap').x==72,'Bars restores the seal and the wing spacing')
     -- In combat the upkeep row (native aura buttons) is left where it is.
     local inCombat=E.InCombat;E.InCombat=function()return true end
     E.Profile().frameStyle='Globes';S.ApplyLayout()

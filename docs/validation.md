@@ -1,6 +1,14 @@
-# Validation for 0.14.16
+# Validation for 0.14.17
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.17 (prerelease) — globes 20% closer
+
+- **Request:** the user's screenshot of the 0.14.15+ globes: "make it a bit shorter? Maybe 20%". They chose to move the seal above the rail.
+- **Change:** globes at x=±240 (360 px between the rings, was 450); rail 382x95; shade 470x230; pet globe (-297, -57); companion spots: Soul Shards (240, -93), upkeep row (240, 99). In the Globes style the companion moves the seal to (0, 76) and the wings 48 px inward (first spell centres ±24).
+- **Tests:** `test_globe_frame_style` checks the numbers, that four spells per side stay out of the liquid and that the seal clears them; `tests/selection.lua` checks the seal and wing moves and that Bars restores them.
+- **Illustrative only:** `docs/images/mock-0.14.17-globes.png` (Warlock) is drawn from the exported textures at the generated coordinates; it is not a game capture.
+- **Not yet checked in game.**
 
 ## 0.14.16 (prerelease) — pet health only with a pet
 
@@ -13,7 +21,7 @@ Sections below 0.4.0 describe releases made under the Eclipse name and keep the 
 
 - **Change:** globes 120/110 px at x=+-285; class frames 166 px; rail 472x118; shade 560x230; pet globe (-342, -57); companion spots: Soul Shards (285, -93), upkeep row (285, 99).
 - **Tests:** `test_globe_frame_style` checks the new sizes and positions and that a fourth spell per side reaches no more than 3 px into the liquid; `tests/selection.lua` checks the companion spots.
-- **Illustrative only:** `docs/images/mock-0.14.15-globes.png` (Warlock) is drawn from the exported textures at the generated coordinates; it is not a game capture.
+- **Illustrative only:** the 0.14.15 mock (since replaced by the 0.14.17 one) was drawn from the exported textures at the generated coordinates; it is not a game capture.
 - **Not yet checked in game.**
 
 ## 0.14.14 (prerelease) — class globe frames

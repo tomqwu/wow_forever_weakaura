@@ -240,14 +240,19 @@ end
 -- cooldown wings come down from PRIMARY_Y onto the rail at GLOBE_Y, one skill
 -- bar between the globes; the Soul Shards text moves under the resource globe.
 -- Matches GLOBE_X, GLOBE_Y, PRIMARY_Y and GLOBE_SHARDS in scripts/build.py.
-S.PRIMARY_Y,S.GLOBE_X,S.GLOBE_Y=80,285,0
-S.SHARDS_BARS,S.SHARDS_GLOBES={138,-13},{285,-93}
+S.PRIMARY_Y,S.GLOBE_X,S.GLOBE_Y=80,240,0
+S.SHARDS_BARS,S.SHARDS_GLOBES={138,-13},{240,-93}
+-- 0.14.17 (user: "Seal above the rail"): in the Globes style the seal rises
+-- off the rail and both wings close in on the centre, so the globes sit 20%
+-- closer. Matches GLOBE_WING_SHIFT and GLOBE_SEAL_Y in scripts/build.py.
+S.GLOBE_WING_SHIFT=48
+S.SEAL_BARS,S.SEAL_GLOBES=13,76
 -- 0.14.11 (user: "it's too long"): the upkeep row goes above the resource
 -- globe in the Globes style. It holds native aura buttons, so its group is
 -- moved only out of combat (E.ApplyLayout runs then; a call during combat
 -- leaves it where it is until the next one).
 -- 0.14.14: both sit just outside the 180 px class ornament.
-S.MAINT_BARS,S.MAINT_GLOBES={286,13},{285,99}
+S.MAINT_BARS,S.MAINT_GLOBES={286,13},{240,99}
 function S.Globes()
     local p=E.Profile()
     return p and p.frameStyle=='Globes' or false
@@ -261,8 +266,14 @@ function S.ApplyLayout()
         -- Ordinary spell displays only, never root ancestry or native aura
         -- buttons. Cached form selection can reposition these ordinary icons.
         local y=globes and S.GLOBE_Y-S.PRIMARY_Y or (position.x<0 and lift or 0)
-        if region and region.SetOffset then region:SetOffset(position.x,y) end
+        local x=position.x
+        if globes then x=x<0 and x+S.GLOBE_WING_SHIFT or x-S.GLOBE_WING_SHIFT end
+        if region and region.SetOffset then region:SetOffset(x,y) end
     end
+    -- The in-combat seal (an ordinary texture); the folded seal stays put.
+    local seal=E.DisplayID and E.DisplayID('Seal')
+    local sealRegion=seal and api.GetRegion(seal)
+    if sealRegion and sealRegion.SetOffset then sealRegion:SetOffset(0,globes and S.SEAL_GLOBES or S.SEAL_BARS) end
     -- An ordinary text display (no aura buttons).
     local shards=E.DisplayID and E.DisplayID('Soul Shards')
     local region=shards and api.GetRegion(shards)
