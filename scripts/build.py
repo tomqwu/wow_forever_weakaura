@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.14"
+VERSION = "0.14.15"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -304,11 +304,14 @@ LOW_HEALTH = 30
 # about 22% narrower overall; four 40 px spells per side (to x=+-233) still
 # clear each ring, and the upkeep row moves above the resource globe
 # (GLOBE_MAINT, moved by the companion out of combat).
-GLOBE_X = 305
+# 0.14.15 (user: "can width a bit shorter between both globe?"): globes at
+# +-285 and 120 px (110 px liquid): 450 px between the rings instead of 480.
+# A fourth spell per side (to x=+-233) meets the liquid edge (+-230).
+GLOBE_X = 285
 GLOBE_Y = 0
-GLOBE_SIZE = 130
-GLOBE_FILL = 120
-GLOBE_BAND = (512, 128)
+GLOBE_SIZE = 120
+GLOBE_FILL = 110
+GLOBE_BAND = (472, 118)
 # FA scales progress-texture coordinates by sqrt(2) and divides by 1+crop
 # (TextureCoords.lua, ProgressTexture.lua SetCropX), so its default 0.41 shows
 # the whole texture. 0.14.6 used 1, which showed only the middle 71% of the
@@ -321,8 +324,8 @@ GLOBE_CROP = 0.41
 # its opening hides under the liquid and about 25 px of class art shows round
 # the ring. The resource side is the same art mirrored. The Soul Shards text
 # and the upkeep row sit just outside it.
-GLOBE_ORNAMENT = 180
-GLOBE_SHADE = (600, 230)
+GLOBE_ORNAMENT = 166
+GLOBE_SHADE = (560, 230)
 GLOBE_SHADE_Y = 55
 # Soul Shards text sits under the resource globe in the Globes style, like
 # the pet bar under the Health globe (the companion moves it).
@@ -332,7 +335,7 @@ GLOBE_SHARDS = (GLOBE_X, GLOBE_Y - GLOBE_ORNAMENT // 2 - 10)
 # (65 + 30 - 10 px overlap = 85 from the centre).
 PET_GLOBE_SIZE = 60
 PET_GLOBE_FILL = 55
-PET_GLOBE_AT = (-GLOBE_X - 60, GLOBE_Y - 60)
+PET_GLOBE_AT = (-GLOBE_X - 57, GLOBE_Y - 57)
 # The upkeep reminder row (x=286, y=13 in the data, beside the resource bar)
 # sits above the resource globe in the Globes style, its first 24 px icon
 # 12 px over the ring.

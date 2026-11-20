@@ -1,6 +1,13 @@
-# Validation for 0.14.14
+# Validation for 0.14.15
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.15 (prerelease) — globes closer together
+
+- **Change:** globes 120/110 px at x=+-285; class frames 166 px; rail 472x118; shade 560x230; pet globe (-342, -57); companion spots: Soul Shards (285, -93), upkeep row (285, 99).
+- **Tests:** `test_globe_frame_style` checks the new sizes and positions and that a fourth spell per side reaches no more than 3 px into the liquid; `tests/selection.lua` checks the companion spots.
+- **Illustrative only:** `docs/images/mock-0.14.15-globes.png` (Warlock) is drawn from the exported textures at the generated coordinates; it is not a game capture.
+- **Not yet checked in game.**
 
 ## 0.14.14 (prerelease) — class globe frames
 
