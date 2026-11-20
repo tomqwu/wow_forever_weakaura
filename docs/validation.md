@@ -1,6 +1,13 @@
-# Validation for 0.14.15
+# Validation for 0.14.16
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.16 (prerelease) — pet health only with a pet
+
+- **Game evidence:** the user's screenshot showed the folded HUD with the 0.14.12 short pet bar visible and reading "inf" with no pet out; the saved ForeverAuras data (read only) still held 0.14.12 (build 1412) auras.
+- **Change:** a native Conditions trigger with Has Pet on both pet displays, before the gate.
+- **Tests:** `test_globe_frame_style` checks the trigger order (pet Health, Has Pet, gate) and the "all" combination on both pet displays for Warlock and Hunter.
+- **Not yet checked in game:** the displays hiding without a pet, and why the 0.14.12 bar showed while the HUD was folded (its module gate hides the pet module while folded).
 
 ## 0.14.15 (prerelease) — globes closer together
 

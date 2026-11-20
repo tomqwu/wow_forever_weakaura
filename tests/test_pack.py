@@ -598,6 +598,13 @@ class PackTests(unittest.TestCase):
             self.assertEqual(by_id[f'ForeverHUD | {cls} | Pet health']['load']['loadFlag'],f'FOREVERHUD_{token}_petBar')
             pet=by_id[f'ForeverHUD | {cls} | Pet health | Globe']
             self.assertEqual((pet['load']['loadFlag'],pet['xOffset']),(f'FOREVERHUD_{token}_petGlobe',-342))
+            # 0.14.16: both pet displays need a living pet (native Has Pet), and
+            # the module gate stays the last trigger.
+            for d in (pet,by_id[f'ForeverHUD | {cls} | Pet health']):
+                ts=d['triggers']
+                self.assertEqual((ts[1]['trigger']['unit'],ts[2]['trigger']['event'],ts[2]['trigger']['use_HasPet']),('pet','Conditions',True),d['id'])
+                self.assertEqual((ts[3]['trigger']['type'],ts['disjunctive']),('custom','all'),d['id'])
+                self.assertIn('Gate("pet"',ts[3]['trigger']['custom'])
             # 0.14.13: a small pet globe (native fill, slim ring) against the Health
             # globe's lower left, replacing the thin 0.14.6 pet bar.
             self.assertEqual((pet['regionType'],pet['orientation'],pet['yOffset'],pet['width'],pet['crop_x']),('progresstexture','VERTICAL',-57,55,0.41))

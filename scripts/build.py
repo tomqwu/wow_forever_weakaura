@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.15"
+VERSION = "0.14.16"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -1193,6 +1193,14 @@ def generate():
             pet_globe=globe(p,prefix+" | Pet health | Globe",resources,cls,"pet",*PET_GLOBE_AT,PET_GLOBE_FILL,PET_GLOBE_SIZE,
                 dict(type="unit",event="Health",unit="pet",use_unit=True),PET_HEALTH_COLOR,'%percenthealth%%',11)
             pet_globe['load']['loadFlag']=f'FOREVERHUD_{cls}_petGlobe'
+            # 0.14.16 (user screenshot: the pet bar showing "inf" with no pet
+            # out, the demon dismissed or sacrificed): both pet displays also
+            # need a living pet, one more native Conditions trigger (Has Pet)
+            # before the gate, which stays last.
+            for d in (pet_bar,pet_globe):
+                gate=max(k for k in d['triggers'] if isinstance(k,int))
+                d['triggers'][gate+1]=d['triggers'][gate]
+                d['triggers'][gate]=dict(trigger=dict(type='unit',event='Conditions',unit='player',use_HasPet=True),untrigger={})
         if c.get('extra')=="shards":
             d=p.add(prefix+" | Soul Shards","text",resources,cls,"pet",x=138,y=-13,displayText="%c: %s  |TInterface\\Icons\\INV_Misc_Gem_Amethyst_02:12|t",
                 font="Friz Quadrata TT",fontSize=11,outline="OUTLINE",color=rgba(c['accent']),justify="CENTER",

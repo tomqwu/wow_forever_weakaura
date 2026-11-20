@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.16 — 2026-11-19 (prerelease)
+
+User: in-game screenshot of the folded HUD with an empty pet bar reading "Pet … inf" and no pet out.
+
+- **Pet health only with a pet.** The pet health bar (Bars style) and the pet globe (Globes style) each get one more native trigger, Conditions "Has Pet", before the module gate, so neither shows while the pet is dismissed, dead or sacrificed. The module gate stays the last trigger.
+- Update your class in `/fa`, choosing **Update Auras**. (The screenshot was from 0.14.12 auras; 0.14.13 replaced that bar with the pet globe.)
+
 ## 0.14.15 — 2026-11-19 (prerelease)
 
 User: "can width a bit shorter between both globe?"
