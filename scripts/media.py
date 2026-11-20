@@ -60,6 +60,19 @@ def build(directory,classes):
     # opening is a fixed share of the canvas (GLOBE_FILL / GLOBE_SIZE).
     export(directory,'globe-frame',Image.open(MASTERS/'globe-ring.png'),(256,256))
     export(directory,'globe-band',Image.open(MASTERS/'globe-rail.png'),(1024,256))
+    # 0.14.14 (user: "can you have class related texture around globe?"):
+    # one painted ornament per class (Figma generator, keyed). Each is cut as
+    # a square centred on the image centre (the empty opening the globe sits
+    # in), just wide enough for the art, so the opening stays centred.
+    for token in ('WARRIOR','MAGE','PRIEST','ROGUE','DRUID','HUNTER','SHAMAN','PALADIN','WARLOCK'):
+        art=Image.open(MASTERS/f'globe-ornament-{token.lower()}.png').convert('RGBA')
+        x0,y0,x1,y1=art.getchannel('A').point(lambda a: 255 if a > 1 else 0).getbbox()
+        cx,cy=art.width//2,art.height//2
+        half=max(cx-x0,x1-cx,cy-y0,y1-cy)
+        square=Image.new('RGBA',(2*half,2*half),(0,0,0,0))
+        square.alpha_composite(art.crop((max(0,cx-half),max(0,cy-half),min(art.width,cx+half),min(art.height,cy+half))),
+            (max(0,half-cx),max(0,half-cy)))
+        export(directory,f'globe-ornament-{token.lower()}',square,(256,256),trim=False)
     # The liquid is greyscale (tinted in game); a round alpha makes the
     # vertical native fill read as a filling orb. 0.14.9: darker toward the
     # rim so the flat fill reads as a sphere.

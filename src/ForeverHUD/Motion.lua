@@ -61,7 +61,8 @@ function M.Gather()
     if p and p.frameStyle=='Globes' then
         local gx=E.selection and E.selection.GLOBE_X or 400
         rows={{'Soul Shards',gx,'pet'},{'Globe band',0,'art'},{'Globe shade',0,'art'},{'Pet health | Globe',-gx,'pet'},
-            {'Globes | Health',-gx,'resources'},{'Globes | Resource',gx,'resources'},{'Globe danger',-gx,'resources'}}
+            {'Globes | Health',-gx,'resources'},{'Globes | Resource',gx,'resources'},{'Globe danger',-gx,'resources'},
+            {'Globe ornament | Health',-gx,'art'},{'Globe ornament | Resource',gx,'art'}}
     end
     for _,row in ipairs(rows) do
         local id=E.DisplayID(row[1])

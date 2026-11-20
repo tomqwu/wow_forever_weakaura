@@ -1,6 +1,13 @@
-# Validation for 0.14.13
+# Validation for 0.14.14
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.14 (prerelease) — class globe frames
+
+- **Art:** nine ornaments generated and keyed; each keyed master has a transparent centre (measured opening radius 246–340 of 1024 px). `scripts/media.py` cuts each as a square centred on its opening.
+- **Tests:** `test_globe_frame_style` checks both ornaments for every class (texture file present, position, 180 px, art strata, `globeArt` flag, mirrored on the resource side, drawn after the rail and before the seal); the texture count is 39; `tests/selection.lua` checks the new upkeep and Soul Shards spots.
+- **Illustrative only:** `docs/images/mock-0.14.14-globes.png` (Warlock) is drawn from the exported textures at the generated coordinates; it is not a game capture.
+- **Not yet checked in game:** the frames in any class, their overlap with the fourth spell slot on each side, the upkeep row and the Soul Shards line.
 
 ## 0.14.13 (prerelease) — pet globe
 
