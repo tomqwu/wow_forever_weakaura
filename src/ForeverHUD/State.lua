@@ -88,6 +88,15 @@ function S.ToggleInspect()
     local p=E.Profile();if not p or not p.enabled or not S.world then return end
     local combat=S.combat
     if combat==nil then combat=E.InCombat()end
+    -- 0.14.21 (user: "click shouldn't expand it, and you should hint the
+    -- option is turned off"): with Stay folded a click (seal, minimap or
+    -- broker) never expands; it says why. An open HUD (settings preview,
+    -- /fhud inspect) still folds on a click.
+    if p.stayFolded and not S.open then
+        S.inspected=false
+        if E.StayFoldedHint then E.StayFoldedHint() end
+        return false
+    end
     cancel('inspectTimer');cancel('closeTimer')
     if combat then
         S.inspected=false;S.Update(false,true);return

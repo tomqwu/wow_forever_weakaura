@@ -161,10 +161,16 @@ do
     p.stayFolded=true
     E.Hover(true)
     check(not E.peeking and not S.open,'Stay folded: hovering does not open the ghost')
+    -- 0.14.21: nor does a click; it says why instead.
+    local hints={};UIErrorsFrame={AddMessage=function(_,text)hints[#hints+1]=text end}
     E.handle.scripts.OnClick(E.handle,'LeftButton')
-    check(S.open and handleY()==76,'Stay folded: a click still opens the HUD')
+    check(not S.open and handleY()==13 and #hints==1 and hints[1]:find('Stay folded is on',1,true),'Stay folded: a click does not expand; it shows the hint')
+    check(S.ToggleInspect()==false and not S.open and #hints==2,'Stay folded: every toggle (minimap, broker) refuses with the hint')
+    -- An HUD opened another way (/fhud inspect) still folds on a click, with no hint.
+    S.Inspect();check(S.open,'Stay folded: /fhud inspect still opens it')
     E.handle.scripts.OnClick(E.handle,'LeftButton')
-    check(not S.open and not E.peeking,'Stay folded: a second click folds it')
+    check(not S.open and #hints==2,'Stay folded: a click folds an opened HUD')
+    UIErrorsFrame=nil
     E.Hover(false);E.SetPeek(false);p.stayFolded=false;E.selection=nil
     ForeverAuras.GetRegion,ForeverAuras.GetData=oldRegion,oldData
 end
