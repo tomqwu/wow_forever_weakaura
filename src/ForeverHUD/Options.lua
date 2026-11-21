@@ -565,6 +565,8 @@ SlashCmdList.FOREVERHUD = function(message)
     elseif install and E.InstallBundled then E.InstallBundled(install=="force")
     elseif message and message:match("^%s*spells%s*$") and E.ReportSpells then E.ReportSpells()
     elseif message and message:match("^%s*inspect%s*$") and E.state then E.state.Inspect()
+    -- 0.14.23: /fhud fold switches Stay folded on or off.
+    elseif message and message:lower():match("^%s*fold%s*$") then E.ToggleStayFolded()
     elseif message and message:match("^%s*perf%s*$") then E.Perf()
     else E.ToggleOptions() end
 end

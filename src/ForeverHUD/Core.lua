@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.14.22"
+E.releaseVersion = "0.14.23"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -26,7 +26,7 @@ local defaults = {
     -- 0.13.7: the default sits lower (was y=-160): about 10% of a 768-unit screen.
     scale=1, x=0, y=-235, opacity=1, castScale=1,
     school="Auto", cleave=false, cooldownLayout="Forever",
-    expandCombat=true, stayFolded=false, unfoldSound=false, unfold=true,
+    expandCombat=true, stayFolded=true, unfoldSound=false, unfold=true,
     resourceFlow=true, swingMode="Auto",
     hideDefaultCast=false, castBarMode="Default",
     fx=true,
@@ -149,6 +149,10 @@ local function fill(profile)
     for key, value in pairs(defaults) do
         if type(profile[key]) ~= type(value) then profile[key] = value end
     end
+    -- 0.14.23 (user: "make fold by default"): every class starts with Stay
+    -- folded on, once. The option is from 0.14.18, so a saved "off" is the old
+    -- default; after this a player's choice is kept.
+    if profile.foldDefault ~= true then profile.stayFolded = true; profile.foldDefault = true end
     fillClass(profile)
     profile.cast=profile.castBarMode~='Default'
     profile.hideDefaultCast=profile.castBarMode=='ForeverHUD'
@@ -762,11 +766,36 @@ function E.ClearInteraction()
 end
 -- 0.14.21: with Stay folded the seal does not expand; a click says so once
 -- on screen, and hovering shows the same hint.
-E.STAY_FOLDED_HINT = "Stay folded is on, so the HUD does not expand. Turn it off in Settings > Combat."
-function E.StayFoldedHint()
-    local text = E.L(E.STAY_FOLDED_HINT)
+-- 0.14.23 (user: "make an option can be easier stay folded or expanded?"):
+-- Shift-click on the seal (or /fhud fold) switches Stay folded on or off.
+E.STAY_FOLDED_HINT = "Stay folded is on, so the HUD does not expand. Shift-click the seal to let it expand."
+E.FOLDED_INTRO = "The HUD stays folded in combat. Shift-click the seal, or type /fhud fold, to let it expand."
+local function hint(text)
     E.lastHint = text
     if UIErrorsFrame and UIErrorsFrame.AddMessage then UIErrorsFrame:AddMessage(text, 1, 0.82, 0) end
+end
+function E.StayFoldedHint() hint(E.L(E.STAY_FOLDED_HINT)) end
+-- 0.14.23 (user: "give hint to user it can be expanded"): once per session,
+-- when the HUD first starts folded, a chat line says how to let it expand.
+function E.FoldedIntro()
+    local p = E.Profile()
+    if E.introShown or not p or not p.stayFolded then return end
+    E.introShown = true
+    print("|cffb48cffForeverHUD|r: " .. E.L(E.FOLDED_INTRO))
+end
+function E.ToggleStayFolded()
+    local p = E.Profile()
+    if not p then return end
+    local queued = E.queued and E.queued.stayFolded
+    local current = p.stayFolded
+    if queued ~= nil then current = queued end
+    local value = not current
+    E.Set("stayFolded", value)
+    if E.RefreshOptions then E.RefreshOptions() end
+    local text = E.L(value and "Stay folded on: the HUD stays folded in combat." or "Stay folded off: the HUD expands in combat again.")
+    if E.InCombat() then text = text .. " " .. E.L("Changes apply after combat.") end
+    hint(text)
+    return value
 end
 handle:SetScript("OnEnter", function()
     E.Hover(true)
@@ -780,12 +809,17 @@ handle:SetScript("OnEnter", function()
     elseif p and not p.locked then
         GameTooltip:SetOwner(handle, "ANCHOR_TOP")
         GameTooltip:SetText(E.L("Left-click to expand or fold. Right-click for settings."))
+        GameTooltip:AddLine(E.L("Shift-click: Stay folded on or off."), 1, 1, 1, true)
         GameTooltip:Show()
     end
 end)
 handle:SetScript("OnLeave", function() E.Hover(false); GameTooltip:Hide() end)
 handle:SetScript("OnClick", function(_, button)
-    if button == "RightButton" then
+    if IsShiftKeyDown and IsShiftKeyDown() then
+        E.ToggleStayFolded()
+        GameTooltip:Hide()
+        E.Notify()
+    elseif button == "RightButton" then
         if E.ToggleOptions then E.ToggleOptions() end
     else
         local opened

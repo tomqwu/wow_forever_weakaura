@@ -1,6 +1,19 @@
-# Validation for 0.14.22
+# Validation for 0.14.23
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.23 (prerelease) — folded by default; Shift-click to switch
+
+- **Request:** "make an option can be easier stay folded or expanded?" and "make fold by default, and give hint to user it can be expanded".
+- **Change:**
+  - Stay folded defaults to on. `fill` switches existing profiles once (`foldDefault`); after that the saved choice is kept.
+  - Shift-click on the seal (either button) and `/fhud fold` call `E.ToggleStayFolded`. It sets the option (queued in combat), refreshes the settings window and shows an on-screen line.
+  - The first start each session with Stay folded on prints a chat line saying how to let the HUD expand. The click hint and the seal tooltip say Shift-click lets it expand.
+- **Tests:**
+  - `tests/state.lua` checks the default, the one-time switch and kept choice, the single intro line, and Shift-click both ways.
+  - `tests/core.lua` checks `/fhud fold` both ways.
+  - Older tests now set Stay folded off explicitly.
+- **Not yet checked in game.**
 
 ## 0.14.22 (prerelease) — folded combat view: damage wing only, full-size suggestion
 
