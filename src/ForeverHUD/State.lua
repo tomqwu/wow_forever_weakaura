@@ -113,6 +113,7 @@ function S.Start()
     S.world=true; S.loading=false;S.combat=nil;S.manualFold=false
     for _,event in ipairs(watch) do pcall(events.RegisterEvent,events,event) end
     S.Update(true)
+    if E.FoldedIntro then E.FoldedIntro() end
 end
 function S.Stop()
     cancel('closeTimer'); cancel('inspectTimer'); cancel('previewTimer')

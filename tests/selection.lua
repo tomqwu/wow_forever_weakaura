@@ -13,7 +13,8 @@ ForeverAuras.GetRegion=function(id)
 end
 local function loadout(class,names)
     UnitClass=function()return class,class end
-    E.InitDB(); E.Profile().cooldownLayout='Class plan'; E.Profile().school='Auto'; E.Profile().cleave=false
+    -- Stay folded is on by default (0.14.23); these layout checks start expanded-style.
+    E.InitDB(); E.Profile().cooldownLayout='Class plan'; E.Profile().school='Auto'; E.Profile().cleave=false; E.Profile().stayFolded=false
     local allowed={};for _,name in ipairs(names)do allowed[name]=true end
     D.eligible={}
     for id,entry in pairs(E.catalog)do

@@ -181,6 +181,12 @@ check(E.gameOptions.slider.valueNumber==E.Profile().scale and E.gameOptions.slid
 E.gameOptions.slider:SetValue(1.3)
 check(math.abs(E.Profile().scale-1.3)<0.0001 and root.scale==E.Profile().scale and E.gameOptions.slider.value.text=='130%','The game page size slider resizes the HUD')
 E.gameOptions.slider:SetValue(1.2);Settings=nil
+-- 0.14.23: /fhud fold switches Stay folded (on by default).
+do
+    local before=E.Profile().stayFolded
+    SlashCmdList.FOREVERHUD('fold');check(E.Profile().stayFolded==not before,'/fhud fold switches Stay folded')
+    SlashCmdList.FOREVERHUD(' FOLD ');check(E.Profile().stayFolded==before and not E.panel:IsShown(),'/fhud fold again switches it back')
+end
 SlashCmdList.FOREVERHUD('60%');check(math.abs(E.Profile().scale-.6)<0.0001,'/fhud 60% sets the size')
 SlashCmdList.FOREVERHUD(' 130 ');check(math.abs(E.Profile().scale-1.3)<0.0001,'/fhud 130 sets the size')
 SlashCmdList.FOREVERHUD('500');check(math.abs(E.Profile().scale-1.3)<0.0001 and not E.panel:IsShown(),'An out-of-range size changes nothing and opens nothing')
@@ -254,7 +260,7 @@ local oldParent=standalone.parent
 InCombatLockdown=function()return true end;E.ApplyLayout()
 check(E.pending and standalone.parent==oldParent,'Standalone ancestry changes defer in combat')
 InCombatLockdown=function()return false end
-check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.14.22','Legacy v0.3.2 bridge and independent class import API remain compatible')
+check(E.version=='0.3.2' and E.importAPI==2 and E.releaseVersion=='0.14.23','Legacy v0.3.2 bridge and independent class import API remain compatible')
 local legacy=assert(loadstring('return function()return ForeverHUD and ForeverHUD.version=="0.3.2" and ForeverHUD.Gate("base","WARLOCK") or false end'))()
 check(legacy()==true,'An existing v0.3.2 class gate still works with the new companion')
 local importing=true

@@ -14,7 +14,22 @@ C_Timer.NewTimer=function(delay,callback)return {delay=delay,callback=callback,C
 assert(loadfile('src/ForeverHUD/Discovery.lua'))('ForeverHUD',E)
 assert(loadfile('src/ForeverHUD/State.lua'))('ForeverHUD',E)
 local S=E.state
-E.Reset();E.Set('castBarMode','ForeverHUD');S.Start()
+E.Reset();E.Set('castBarMode','ForeverHUD')
+-- 0.14.23 (user: "make fold by default, and give hint to user it can be
+-- expanded"): Stay folded starts on; the first start says how to expand.
+check(E.Profile().stayFolded==true and E.Profile().foldDefault==true,'Stay folded is on by default')
+do
+    local said={}
+    local oldPrint=print;print=function(text)said[#said+1]=text end
+    E.introShown=nil;S.Start();S.Stop();S.Start()
+    print=oldPrint
+    check(#said==1 and said[1]:find('/fhud fold',1,true),'The first start says once how to let the HUD expand')
+    local p=E.Profile();p.stayFolded=false;p.foldDefault=nil;E.Set('scale',1)
+    check(p.stayFolded==true and p.foldDefault==true,'An older profile switches to Stay folded once')
+    p.stayFolded=false;E.Set('scale',1)
+    check(p.stayFolded==false,'After that the player\'s choice is kept')
+end
+S.Update(true)
 check(not S.Visible() and E.Gate('art','WARLOCK') and not E.Gate('resources','WARLOCK'),'Compact idle retains emblem, folds resources')
 check(E.Gate('cast','WARLOCK') and not E.Gate('buffs','WARLOCK') and E.Gate('tray','WARLOCK'),'Casting keeps its own rule; folded, the tray replaces the buff rows (0.8)')
 exists=true;attack=true;S.Update(false)
@@ -147,7 +162,7 @@ end
 -- 0.14.20: the click button follows the seal that shows (the Globes open seal
 -- sits above the rail at y=76), and Stay folded has no hover peek.
 do
-    local root={SetRegionAlpha=function()end}
+    local root={SetRegionAlpha=function()end,SetScale=function()end}
     local oldRegion,oldData=ForeverAuras.GetRegion,ForeverAuras.GetData
     ForeverAuras.GetRegion=function()return root end
     ForeverAuras.GetData=function()return nil end
@@ -176,6 +191,13 @@ do
     S.Inspect();check(S.open,'Stay folded: /fhud inspect still opens it')
     E.handle.scripts.OnClick(E.handle,'LeftButton')
     check(not S.open and #hints==2,'Stay folded: a click folds an opened HUD')
+    -- 0.14.23: Shift-click switches Stay folded, with a line saying so.
+    local shift=true;IsShiftKeyDown=function()return shift end
+    E.handle.scripts.OnClick(E.handle,'LeftButton')
+    check(p.stayFolded==false and not S.open and #hints==3 and hints[3]:find('Stay folded off',1,true),'Shift-click turns Stay folded off')
+    E.handle.scripts.OnClick(E.handle,'RightButton')
+    check(p.stayFolded==true and #hints==4 and hints[4]:find('Stay folded on',1,true),'Shift-click turns it back on (either button)')
+    shift=false;IsShiftKeyDown=nil
     UIErrorsFrame=nil
     E.Hover(false);E.SetPeek(false);p.stayFolded=false;E.selection=nil
     ForeverAuras.GetRegion,ForeverAuras.GetData=oldRegion,oldData
