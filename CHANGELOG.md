@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.18 — 2026-11-20 (prerelease)
+
+User: "option to not expand in combat, just retracted model".
+
+- **Stay folded.** A new setting, **Combat → Stay folded** (off by default). It keeps the folded seal and tray in combat and with a hostile target. A seal click, `/fhud inspect`, the hover peek and the settings preview still open the HUD. The existing **Expand when combat starts** only stops the combat trigger; a hostile target still opened the HUD.
+- The companion changed; update your class and Core in `/fa` with **Update Auras** for the new build.
+
 ## 0.14.17 — 2026-11-20 (prerelease)
 
 User: "didn't I tell you to make it a bit shorter? Maybe 20%", then chose "Seal above the rail".

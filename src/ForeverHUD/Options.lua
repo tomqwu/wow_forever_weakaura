@@ -194,7 +194,7 @@ local function build()
     local after = grid(combat, {{'combatOnly','Combat only'}, {'hoverUtility','Utility on hover'},
         {'expandCombat','Expand when combat starts'}, {'unfold','Unfold animation'},
         {'unfoldSound','Unfold sound'}, {'resourceFlow','Resource flow'},
-        {'cleave','Prefer Cleave in Fury'}}, -176)
+        {'cleave','Prefer Cleave in Fury'}, {'stayFolded','Stay folded'}}, -176)
     group(combat, "Plans", after - 12)
     local function cycle(key, values, title, x, y)
         local b = wide(combat, x, y, 240, nil, function()
