@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.21 — 2026-11-20 (prerelease)
+
+User: "click shouldn't expand it, and you should hint the option is turned off".
+
+- **Clicks do not expand with Stay folded.** The seal click and the minimap and broker right-click no longer expand the HUD while **Stay folded** is on. Each shows an on-screen hint instead: "Stay folded is on, so the HUD does not expand. Turn it off in Settings > Combat." Hovering the seal shows the same hint as a tooltip.
+- `/fhud inspect`, **Expand for inspection** and the settings preview still open the HUD, and a click folds it again.
+- Companion only; choose **Update Auras** in `/fa` for the rebuilt imports.
+
 ## 0.14.20 — 2026-11-20 (prerelease)
 
 User: "it shouldn't expand when mouse over if it stay folded, also single click doesn't fold it too".

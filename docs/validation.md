@@ -1,6 +1,19 @@
-# Validation for 0.14.20
+# Validation for 0.14.21
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.21 (prerelease) — Stay folded ignores clicks, with a hint
+
+- **Request:** "click shouldn't expand it, and you should hint the option is turned off".
+- **Change:**
+  - With Stay folded on and the HUD folded, `State.ToggleInspect` refuses. Every toggle uses it: the seal, the minimap and the broker.
+  - Instead it calls `E.StayFoldedHint`, which puts a localized line in `UIErrorsFrame`. The seal tooltip shows the same hint.
+  - An HUD that is already open still folds on a click.
+- **Tests:** `tests/state.lua` checks the cases below.
+  - A click does not expand and shows the hint.
+  - `ToggleInspect` refuses with the hint.
+  - `/fhud inspect` still opens the HUD, and a click folds it with no hint.
+- **Not yet checked in game.**
 
 ## 0.14.20 (prerelease) — seal click and Stay folded hover fixes
 

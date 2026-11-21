@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.14.20"
+E.releaseVersion = "0.14.21"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -751,10 +751,24 @@ function E.ClearInteraction()
     stopHover();E.StopDrag(false);E.hovering,E.utilityPinned=false,false
     E.SetPeek(false)
 end
+-- 0.14.21: with Stay folded the seal does not expand; a click says so once
+-- on screen, and hovering shows the same hint.
+E.STAY_FOLDED_HINT = "Stay folded is on, so the HUD does not expand. Turn it off in Settings > Combat."
+function E.StayFoldedHint()
+    local text = E.L(E.STAY_FOLDED_HINT)
+    E.lastHint = text
+    if UIErrorsFrame and UIErrorsFrame.AddMessage then UIErrorsFrame:AddMessage(text, 1, 0.82, 0) end
+end
 handle:SetScript("OnEnter", function()
     E.Hover(true)
     local p = E.Profile()
-    if p and not p.locked then
+    if p and p.stayFolded and E.state and not E.state.open then
+        GameTooltip:SetOwner(handle, "ANCHOR_TOP")
+        GameTooltip:SetText(E.L("Stay folded"))
+        GameTooltip:AddLine(E.L(E.STAY_FOLDED_HINT), 1, 0.82, 0, true)
+        GameTooltip:AddLine(E.L("Right-click for settings."), 1, 1, 1, true)
+        GameTooltip:Show()
+    elseif p and not p.locked then
         GameTooltip:SetOwner(handle, "ANCHOR_TOP")
         GameTooltip:SetText(E.L("Left-click to expand or fold. Right-click for settings."))
         GameTooltip:Show()
