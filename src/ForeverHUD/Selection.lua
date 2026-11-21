@@ -257,10 +257,32 @@ function S.Globes()
     local p=E.Profile()
     return p and p.frameStyle=='Globes' or false
 end
+-- 0.14.19 (user: "when foldable combat, make mini CDM and recommendation
+-- engine minimize around it"): with Stay folded, while the HUD is folded the
+-- cooldown wings are laid out at 60% beside the folded seal (inner edges
+-- +-59, 6 px outside its 106 px art, centred at y=13) and the suggestion row
+-- at 70% above it (its lead edge at x=11, centre y=81, 4 px over the seal).
+-- Scale and the suggestion row change only out of combat; in combat the
+-- last layout stays (S.mini), so a fold or click in combat moves nothing.
+-- Matches SUGGEST_ROW_X, SUGGEST_Y and RETRACTED_SEAL in scripts/build.py.
+S.MINI_SCALE,S.MINI_EDGE,S.MINI_Y=0.6,59,13
+S.MINI_SUGGEST_SCALE,S.MINI_SUGGEST_LEAD,S.MINI_SUGGEST_Y=0.7,11,81
+S.SUGGEST_ROW_X,S.SUGGEST_Y,S.SUGGEST_HALF=-68,78,16
+function S.WantMini()
+    local p=E.Profile()
+    return p~=nil and p.stayFolded==true and not (E.state and E.state.open)
+end
+local function scale(region,value)
+    if region.SetScale then region:SetScale(value) end
+end
 function S.ApplyLayout()
     local api=E.API(); if not api or not api.GetRegion then return end
     local globes=S.Globes()
     local lift=S.LeftLift()
+    local combat=E.InCombat()
+    local was=S.mini
+    if not combat then S.mini=S.WantMini() end
+    local mini=S.mini==true
     for id,position in pairs(S.positions) do
         local region=api.GetRegion(id)
         -- Ordinary spell displays only, never root ancestry or native aura
@@ -268,12 +290,40 @@ function S.ApplyLayout()
         local y=globes and S.GLOBE_Y-S.PRIMARY_Y or (position.x<0 and lift or 0)
         local x=position.x
         if globes then x=x<0 and x+S.GLOBE_WING_SHIFT or x-S.GLOBE_WING_SHIFT end
-        if region and region.SetOffset then region:SetOffset(x,y) end
+        local size=1
+        if mini then
+            -- A scaled frame's offsets are in its own (scaled) units.
+            size=S.MINI_SCALE
+            local sign=position.x<0 and -1 or 1
+            x=sign*(S.MINI_EDGE+S.ICON*size/2+(math.abs(position.x)-S.WING_X)*size)/size
+            y=(S.MINI_Y-S.PRIMARY_Y)/size
+        end
+        if region and region.SetOffset then
+            if not combat then scale(region,size) end
+            region:SetOffset(x,y)
+        end
     end
     -- The in-combat seal (an ordinary texture); the folded seal stays put.
     local seal=E.DisplayID and E.DisplayID('Seal')
     local sealRegion=seal and api.GetRegion(seal)
-    if sealRegion and sealRegion.SetOffset then sealRegion:SetOffset(0,globes and S.SEAL_GLOBES or S.SEAL_BARS) end
+    if sealRegion and sealRegion.SetOffset then sealRegion:SetOffset(0,globes and not mini and S.SEAL_GLOBES or S.SEAL_BARS) end
+    -- The suggestion row is touched only to enter or leave the mini layout,
+    -- and only out of combat (its children may be native aura buttons).
+    if not combat and (mini or S.suggestMoved) then
+        local id=E.DisplayID and E.DisplayID('Suggest')
+        local row=id and api.GetRegion(id)
+        if row and row.SetOffset then
+            if mini then
+                local size=S.MINI_SUGGEST_SCALE
+                scale(row,size)
+                row:SetOffset(S.MINI_SUGGEST_LEAD/size-S.SUGGEST_HALF,S.MINI_SUGGEST_Y/size)
+                S.suggestMoved=true
+            else
+                scale(row,1);row:SetOffset(S.SUGGEST_ROW_X,S.SUGGEST_Y);S.suggestMoved=false
+            end
+        end
+    end
+    if was~=S.mini and E.motion and E.state and E.state.world then E.motion.Reconcile() end
     -- An ordinary text display (no aura buttons).
     local shards=E.DisplayID and E.DisplayID('Soul Shards')
     local region=shards and api.GetRegion(shards)

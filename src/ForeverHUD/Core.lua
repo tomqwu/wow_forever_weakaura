@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.14.18"
+E.releaseVersion = "0.14.19"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -209,6 +209,18 @@ function E.Retracted()
     local p = E.Profile()
     return p ~= nil and p.tray ~= false and E.state ~= nil and E.state.world == true and not E.state.Visible()
 end
+-- 0.14.19 (user: "when foldable combat, make mini CDM and recommendation
+-- engine minimize around it"): with Stay folded, combat keeps the folded seal
+-- and shows small cooldown wings beside it and the suggestions above it.
+-- Only once the companion has laid them out small (out of combat).
+function E.Mini()
+    local p, s = E.Profile(), E.state
+    if not p or not p.stayFolded or not s or s.world ~= true or s.Visible() then return false end
+    if not (E.selection and E.selection.mini) then return false end
+    local combat = s.combat
+    if combat == nil then combat = E.InCombat() end
+    return combat == true
+end
 -- DoT suggestions apply only in combat against a living hostile target.
 function E.SuggestTarget()
     return E.InCombat() and E.state ~= nil and E.state.HostileTarget() == true
@@ -222,14 +234,20 @@ function E.Gate(module, class)
     if E.state then E.state.ObservePreview(preview==true) end
     if not preview and p.combatOnly and not E.InCombat() then return false end
     if module == "base" then return true end
+    -- Threshold cues sit by the bars, which the mini layout folds away.
+    if module == "cue" then
+        if E.Mini() then return false end
+        module = "suggest"
+    end
     if p[module] == false then return false end
+    local mini = (module == "primary" or module == "suggest") and E.Mini()
     -- 0.8 retracted mode: while folded only the seal and its tray remain.
     if module == "tray" then return E.Retracted() end
-    if E.Retracted() and (module == "buffs" or module == "maintenance" or module == "trackedBars" or module == "suggest") then return false end
+    if E.Retracted() and not mini and (module == "buffs" or module == "maintenance" or module == "trackedBars" or module == "suggest") then return false end
     if module == "motion" and not p.art then return false end
     if module == "fx" and (not p.art or (E.state and (not E.state.world or E.state.loading or E.state.hidden or preview
         or E.Call(UnitIsDeadOrGhost,"player")~=false))) then return false end
-    if E.state and (module=="primary" or module=="resources" or module=="pet") and not E.state.Visible() then return false end
+    if E.state and (module=="primary" or module=="resources" or module=="pet") and not E.state.Visible() and not mini then return false end
     if module == "utility" and p.hoverUtility and not preview then
         return E.hovering == true or E.utilityPinned == true
     end

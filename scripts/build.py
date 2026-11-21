@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.18"
+VERSION = "0.14.19"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -1156,7 +1156,12 @@ def generate():
                         # Hidden unless the native curve says the value is at or under the threshold.
                         d['conditions']=[dict(check=dict(trigger=1,variable=rule['variable'],op='<=',value=rule['at']),
                             changes=[dict(property='alpha',value=SUGGEST_ALPHA if rule['unit']=='target' else 1)])]
-                        if rule['unit']=='target': d['triggers'][2]['trigger']['custom']=in_target
+                        # 0.14.19: cues sit by the bars, so the mini (Stay
+                        # folded) layout hides them: Gate("cue") is the
+                        # suggest gate, off while that layout shows.
+                        gate=d['triggers'][2]['trigger']['custom']
+                        assert 'Gate("suggest",' in gate,gate
+                        d['triggers'][2]['trigger']['custom']=(in_target if rule['unit']=='target' else gate).replace('Gate("suggest"','Gate("cue"')
                     elif rule['kind'] in ('missing','buff'):
                         target=rule['kind']=='missing'
                         # Own buffs (Slice and Dice, Shadowform...) only come from

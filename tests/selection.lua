@@ -8,7 +8,7 @@ assert(loadfile('src/ForeverHUD/Selection.lua'))('ForeverHUD',E)
 local S,D=E.selection,E.discovery
 local frames={}
 ForeverAuras.GetRegion=function(id)
-    frames[id]=frames[id] or {SetOffset=function(self,x,y)self.x,self.y=x,y end}
+    frames[id]=frames[id] or {SetOffset=function(self,x,y)self.x,self.y=x,y end,SetScale=function(self,s)self.scale=s end}
     return frames[id]
 end
 local function loadout(class,names)
@@ -38,7 +38,7 @@ do
     -- wing rises above them, the right wing stays put.
     local function region(name)return ForeverAuras.GetRegion('ForeverHUD | Warlock | Primary | '..name)end
     check(region('Shadow Bolt').y==42 and region('Life Tap').y==0,'Left wing lifts above the suggestions; right wing unchanged')
-    check(not frames['ForeverHUD | Warlock | Suggest'],'The suggestion row itself is never moved')
+    check(not frames['ForeverHUD | Warlock | Suggest'],'The suggestion row itself is never moved (outside Stay folded)')
     E.Profile().suggest=false;S.Refresh()
     check(region('Shadow Bolt').y==0,'With suggestions off, the left wing stays at its normal height')
     E.Profile().suggest=true;S.Refresh()
@@ -68,6 +68,32 @@ do
     E.Profile().frameStyle='Globes';S.ApplyLayout()
     check(maint.x==286 and region('Shadow Bolt').y==-80,'In combat the upkeep row stays; the spell wings still move')
     E.InCombat=inCombat;E.Profile().frameStyle='Bars';S.ApplyLayout()
+    -- 0.14.19: Stay folded lays the wings out at 60% beside the folded seal
+    -- and the suggestion row at 70% above it, out of combat only.
+    local function near(a,b)return math.abs(a-b)<1e-6 end
+    local row=ForeverAuras.GetRegion(E.DisplayID('Suggest'))
+    E.Profile().stayFolded=true;S.ApplyLayout()
+    local sb,lt=region('Shadow Bolt'),region('Life Tap')
+    check(S.mini and sb.scale==0.6 and lt.scale==0.6,'Mini: the wings shrink to 60%')
+    check(near(lt.x*0.6,71) and near(lt.y*0.6,13-80),'Mini: the first support spell sits 6 px right of the folded seal, at its centre')
+    check(near(sb.x*0.6,-(71+(math.abs(selected('Shadow Bolt').x)-72)*0.6)),'Mini: attack spells keep their order, 60% apart, on the left')
+    check(row.scale==0.7 and near((row.x+16)*0.7,11) and near(row.y*0.7,81),'Mini: the suggestion row sits small above the seal')
+    check(seal.y==13,'Mini: the seal is at its folded height')
+    E.Profile().frameStyle='Globes';S.ApplyLayout()
+    check(seal.y==13 and near(lt.x*0.6,71),'Mini overrides the Globes positions')
+    E.Profile().frameStyle='Bars'
+    -- In combat the layout is frozen: no scale or suggestion-row changes.
+    E.InCombat=function()return true end
+    E.Profile().stayFolded=false;S.ApplyLayout()
+    check(S.mini and lt.scale==0.6 and row.scale==0.7,'In combat the mini layout stays')
+    E.InCombat=inCombat;S.ApplyLayout()
+    check(not S.mini and lt.scale==1 and sb.scale==1 and lt.x==72 and row.scale==1 and row.x==-68 and row.y==78,
+        'Out of combat, turning Stay folded off restores the full layout and the suggestion row')
+    -- An opened HUD uses the full layout even with Stay folded on.
+    local state=E.state
+    E.state={open=true};E.Profile().stayFolded=true;S.ApplyLayout()
+    check(not S.mini and lt.scale==1,'Opened: full layout')
+    E.state=state;E.Profile().stayFolded=false;S.ApplyLayout()
     -- 0.10: the current spec picks its suggestion list; Leveling without talents.
     local function allowed(id)return S.Allowed(id,E.catalog[id])end
     local leveling,affliction='ForeverHUD | Warlock | Suggest | Corruption','ForeverHUD | Warlock | Suggest | Affliction | Corruption'

@@ -913,6 +913,14 @@ class PackTests(unittest.TestCase):
         by_id={d['id']:d for d in self.regions}
         row=by_id['ForeverHUD | Warlock | Suggest']
         cues=by_id['ForeverHUD | Warlock | Suggest cues']
+        # 0.14.19: cues use Gate("cue"), which the mini (Stay folded) layout turns off.
+        for child in cues['controlledChildren']:
+            gate=by_id[child]['triggers'][2]['trigger']['custom']
+            self.assertIn('Gate("cue",',gate,child); self.assertNotIn('Gate("suggest"',gate,child)
+        from build import SUGGEST_ROW_X, SUGGEST_Y, SUGGEST_SIZE, RETRACTED_SEAL
+        lua=(ROOT/'src/ForeverHUD/Selection.lua').read_text(encoding='utf-8')
+        self.assertIn(f'S.SUGGEST_ROW_X,S.SUGGEST_Y,S.SUGGEST_HALF={SUGGEST_ROW_X},{SUGGEST_Y},{SUGGEST_SIZE//2}',lua)
+        self.assertIn(f'S.MINI_SCALE,S.MINI_EDGE,S.MINI_Y=0.6,{RETRACTED_SEAL//2+6},13',lua)
         # 0.10: one list per spec; Leveling keeps the 0.9 display IDs.
         # 0.11: a list's actions chain in the row; its threshold cues sit by their bar.
         lists={}
