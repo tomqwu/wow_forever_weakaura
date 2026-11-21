@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.21"
+VERSION = "0.14.22"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -846,10 +846,21 @@ def generate():
             # shows its entries always, so it loads only in combat (native
             # In Combat load). The damage wing stays cooldown-only.
             if slot>4: slot_icon['load']['use_combat']=True
+            # 0.14.22 (user: "Death Coil why it's there?"): the right wing is
+            # left out of the folded (Stay folded) combat view.
+            if slot>4:
+                gate=slot_icon['triggers'][2]['trigger']
+                assert 'Gate("primary",' in gate['custom'],gate
+                gate['custom']=gate['custom'].replace('Gate("primary"','Gate("rightWing"')
         for seed,name in candidates(cls):
             d=icon(p,primary+" | "+name,primary,cls,"primary",cooldown(seed),40,known=seed)
             d['actions']['init']['custom']+='\nif ForeverHUD then ForeverHUD.BindAbility(aura_env.id) end'
             p.eligibility[d['id']].update(key=name,seeds=RANKS.get(name,[seed]) if cls=='WARRIOR' else [seed])
+            # 0.14.22: a class-plan spell placed on the right (support) wing
+            # stays out of the folded combat view; the side is chosen at runtime.
+            gate=d['triggers'][2]['trigger']
+            assert gate['custom'].endswith(' or false end'),gate
+            gate['custom']=gate['custom'][:-len(' or false end')]+f' and ForeverHUD.WingShown("{d["id"]}") or false end'
             d['conditions']=[dict(check=dict(trigger=1,variable="onCooldown",value=1),
                 changes=[dict(property="desaturate",value=True)])]
             d['conditions'].append(dict(check=dict(trigger=1,variable="spellUsable",value=0),

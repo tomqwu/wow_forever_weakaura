@@ -1,6 +1,22 @@
-# Validation for 0.14.21
+# Validation for 0.14.22
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.22 (prerelease) — folded combat view: damage wing only, full-size suggestion
+
+- **Game evidence:** two user screenshots (Warlock, Stay folded, in combat, 0.14.21). Death Coil sat alone right of the folded seal ("same problem again, Death coil why it's there?"), and the suggestion above the seal was 22 px ("recommendation is too small").
+- **Cause:** the right wing shows the Cooldown Manager's Utility list in combat. With Howl of Terror and Shadow Ward skipped, Death Coil was the only Utility entry left. The mini layout drew it beside the seal. The mini suggestion row was scaled to 70%.
+- **Decision:** the user chose "Hide right wing when folded".
+- **Change:**
+  - Native slots 5-8 use `Gate("rightWing")`, which fails while `E.Mini()` is true.
+  - Class-plan spells add `ForeverHUD.WingShown(id)`, which hides an icon placed on the right (`Selection.RightWing`) in the mini layout.
+  - The mini suggestion row is full size (scale 1). Its first icon is centred over the seal, 4 px above the seal art (centre y=86).
+  - The expanded HUD is unchanged.
+- **Tests:**
+  - `tests/state.lua`: the right wing is hidden in the mini layout and shows once the HUD is open.
+  - `tests/selection.lua`: suggestion position and `RightWing`.
+  - `tests/test_pack.py`: the gates on slots 5-8 and on class-plan spells, and the mini constants.
+- **Not yet checked in game.**
 
 ## 0.14.21 (prerelease) — Stay folded ignores clicks, with a hint
 

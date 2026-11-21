@@ -921,6 +921,15 @@ class PackTests(unittest.TestCase):
         lua=(ROOT/'src/ForeverHUD/Selection.lua').read_text(encoding='utf-8')
         self.assertIn(f'S.SUGGEST_ROW_X,S.SUGGEST_Y,S.SUGGEST_HALF={SUGGEST_ROW_X},{SUGGEST_Y},{SUGGEST_SIZE//2}',lua)
         self.assertIn(f'S.MINI_SCALE,S.MINI_EDGE,S.MINI_Y=0.6,{RETRACTED_SEAL//2+6},13',lua)
+        # 0.14.22: the folded suggestion row is full size, centred, 4 px over the seal.
+        self.assertIn(f'S.MINI_SUGGEST_SCALE,S.MINI_SUGGEST_LEAD,S.MINI_SUGGEST_Y=1,{SUGGEST_SIZE//2},{13+RETRACTED_SEAL//2+4+SUGGEST_SIZE//2}',lua)
+        # 0.14.22: the right wing (native slots 5-8, class-plan spells by side)
+        # stays out of the folded combat view.
+        for slot in range(1,9):
+            gate=by_id[f'ForeverHUD | Warlock | Primary | Native {slot} | Entry']['triggers'][2]['trigger']['custom']
+            self.assertIn('Gate("rightWing",' if slot>4 else 'Gate("primary",',gate,slot)
+        shadowburn=by_id['ForeverHUD | Warlock | Primary | Shadowburn']['triggers'][2]['trigger']['custom']
+        self.assertIn('Gate("primary", "WARLOCK") and ForeverHUD.WingShown("ForeverHUD | Warlock | Primary | Shadowburn") or false end',shadowburn)
         # 0.10: one list per spec; Leveling keeps the 0.9 display IDs.
         # 0.11: a list's actions chain in the row; its threshold cues sit by their bar.
         lists={}

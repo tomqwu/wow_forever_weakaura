@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.22 — 2026-11-20 (prerelease)
+
+User: "same problem again, Death coil why it's there?" (chose "Hide right wing when folded") and "recommendation is too small".
+
+- **Folded combat view shows the damage wing only.** With **Stay folded**, the right-hand wing (Cooldown Manager Utility, such as Death Coil, or the class plan's support side) no longer appears beside the folded seal. It still shows in the expanded HUD.
+- **Full-size suggestion.** The spell suggestion above the folded seal is back to its normal 32 px size, centred over the seal.
+- Choose **Update Auras** in `/fa` for your class.
+
 ## 0.14.21 — 2026-11-20 (prerelease)
 
 User: "click shouldn't expand it, and you should hint the option is turned off".
