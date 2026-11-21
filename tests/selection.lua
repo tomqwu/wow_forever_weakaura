@@ -69,7 +69,7 @@ do
     check(maint.x==286 and region('Shadow Bolt').y==-80,'In combat the upkeep row stays; the spell wings still move')
     E.InCombat=inCombat;E.Profile().frameStyle='Bars';S.ApplyLayout()
     -- 0.14.19: Stay folded lays the wings out at 60% beside the folded seal
-    -- and the suggestion row at 70% above it, out of combat only.
+    -- and the suggestion row above it, out of combat only.
     local function near(a,b)return math.abs(a-b)<1e-6 end
     local row=ForeverAuras.GetRegion(E.DisplayID('Suggest'))
     E.Profile().stayFolded=true;S.ApplyLayout()
@@ -77,7 +77,10 @@ do
     check(S.mini and sb.scale==0.6 and lt.scale==0.6,'Mini: the wings shrink to 60%')
     check(near(lt.x*0.6,71) and near(lt.y*0.6,13-80),'Mini: the first support spell sits 6 px right of the folded seal, at its centre')
     check(near(sb.x*0.6,-(71+(math.abs(selected('Shadow Bolt').x)-72)*0.6)),'Mini: attack spells keep their order, 60% apart, on the left')
-    check(row.scale==0.7 and near((row.x+16)*0.7,11) and near(row.y*0.7,81),'Mini: the suggestion row sits small above the seal')
+    -- 0.14.22: full size, the first suggestion centred 4 px above the seal's art.
+    check(row.scale==1 and row.x==0 and row.y==86 and row.y-16==13+106/2+4,'Mini: the full-size suggestion row sits above the seal')
+    check(S.RightWing('ForeverHUD | Warlock | Primary | Life Tap') and not S.RightWing('ForeverHUD | Warlock | Primary | Shadow Bolt')
+        and not S.RightWing('unknown'),'Mini: RightWing tells the support side from the attack side')
     check(seal.y==13,'Mini: the seal is at its folded height')
     E.Profile().frameStyle='Globes';S.ApplyLayout()
     check(seal.y==13 and near(lt.x*0.6,71),'Mini overrides the Globes positions')
@@ -85,7 +88,7 @@ do
     -- In combat the layout is frozen: no scale or suggestion-row changes.
     E.InCombat=function()return true end
     E.Profile().stayFolded=false;S.ApplyLayout()
-    check(S.mini and lt.scale==0.6 and row.scale==0.7,'In combat the mini layout stays')
+    check(S.mini and lt.scale==0.6 and row.y==86,'In combat the mini layout stays')
     E.InCombat=inCombat;S.ApplyLayout()
     check(not S.mini and lt.scale==1 and sb.scale==1 and lt.x==72 and row.scale==1 and row.x==-68 and row.y==78,
         'Out of combat, turning Stay folded off restores the full layout and the suggestion row')

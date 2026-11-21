@@ -261,13 +261,24 @@ end
 -- engine minimize around it"): with Stay folded, while the HUD is folded the
 -- cooldown wings are laid out at 60% beside the folded seal (inner edges
 -- +-59, 6 px outside its 106 px art, centred at y=13) and the suggestion row
--- at 70% above it (its lead edge at x=11, centre y=81, 4 px over the seal).
+-- above it (0.14.19 at 70%; 0.14.22 full size, below).
 -- Scale and the suggestion row change only out of combat; in combat the
 -- last layout stays (S.mini), so a fold or click in combat moves nothing.
 -- Matches SUGGEST_ROW_X, SUGGEST_Y and RETRACTED_SEAL in scripts/build.py.
 S.MINI_SCALE,S.MINI_EDGE,S.MINI_Y=0.6,59,13
-S.MINI_SUGGEST_SCALE,S.MINI_SUGGEST_LEAD,S.MINI_SUGGEST_Y=0.7,11,81
+-- 0.14.22 (user: "recommendation is too small"): the suggestion row keeps its
+-- full 32 px size above the folded seal; its lead edge at x=16 centres the
+-- first suggestion over the seal, 4 px above the seal's art (top y=66).
+S.MINI_SUGGEST_SCALE,S.MINI_SUGGEST_LEAD,S.MINI_SUGGEST_Y=1,16,86
 S.SUGGEST_ROW_X,S.SUGGEST_Y,S.SUGGEST_HALF=-68,78,16
+-- 0.14.22 (user: "Death Coil why it's there?", chose "Hide right wing when
+-- folded"): the folded combat view keeps only the damage wing on the left.
+-- The right wing (Cooldown Manager Utility, or the class plan's support
+-- side) shows only in the expanded HUD.
+function S.RightWing(id)
+    local position=S.positions[id]
+    return position~=nil and position.x>0
+end
 function S.WantMini()
     local p=E.Profile()
     return p~=nil and p.stayFolded==true and not (E.state and E.state.open)

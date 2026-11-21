@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.14.21"
+E.releaseVersion = "0.14.22"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -221,6 +221,10 @@ function E.Mini()
     if combat == nil then combat = E.InCombat() end
     return combat == true
 end
+-- 0.14.22: a class-plan spell shows in the mini layout only on the left wing.
+function E.WingShown(id)
+    return not (E.Mini() and E.selection and E.selection.RightWing and E.selection.RightWing(id))
+end
 -- DoT suggestions apply only in combat against a living hostile target.
 function E.SuggestTarget()
     return E.InCombat() and E.state ~= nil and E.state.HostileTarget() == true
@@ -238,6 +242,11 @@ function E.Gate(module, class)
     if module == "cue" then
         if E.Mini() then return false end
         module = "suggest"
+    end
+    -- 0.14.22: the right (Utility/support) wing stays out of the mini layout.
+    if module == "rightWing" then
+        if E.Mini() then return false end
+        module = "primary"
     end
     if p[module] == false then return false end
     local mini = (module == "primary" or module == "suggest") and E.Mini()

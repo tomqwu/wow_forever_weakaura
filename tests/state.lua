@@ -49,6 +49,12 @@ do
     check(not S.open and E.Mini() and E.Gate('primary','WARLOCK') and E.Gate('suggest','WARLOCK') and E.Gate('tray','WARLOCK'),
         'Mini: folded in combat, the wings, suggestions and tray show')
     check(not E.Gate('cue','WARLOCK') and not E.Gate('resources','WARLOCK') and not E.Gate('buffs','WARLOCK'),'Mini: cues, bars and buff rows stay hidden')
+    -- 0.14.22: only the left (damage) wing; the right wing waits for the expanded HUD.
+    E.selection.RightWing=function(id) return id=='right' end
+    check(not E.Gate('rightWing','WARLOCK') and not E.WingShown('right') and E.WingShown('left'),'Mini: the right wing stays hidden')
+    S.Inspect()
+    check(S.open and E.Gate('rightWing','WARLOCK') and E.WingShown('right'),'Expanded: the right wing shows again')
+    S.inspected=false;S.Update(false,true)
     E.selection.mini=false
     check(not E.Mini() and not E.Gate('primary','WARLOCK') and not E.Gate('suggest','WARLOCK'),'Without the mini layout in place nothing extra shows')
     E.selection.mini=true
