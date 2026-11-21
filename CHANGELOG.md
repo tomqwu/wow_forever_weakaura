@@ -7,7 +7,7 @@ User: "make an option can be easier stay folded or expanded?" and "make fold by 
 - **Folded by default.** **Stay folded** is now on for every class. Existing settings switch to it once; after that your choice is kept.
 - **Shift-click to switch.** Shift-click the seal, or type `/fhud fold`, to switch Stay folded on or off. A line on screen says which.
 - **Hints.** On login a chat line says how to let the HUD expand. The click hint and the seal tooltip mention Shift-click.
-- Companion only; no aura update needed.
+- Companion only; choose **Update Auras** in `/fa` for the rebuilt imports.
 
 ## 0.14.22 — 2026-11-20 (prerelease)
 
