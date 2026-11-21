@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.14.19"
+E.releaseVersion = "0.14.20"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -260,6 +260,8 @@ function E.Notify()
     local api = E.API()
     local p = E.Profile()
     E.perf.notify = E.perf.notify + 1
+    -- Folding and unfolding change which seal shows.
+    E.PlaceHandle()
     if api and api.SetLoadFlag then
         for class in pairs(E.classNames) do
             local enabled = p and p.enabled and class == E.class and E.LiveWorld() or false
@@ -314,6 +316,22 @@ function E.ApplyCastScale()
     for _, root in ipairs(E.RootRegions()) do if root == region then return end end
     region:SetScale(p.castScale)
 end
+-- 0.14.20 (user: "single click doesn't fold it"): the click button sits on the
+-- seal that is showing. Since 0.14.17 the open seal in the Globes style sits
+-- above the rail (y=76) while the folded seal stays at y=13, and the button
+-- had stayed at 13. It is a plain UIParent button, so it may move in combat.
+function E.HandleY()
+    -- The peek ghost keeps the button under the cursor on the folded seal.
+    if E.Retracted() or E.peeking then return 13 end
+    return E.selection and E.selection.sealY or 13
+end
+function E.PlaceHandle()
+    local p = E.Profile()
+    if not p then return end
+    handle:ClearAllPoints()
+    -- A scaled button's anchor offsets are in its own units.
+    handle:SetPoint("CENTER", UIParent, "CENTER", p.x/p.scale, p.y/p.scale+E.HandleY())
+end
 function E.ApplyLayout()
     if E.InCombat() then E.pending = true; return end
     -- Never re-parent a root the importer has temporarily detached; the bind
@@ -337,9 +355,7 @@ function E.ApplyLayout()
         if region.SetRegionAlpha then region:SetRegionAlpha(p.opacity * E.AlphaFactor()) end
     end
     handle:SetScale(p.scale)
-    handle:ClearAllPoints()
-    -- A scaled button's anchor offsets are in its own units.
-    handle:SetPoint("CENTER", UIParent, "CENTER", p.x/p.scale, p.y/p.scale+13)
+    E.PlaceHandle()
     handle:SetShown(#regions > 0 and E.Gate("base", E.class) and (p.art or not p.locked))
     outline:SetShown(not p.locked)
     E.ApplyCastScale()
@@ -710,7 +726,9 @@ E.RootAlpha = rootAlpha
 function E.SetPeek(on)
     on = on == true
     if on == (E.peeking == true) then return end
-    if on and (E.InCombat() or not E.state or E.state.open or not E.state.world) then return end
+    -- 0.14.20 (user: "it shouldn't expand when mouse over if it stay folded").
+    local p = E.Profile()
+    if on and (E.InCombat() or not E.state or E.state.open or not E.state.world or (p and p.stayFolded)) then return end
     E.peeking = on or nil
     rootAlpha()
     -- Peek opens like an inspection; leaving closes at once (no 5 s hold).

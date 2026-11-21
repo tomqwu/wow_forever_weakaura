@@ -138,6 +138,36 @@ do
     combat=false
     ForeverAuras.GetRegion,ForeverAuras.GetData=oldRegion,oldData
 end
+-- 0.14.20: the click button follows the seal that shows (the Globes open seal
+-- sits above the rail at y=76), and Stay folded has no hover peek.
+do
+    local root={SetRegionAlpha=function()end}
+    local oldRegion,oldData=ForeverAuras.GetRegion,ForeverAuras.GetData
+    ForeverAuras.GetRegion=function()return root end
+    ForeverAuras.GetData=function()return nil end
+    combat,exists,attack=false,false,false;S.inspected=false;S.manualFold=false;S.Update(true)
+    E.selection={sealY=76}
+    local p=E.Profile()
+    local function handleY()return E.handle.point[5]-p.y/p.scale end
+    E.Notify()
+    check(not S.open and handleY()==13,'Folded: the button is on the folded seal')
+    E.Hover(true)
+    check(E.peeking and S.open and handleY()==13,'Peeking: the button stays under the cursor')
+    E.handle.scripts.OnClick(E.handle,'LeftButton')
+    check(S.open and not E.peeking and handleY()==76,'Opened: the button moves onto the raised seal')
+    E.handle.scripts.OnClick(E.handle,'LeftButton')
+    check(not S.open and handleY()==13,'A single click on the raised seal folds the HUD')
+    E.Hover(false);E.SetPeek(false)
+    p.stayFolded=true
+    E.Hover(true)
+    check(not E.peeking and not S.open,'Stay folded: hovering does not open the ghost')
+    E.handle.scripts.OnClick(E.handle,'LeftButton')
+    check(S.open and handleY()==76,'Stay folded: a click still opens the HUD')
+    E.handle.scripts.OnClick(E.handle,'LeftButton')
+    check(not S.open and not E.peeking,'Stay folded: a second click folds it')
+    E.Hover(false);E.SetPeek(false);p.stayFolded=false;E.selection=nil
+    ForeverAuras.GetRegion,ForeverAuras.GetData=oldRegion,oldData
+end
 -- 0.13.19: bursts of unit-flag, faction and target events that change
 -- nothing skip the full HUD update; settings changes still notify.
 exists,attack,dead,combat,preview=false,false,false,false,false

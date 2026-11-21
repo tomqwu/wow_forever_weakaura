@@ -1,6 +1,16 @@
-# Validation for 0.14.19
+# Validation for 0.14.20
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.20 (prerelease) — seal click and Stay folded hover fixes
+
+- **Game evidence:** the user reported that with Stay folded the seal still opened on hover, and that a single click did not fold the HUD (settings screenshot, Globes style, 0.14.19).
+- **Cause found in the code:** `E.ApplyLayout` placed the click button at y=13. That is the folded seal; the Globes open seal has been at y=76 since 0.14.17.
+- **Change:**
+  - `E.PlaceHandle` puts the button at `E.HandleY()`: 13 while folded or peeking, otherwise the seal height that Selection set (`S.sealY`). It runs on every notify.
+  - `E.SetPeek` refuses to open with Stay folded on.
+- **Tests:** `tests/state.lua` checks the button height folded, peeking, opened and folded by one click, and that Stay folded has no peek while clicks still open and fold.
+- **Not yet checked in game.**
 
 ## 0.14.19 (prerelease) — mini combat layout for Stay folded
 
