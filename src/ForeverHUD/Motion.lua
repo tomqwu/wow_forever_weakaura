@@ -47,7 +47,9 @@ function M.Gather()
     if not E.class then return end
     local p=E.Profile()
     local counts={0,0}
-    local positions=p and p.primary and E.selection and E.selection.positions or {}
+    -- 0.14.19: the mini (Stay folded) layout shows the wings while folded, so
+    -- they leave the fold animation and keep full alpha in place.
+    local positions=p and p.primary and E.selection and not E.selection.mini and E.selection.positions or {}
     for _,p in pairs(positions) do counts[p.side]=counts[p.side]+1 end
     for id,p in pairs(positions) do
         local rank=1

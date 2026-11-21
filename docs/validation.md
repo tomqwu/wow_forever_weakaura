@@ -1,6 +1,21 @@
-# Validation for 0.14.18
+# Validation for 0.14.19
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.19 (prerelease) — mini combat layout for Stay folded
+
+- **Request:** "when foldable combat, make mini CDM and recommendation engine minimize around it".
+- **Change:**
+  - `E.Mini()` is true with Stay folded on, the HUD folded, combat, and the mini layout in place. The `primary` and `suggest` gates then pass and `cue` fails.
+  - `Selection.ApplyLayout` scales the wings to 0.6 (first centres ±71, y=13) and the suggestion row to 0.7 (lead edge x=11, y=81), out of combat only.
+  - Motion leaves the wings out of the fold animation while the mini layout is in place.
+  - A folded combat edge re-runs the gates.
+- **Tests:**
+  - `tests/selection.lua`: positions, scales, the in-combat freeze, and the restore when the option is off or the HUD is open.
+  - `tests/state.lua`: the gates in and out of combat, and the notify on the combat edge.
+  - `test_pack.py`: every threshold cue uses `Gate("cue")`, and the Lua constants match the generator.
+- **Illustrative only:** `docs/images/mock-0.14.19-stay-folded.png` is drawn at the generated coordinates; it is not a game capture.
+- **Not yet checked in game:** in particular whether the client accepts `SetScale` on the wing groups and the suggestion row. It is applied only out of combat.
 
 ## 0.14.18 (prerelease) — Stay folded option
 

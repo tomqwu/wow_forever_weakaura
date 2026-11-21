@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.19 — 2026-11-20 (prerelease)
+
+User: "when foldable combat, make mini CDM and recommendation engine minimize around it".
+
+- **Mini combat layout.** With **Combat → Stay folded** on, combat shows the cooldown wings at 60% either side of the folded seal (inner edges 6 px outside it) and the suggestion row at 70% above it. The threshold cues (mana, pet, execute) use a new `cue` gate and stay hidden there, like the bars and buff rows.
+- Scale and the suggestion row change only out of combat. In combat the last layout stays, so a fold or a seal click in combat moves nothing; opening the HUD out of combat restores the full layout.
+- Update your class and Core in `/fa`, choosing **Update Auras** (the cue gate is in the import).
+
 ## 0.14.18 — 2026-11-20 (prerelease)
 
 User: "option to not expand in combat, just retracted model".

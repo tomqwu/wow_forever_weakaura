@@ -37,6 +37,12 @@ function S.Goal(open,silent,fromEvent)
     end
     local edge=not S.open and open
     S.open=open
+    -- 0.14.19: with Stay folded, opening restores the full layout and folding
+    -- returns to the mini one (out of combat; Selection keeps it in combat).
+    local p=E.Profile()
+    if p and (p.stayFolded or (E.selection and E.selection.mini)) and E.selection and E.selection.ApplyLayout then
+        E.selection.ApplyLayout()
+    end
     if E.motion then E.motion.Change(open,silent) end
     if edge and not silent then
         local p=E.Profile()
@@ -118,6 +124,12 @@ events:SetScript('OnEvent',function(_,event,unit)
     if event=='PLAYER_REGEN_DISABLED' then S.combat=true;S.manualFold=false
     elseif event=='PLAYER_REGEN_ENABLED' then S.combat=false end
     S.Update(event=='LOADING_SCREEN_DISABLED' or event=='PLAYER_ALIVE' or event=='PLAYER_UNGHOST',event=='PLAYER_REGEN_ENABLED',true)
+    -- 0.14.19: a folded HUD does not change on a combat edge, but the mini
+    -- (Stay folded) wings and suggestions do, so the gates are re-run.
+    if (event=='PLAYER_REGEN_DISABLED' or event=='PLAYER_REGEN_ENABLED') and not S.open then
+        local p=E.Profile()
+        if p and p.stayFolded then E.Notify() end
+    end
 end)
 function E.LayoutVisible() return not E.state or E.state.Visible() end
 if UIParent.HookScript then

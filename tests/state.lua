@@ -37,6 +37,27 @@ S.Inspect();check(S.open,'Stay folded: a seal click still opens the HUD')
 S.inspectTimer.callback();S.closeTimer.callback();check(not S.open,'Stay folded: it folds again afterwards')
 E.Profile().stayFolded=false;S.Update(false);check(S.open,'Turning Stay folded off restores automatic expansion')
 combat=false;exists=false;S.Update(true);E.Profile().expandCombat=false
+-- 0.14.19: with Stay folded and the mini layout in place, combat shows the
+-- small wings and suggestions around the folded seal; cues by the bars and
+-- the bars themselves stay hidden. The combat edge re-runs the gates.
+do
+    E.selection={mini=true}
+    E.Profile().stayFolded=true;S.Update(true)
+    local notified=E.perf.notify
+    S.events.scripts.OnEvent(nil,'PLAYER_REGEN_DISABLED');combat=true
+    check(E.perf.notify>notified,'Stay folded: combat entry re-runs the gates')
+    check(not S.open and E.Mini() and E.Gate('primary','WARLOCK') and E.Gate('suggest','WARLOCK') and E.Gate('tray','WARLOCK'),
+        'Mini: folded in combat, the wings, suggestions and tray show')
+    check(not E.Gate('cue','WARLOCK') and not E.Gate('resources','WARLOCK') and not E.Gate('buffs','WARLOCK'),'Mini: cues, bars and buff rows stay hidden')
+    E.selection.mini=false
+    check(not E.Mini() and not E.Gate('primary','WARLOCK') and not E.Gate('suggest','WARLOCK'),'Without the mini layout in place nothing extra shows')
+    E.selection.mini=true
+    S.events.scripts.OnEvent(nil,'PLAYER_REGEN_ENABLED');combat=false
+    check(not E.Mini() and not E.Gate('primary','WARLOCK') and not E.Gate('suggest','WARLOCK'),'Mini: out of combat only the folded seal and tray')
+    E.Profile().stayFolded=false
+    check(E.Gate('cue','WARLOCK')==E.Gate('suggest','WARLOCK'),'Without Stay folded a cue follows the suggest gate')
+    E.selection=nil;S.Update(true)
+end
 combat=false;exists=true;attack=false;S.Update(false);check(not S.open,'Friendly target does not open')
 attack=true;dead=true;S.Update(false);check(not S.open,'Dead target does not open')
 dead=secret;S.Update(false);check(not S.open,'Restricted target death never treated as living')
