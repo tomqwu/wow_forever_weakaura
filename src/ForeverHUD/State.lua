@@ -56,8 +56,13 @@ function S.Update(silent,combatExit,fromEvent)
     if preview~=S.preview then silent=true; S.preview=preview end
     local combat=S.combat
     if combat==nil then combat=E.InCombat() end
-    local want=preview or (p.expandCombat and combat)
-        or (not S.manualFold and (S.inspected or E.inspectingSettings or S.HostileTarget()))
+    -- 0.14.18 (user: "option to not expand in combat, just retracted model"):
+    -- Stay folded keeps the folded seal and tray in combat and with a hostile
+    -- target; only the settings preview, a seal click, /fhud and the hover
+    -- peek open the HUD.
+    local auto=not p.stayFolded
+    local want=preview or (auto and p.expandCombat and combat)
+        or (not S.manualFold and (S.inspected or E.inspectingSettings or (auto and S.HostileTarget())))
         or E.peeking == true
     if want then cancel('closeTimer'); S.Goal(true,silent,fromEvent)
     elseif combatExit then cancel('closeTimer');S.Goal(false,silent,fromEvent)

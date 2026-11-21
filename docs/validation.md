@@ -1,6 +1,13 @@
-# Validation for 0.14.17
+# Validation for 0.14.18
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.18 (prerelease) — Stay folded option
+
+- **Request:** "option to not expand in combat, just retracted model".
+- **Change:** profile key `stayFolded` (default off; per class). `State.Update` ignores combat and the hostile target while it is on. Inspection, the hover peek and the settings preview still open the HUD.
+- **Tests:** `tests/state.lua` checks that combat plus a hostile target keep the HUD folded with the tray gate on and the primary gate off, that a seal click still opens it and folds back, and that turning the option off restores automatic expansion.
+- **Not yet checked in game.**
 
 ## 0.14.17 (prerelease) — globes 20% closer
 

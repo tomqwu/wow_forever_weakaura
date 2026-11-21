@@ -36,7 +36,7 @@ local strings = {
     ["Audible alerts"] = "声音提示",
     ["Modules"]="显示模块", ["Behavior"]="战斗行为", ["Position"]="位置与缩放",
     ["Expand when combat starts"]="进入战斗时展开", ["Unfold animation"]="展开与收拢动画",
-    ["Unfold sound"]="展开提示音", ["Resource flow"]="资源流动效果",
+    ["Unfold sound"]="展开提示音", ["Stay folded"]="始终保持收起", ["Resource flow"]="资源流动效果",
     ["Hide default cast bar"]="隐藏系统施法条", ["Prefer Cleave in Fury"]="狂怒方案优先顺劈斩",
     ["Talent school"]="天赋方案", ["Swing mode"]="攻击计时布局",
     ["Expand for inspection"]="临时展开预览", ["Disabled modules unload their trackers."]="关闭模块后将停止对应追踪。",

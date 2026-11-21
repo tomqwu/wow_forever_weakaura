@@ -28,6 +28,15 @@ check(not S.open and not S.Visible(),'Hold expiration closes idle')
 combat=true;S.Update(false);check(S.open,'Combat entry opens without target')
 combat=false;E.Profile().expandCombat=false;S.Update(true);combat=true;S.Update(false)
 check(not S.open,'Combat expansion is independently optional')
+-- 0.14.18: Stay folded keeps the folded seal and tray in combat and with a
+-- hostile target; a seal click (inspection) still opens it.
+combat=false;E.Profile().expandCombat=true;E.Profile().stayFolded=true;S.Update(true)
+combat=true;exists=true;attack=true;S.Update(false)
+check(not S.open and E.Retracted() and E.Gate('tray','WARLOCK') and not E.Gate('primary','WARLOCK'),'Stay folded: combat and a hostile target keep the folded HUD')
+S.Inspect();check(S.open,'Stay folded: a seal click still opens the HUD')
+S.inspectTimer.callback();S.closeTimer.callback();check(not S.open,'Stay folded: it folds again afterwards')
+E.Profile().stayFolded=false;S.Update(false);check(S.open,'Turning Stay folded off restores automatic expansion')
+combat=false;exists=false;S.Update(true);E.Profile().expandCombat=false
 combat=false;exists=true;attack=false;S.Update(false);check(not S.open,'Friendly target does not open')
 attack=true;dead=true;S.Update(false);check(not S.open,'Dead target does not open')
 dead=secret;S.Update(false);check(not S.open,'Restricted target death never treated as living')
