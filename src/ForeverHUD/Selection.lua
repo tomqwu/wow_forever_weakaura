@@ -306,7 +306,8 @@ function S.ApplyLayout()
     -- The in-combat seal (an ordinary texture); the folded seal stays put.
     local seal=E.DisplayID and E.DisplayID('Seal')
     local sealRegion=seal and api.GetRegion(seal)
-    if sealRegion and sealRegion.SetOffset then sealRegion:SetOffset(0,globes and not mini and S.SEAL_GLOBES or S.SEAL_BARS) end
+    S.sealY=globes and not mini and S.SEAL_GLOBES or S.SEAL_BARS
+    if sealRegion and sealRegion.SetOffset then sealRegion:SetOffset(0,S.sealY) end
     -- The suggestion row is touched only to enter or leave the mini layout,
     -- and only out of combat (its children may be native aura buttons).
     if not combat and (mini or S.suggestMoved) then

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.20 — 2026-11-20 (prerelease)
+
+User: "it shouldn't expand when mouse over if it stay folded, also single click doesn't fold it too".
+
+- **Seal click folds again (Globes style).** Since 0.14.17 the open seal sits above the rail (y=76), but the invisible click button stayed on the rail (y=13), so a click on the seal missed it. The button now follows the seal that shows: the folded seal while folded or peeking, the open seal while open. It is a plain button, so it also moves in combat.
+- **No hover peek with Stay folded.** Hovering the folded seal no longer opens the faint preview while **Stay folded** is on; a click still opens the HUD.
+- Companion only; the class and Core imports are rebuilt for the version number, so choose **Update Auras** in `/fa`.
+
 ## 0.14.19 — 2026-11-20 (prerelease)
 
 User: "when foldable combat, make mini CDM and recommendation engine minimize around it".
