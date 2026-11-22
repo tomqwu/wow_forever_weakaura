@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.14.23"
+E.releaseVersion = "0.14.24"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -805,16 +805,23 @@ handle:SetScript("OnEnter", function()
         GameTooltip:SetText(E.L("Stay folded"))
         GameTooltip:AddLine(E.L(E.STAY_FOLDED_HINT), 1, 0.82, 0, true)
         GameTooltip:AddLine(E.L("Right-click for settings."), 1, 1, 1, true)
+        GameTooltip:AddLine(E.L("Ctrl-drag to move."), 1, 1, 1, true)
         GameTooltip:Show()
     elseif p and not p.locked then
         GameTooltip:SetOwner(handle, "ANCHOR_TOP")
         GameTooltip:SetText(E.L("Left-click to expand or fold. Right-click for settings."))
         GameTooltip:AddLine(E.L("Shift-click: Stay folded on or off."), 1, 1, 1, true)
+        GameTooltip:AddLine(E.L("Ctrl-drag to move."), 1, 1, 1, true)
         GameTooltip:Show()
     end
 end)
 handle:SetScript("OnLeave", function() E.Hover(false); GameTooltip:Hide() end)
+-- 0.14.24 (user: "can we make ctrl+click is movable?"): holding Ctrl, the
+-- seal drags the HUD even while the position is locked; a Ctrl-click without
+-- a drag does nothing.
+local function ctrl() return IsControlKeyDown ~= nil and IsControlKeyDown() == true end
 handle:SetScript("OnClick", function(_, button)
+    if ctrl() then return end
     if IsShiftKeyDown and IsShiftKeyDown() then
         E.ToggleStayFolded()
         GameTooltip:Hide()
@@ -835,7 +842,8 @@ handle:SetScript("OnClick", function(_, button)
 end)
 handle:SetScript("OnDragStart", function()
     local p = E.Profile()
-    if not p or p.locked or E.InCombat() then return end
+    if not p or (p.locked and not ctrl()) or E.InCombat() then return end
+    GameTooltip:Hide()
     -- Move a UIParent-owned proxy, so FA's parented native widgets stay still
     -- until the drag ends and the saved layout is applied once.
     if not E.drag then

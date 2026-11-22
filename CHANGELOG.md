@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.24 — 2026-11-22 (prerelease)
+
+User: "can we make ctrl+click is movable?"
+
+- **Ctrl-drag to move.** Hold Ctrl and drag the seal to move the HUD, even while its position is locked (out of combat). A Ctrl-click without dragging does nothing. The seal tooltip says so.
+- Companion only; choose **Update Auras** in `/fa` for the rebuilt imports.
+
 ## 0.14.23 — 2026-11-20 (prerelease)
 
 User: "make an option can be easier stay folded or expanded?" and "make fold by default, and give hint to user it can be expanded".

@@ -1,6 +1,20 @@
-# Validation for 0.14.23
+# Validation for 0.14.24
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.24 (prerelease) — Ctrl-drag to move
+
+- **Request:** "can we make ctrl+click is movable?"
+- **Change:**
+  - With Ctrl held, the seal's `OnDragStart` moves the HUD even while the position is locked. It still refuses in combat.
+  - A Ctrl-click without a drag does nothing.
+  - Both seal tooltips add "Ctrl-drag to move."
+- **Tests:** `tests/state.lua` checks the cases below.
+  - A locked plain drag does nothing.
+  - A Ctrl-click changes nothing.
+  - A locked Ctrl-drag moves the HUD and saves the position.
+- **ForeverAuras 1.4.6:** the user's ForeverAuras updated to 1.4.6 on 2026-11-21. It wraps handlers with `Private.ProfiledEvent`, so `tests/native-schema.lua` now stubs it like `Profiled`. The combined import and every class import pass against 1.4.6.
+- **Not yet checked in game.**
 
 ## 0.14.23 (prerelease) — folded by default; Shift-click to switch
 

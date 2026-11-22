@@ -34,6 +34,8 @@ ForeverAuras=WeakAuras
 local P={frames={},regions={},callbacks=frame(),ExecEnv={},memoryRootAccessors={},subRegionTypes={subtext={default=function()return {}end}}}
 P.TimedAPI=function()return CreateFrame,noop,noop,C_Timer end
 P.Profiled=function(_,fn)return fn end
+-- ForeverAuras 1.4.6 wraps event handlers with ProfiledEvent(label, fn).
+P.ProfiledEvent=function(_,fn)return fn end
 local function load(name)assert(loadfile(source.."/"..name..".lua"))("ForeverAuras",P)end
 load("BlizzardAuraDisplay")
 load("SecretAuraAppearance")

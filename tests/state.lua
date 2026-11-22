@@ -198,6 +198,20 @@ do
     E.handle.scripts.OnClick(E.handle,'RightButton')
     check(p.stayFolded==true and #hints==4 and hints[4]:find('Stay folded on',1,true),'Shift-click turns it back on (either button)')
     shift=false;IsShiftKeyDown=nil
+    -- 0.14.24: Ctrl-drag moves a locked HUD; Ctrl-click does nothing.
+    local ctrlDown=false;IsControlKeyDown=function()return ctrlDown end
+    p.locked=true;E.drag=nil
+    E.handle.scripts.OnDragStart(E.handle)
+    check(E.drag==nil,'Locked: a plain drag does not move the HUD')
+    ctrlDown=true
+    local folded,stay=S.open,p.stayFolded
+    E.handle.scripts.OnClick(E.handle,'LeftButton')
+    check(S.open==folded and p.stayFolded==stay and #hints==4,'Ctrl-click neither expands nor switches anything')
+    E.handle.scripts.OnDragStart(E.handle)
+    check(E.drag and E.drag:IsShown(),'Locked: Ctrl-drag moves the HUD')
+    E.drag.x,E.drag.y=1100,650;E.handle.scripts.OnDragStop(E.handle)
+    check(not E.drag:IsShown() and p.x==100 and p.y==50,'Releasing the Ctrl-drag saves the new position')
+    ctrlDown=false;IsControlKeyDown=nil;E.Set('x',0);E.Set('y',0)
     UIErrorsFrame=nil
     E.Hover(false);E.SetPeek(false);p.stayFolded=false;E.selection=nil
     ForeverAuras.GetRegion,ForeverAuras.GetData=oldRegion,oldData
