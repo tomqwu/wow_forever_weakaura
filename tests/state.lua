@@ -162,7 +162,7 @@ end
 -- 0.14.20: the click button follows the seal that shows (the Globes open seal
 -- sits above the rail at y=76), and Stay folded has no hover peek.
 do
-    local root={SetRegionAlpha=function()end,SetScale=function()end}
+    local root={SetRegionAlpha=function()end,SetScale=function()end,SetOffset=function(self,x,y)self.x,self.y=x,y end}
     local oldRegion,oldData=ForeverAuras.GetRegion,ForeverAuras.GetData
     ForeverAuras.GetRegion=function()return root end
     ForeverAuras.GetData=function()return nil end
@@ -176,8 +176,13 @@ do
     check(E.peeking and S.open and handleY()==13,'Peeking: the button stays under the cursor')
     E.handle.scripts.OnClick(E.handle,'LeftButton')
     check(S.open and not E.peeking and handleY()==76,'Opened: the button moves onto the raised seal')
+    -- 0.14.26: the target distance sits on the lower part of the seal that shows.
+    check(root.x==0 and root.y==76-31,'Opened: the target distance moves with the raised seal')
     E.handle.scripts.OnClick(E.handle,'LeftButton')
     check(not S.open and handleY()==13,'A single click on the raised seal folds the HUD')
+    check(root.y==13-31,'Folded: the target distance is on the folded seal')
+    check(E.RangeText(28,30)=='28-30 yd' and E.RangeText(40,999)=='40+ yd' and E.RangeText(nil,nil)=='' and E.RangeText(5.0,8)=='5-8 yd',
+        'Distance text: min-max yards, or N+ past the last known range')
     E.Hover(false);E.SetPeek(false)
     p.stayFolded=true
     E.Hover(true)

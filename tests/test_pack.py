@@ -928,6 +928,21 @@ class PackTests(unittest.TestCase):
         for slot in range(1,9):
             gate=by_id[f'ForeverHUD | Warlock | Primary | Native {slot} | Entry']['triggers'][2]['trigger']['custom']
             self.assertIn('Gate("rightWing",' if slot>4 else 'Gate("primary",',gate,slot)
+        # 0.14.26: target distance on the seal for ranged classes, native Range Check.
+        from build import RANGE_CLASSES, RANGE_CLOSE, RANGE_DROP
+        for cls,name in (('WARLOCK','Warlock'),('HUNTER','Hunter'),('MAGE','Mage'),('PRIEST','Priest'),('DRUID','Druid'),('SHAMAN','Shaman')):
+            d=by_id[f'ForeverHUD | {name} | Target distance']
+            self.assertEqual(d['triggers'][1]['trigger']['event'],'Range Check')
+            self.assertEqual(d['triggers'][1]['trigger']['unit'],'target')
+            self.assertIn(f'Gate("range", "{cls}")',d['triggers'][2]['trigger']['custom'])
+            self.assertEqual(d['yOffset'] if 'yOffset' in d else None, 13-RANGE_DROP)
+            reach,danger=RANGE_CLASSES[cls]
+            self.assertEqual([(c['check']['op'],c['check']['value']) for c in d['conditions']],[('<=',RANGE_CLOSE),('<=',danger),('>=',reach)])
+        for name in ('Warrior','Rogue','Paladin'):
+            self.assertNotIn(f'ForeverHUD | {name} | Target distance',by_id)
+        self.assertEqual(RANGE_CLASSES['HUNTER'],(35,8),'Hunter: 35 yd reach, 8 yd dead zone')
+        lua_core=(ROOT/'src/ForeverHUD/Core.lua').read_text(encoding='utf-8')
+        self.assertIn(f'E.RANGE_DROP = {RANGE_DROP}',lua_core)
         # 0.14.25: the overflow rows show only while the HUD is expanded.
         core={d['id']:d for d in self.regions}
         for overflow in ('Native cooldowns','Native utility','Native items'):

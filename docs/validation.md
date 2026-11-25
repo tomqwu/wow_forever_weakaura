@@ -1,6 +1,22 @@
-# Validation for 0.14.25
+# Validation for 0.14.26
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.26 (prerelease) — target distance on the seal
+
+- **Request:** "can we add a distance track on the addon, somewhere you think fit? e.g. hunter and warlock range for hellfire (safest)".
+- **Data:** ForeverAuras' native **Range Check** trigger (`Prototypes.lua`), which uses its bundled LibRangeCheck-3.0. It gives `minRange`/`maxRange` estimates for the target. The library treats secret results as unknown and allows hostile units in combat.
+- **Display:** a text display per ranged class (Hunter, Warlock, Mage, Priest, Druid, Shaman) on the lower part of the seal (seal y - 31). `E.PlaceHandle` keeps it on whichever seal shows: folded, Bars or the raised Globes seal. The text is "min-max yd", or "N+ yd" past the last known range. It is a new module, `range`, on by default and listed under Display for those classes.
+- **Colour:** each colour is one native `range` condition, in this order:
+  - green by default;
+  - orange at 20 yd or less;
+  - red at the class danger distance (5 yd; 8 yd for the Hunter dead zone) or less;
+  - grey at the class spell reach (30 yd; Hunter 35 yd) or more.
+- **Tests:**
+  - `tests/test_pack.py`: trigger, gate, offset and conditions for each class; melee classes have no display.
+  - `tests/state.lua`: the text follows the folded and raised seals; text format.
+  - `tests/bridge.lua`: the text callback is safe without the companion.
+- **Not yet checked in game.** Range estimates and their steps depend on the client and on known spells.
 
 ## 0.14.25 (prerelease) — no stray overflow icons while folded
 

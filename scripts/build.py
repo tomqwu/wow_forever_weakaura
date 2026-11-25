@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.25"
+VERSION = "0.14.26"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -259,6 +259,15 @@ for _lists in SUGGESTIONS.values():
 # 0.13.2: 10% smaller (was 132), user request with a folded screenshot.
 # 0.13.6: another 10% (was 118). Spell and tray icons keep their sizes.
 RETRACTED_SEAL = 106
+# 0.14.26 target distance on the seal: (spell reach, danger distance) in yards
+# per ranged class. Danger is melee (5), or the Hunter's dead zone (8).
+RANGE_CLASSES = {'HUNTER':(35,8),'WARLOCK':(30,5),'MAGE':(30,5),'PRIEST':(30,5),'DRUID':(30,5),'SHAMAN':(30,5)}
+RANGE_CLOSE = 20
+RANGE_DROP = 31
+RANGE_SAFE_COLOR = '#8CF07A'
+RANGE_CLOSE_COLOR = '#FFA640'
+RANGE_DANGER_COLOR = '#FF4D4D'
+RANGE_FAR_COLOR = '#9A9A9A'
 TRAY_ICON = 34
 # The native aura buttons' dark inner ring, copied on the ordinary tray icon.
 TRAY_RING = 3
@@ -823,6 +832,23 @@ def generate():
         seal['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and not ForeverHUD.Retracted() or false end'
         big=texture(p,prefix+" | Seal | Retracted",frame,cls,"art","crest-"+cls.lower(),RETRACTED_SEAL,RETRACTED_SEAL,y=13)
         big['triggers'][2]['trigger']['custom']=f'function() return ForeverHUD and ForeverHUD.Gate("art","{cls}") and ForeverHUD.Retracted() or false end'
+        # 0.14.26 (user: "can we add a distance track ... e.g. hunter and
+        # warlock range ... (safest)"): the distance to the target, on the
+        # lower part of the seal, from ForeverAuras' native Range Check trigger
+        # (LibRangeCheck estimates, min-max yards). One native range condition
+        # per colour: green in the safe band, orange when closer than
+        # RANGE_CLOSE, red at melee or the Hunter dead zone, grey beyond the
+        # class's spell range. The companion keeps it on the seal that shows.
+        if cls in RANGE_CLASSES:
+            reach,danger=RANGE_CLASSES[cls]
+            dist=p.add(prefix+" | Target distance","text",frame,cls,"range",y=13-RANGE_DROP,displayText="%c",
+                font="Friz Quadrata TT",fontSize=11,outline="OUTLINE",color=rgba(RANGE_SAFE_COLOR),justify="CENTER",
+                automaticWidth="Auto",fixedWidth=90,wordWrap="WordWrap",customTextUpdate='event',
+                customText='function() local s=ForeverHUD and ForeverHUD.RangeText and aura_env and aura_env.state; '
+                    'return s and ForeverHUD.RangeText(s.minRange,s.maxRange) or "" end')
+            p.triggers(dist,[dict(type='unit',event='Range Check',unit='target',use_unit=True)],cls,'range')
+            dist['conditions']=[dict(check=dict(trigger=1,variable='range',op=op,value=value),changes=[dict(property='color',value=rgba(color))])
+                for op,value,color in (('<=',RANGE_CLOSE,RANGE_CLOSE_COLOR),('<=',danger,RANGE_DANGER_COLOR),('>=',reach,RANGE_FAR_COLOR))]
         # ForeverAuras compiles custom actions only for non-group displays and
         # fails when a group with an Init action is activated (for example by
         # a dynamic-group sort during import). The companion bind and the

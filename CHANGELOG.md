@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.26 — 2026-11-25 (prerelease)
+
+User: "can we add a distance track on the addon, somewhere you think fit? e.g. hunter and warlock range for hellfire (safest)".
+
+- **Target distance on the seal** for Hunters, Warlocks, Mages, Priests, Druids and Shamans, folded or expanded: "28-30 yd".
+- **Colours:** green = safe range (20 yd to your spell range); orange = closer than 20 yd; red = melee (Hunter: dead zone, 8 yd); grey = out of spell range (30 yd, Hunter 35).
+- Uses ForeverAuras' native Range Check (LibRangeCheck estimates). Turn it off with **Display → Target distance**.
+- Choose **Update Auras** in `/fa` for your class.
+
 ## 0.14.25 — 2026-11-24 (prerelease)
 
 User screenshot: a lone cooldown icon far from the folded seal.

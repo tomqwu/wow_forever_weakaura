@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.14.25"
+E.releaseVersion = "0.14.26"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -33,7 +33,7 @@ local defaults = {
     alerts=true,
     resources=true, primary=true, utility=true, dots=true, buffs=true, maintenance=true, trackedBars=false,
     cast=false, pet=true, art=true, motion=true, nameplates=false,
-    tray=true, suggest=true,
+    tray=true, suggest=true, range=true,
     -- 0.14.6: "Bars" (the sculpted bar chassis) or "Globes" (round health
     -- and resource globes either side of a band).
     frameStyle="Bars",
@@ -344,6 +344,21 @@ function E.PlaceHandle()
     handle:ClearAllPoints()
     -- A scaled button's anchor offsets are in its own units.
     handle:SetPoint("CENTER", UIParent, "CENTER", p.x/p.scale, p.y/p.scale+E.HandleY())
+    -- 0.14.26: the target distance rides on the lower part of the seal that
+    -- shows (an ordinary text display, so moving it in combat is allowed).
+    local api = E.API()
+    local id = api and api.GetRegion and E.DisplayID and E.DisplayID("Target distance")
+    local region = id and api.GetRegion(id)
+    if region and region.SetOffset then region:SetOffset(0, E.HandleY() - E.RANGE_DROP) end
+end
+-- Matches RANGE_DROP in scripts/build.py.
+E.RANGE_DROP = 31
+-- "28-30 yd", or "40+ yd" past the last range LibRangeCheck can tell.
+function E.RangeText(low, high)
+    if type(low) ~= "number" then return "" end
+    local yd = E.L("yd")
+    if type(high) ~= "number" or high >= 999 then return math.floor(low) .. "+ " .. yd end
+    return math.floor(low) .. "-" .. math.floor(high) .. " " .. yd
 end
 function E.ApplyLayout()
     if E.InCombat() then E.pending = true; return end
