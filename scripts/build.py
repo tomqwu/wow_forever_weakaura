@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.24"
+VERSION = "0.14.25"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -731,9 +731,17 @@ def generate():
     # Utility and items under the resource bar.
     extra=p.group(overflow,rows,CORE,"primary",x=-138,y=-110,dynamic=True)
     extra.update(grow='GRID',gridType='HD',gridWidth=5,rowSpace=8,columnSpace=8,sort='custom',sortOn='index',customSort=SORT_CDM)
-    icon(p,overflow+" | Entries",overflow,CORE,"primary",dict(type="cdm",event="Blizzard Cooldown Manager",
+    # 0.14.25 (user screenshot: a lone cooldown far below-left of the folded
+    # seal): the overflow rows sit at their expanded-HUD spots, so they show
+    # only while the HUD is expanded, never folded or in the mini layout.
+    def expanded_only(d):
+        gate=d['triggers'][2]['trigger']
+        assert gate['custom'].endswith(' or false end'),gate
+        gate['custom']=gate['custom'][:-len(' or false end')]+' and ForeverHUD.LayoutVisible() or false end'
+        return d
+    expanded_only(icon(p,overflow+" | Entries",overflow,CORE,"primary",dict(type="cdm",event="Blizzard Cooldown Manager",
         cdmSource="cooldown",cdmSpells=dict(multi={}),cdmShow="cooldown",use_cdmShowGCD=False,
-        cdmTrack="auto",cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
+        cdmTrack="auto",cdmHideGCDText=True,use_ignoreSpellKnown=False),28))
     for title,event,source,y in [('Native utility','Blizzard Cooldown Manager','cooldown',-57),
         ('Native items','Blizzard CDM Item','cooldown',-130)]:
         name=CORE_ID+' | '+title
@@ -742,6 +750,7 @@ def generate():
         entries=icon(p,name+' | Entries',name,CORE,'utility',dict(type='cdm',event=event,
             cdmSource=source,cdmSpells=dict(multi={}),cdmShow='cooldown',use_cdmShowGCD=False,
             cdmTrack='auto',cdmHideGCDText=True,use_ignoreSpellKnown=False),28)
+        expanded_only(entries)
         # 0.14.4: the always-shown Utility overflow row follows its wing, in combat only.
         if title=='Native utility': entries['load']['use_combat']=True
     native_auras=CORE_ID+' | Native auras'; p.group(native_auras,CORE_ID,CORE,'base')

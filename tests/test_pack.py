@@ -928,6 +928,11 @@ class PackTests(unittest.TestCase):
         for slot in range(1,9):
             gate=by_id[f'ForeverHUD | Warlock | Primary | Native {slot} | Entry']['triggers'][2]['trigger']['custom']
             self.assertIn('Gate("rightWing",' if slot>4 else 'Gate("primary",',gate,slot)
+        # 0.14.25: the overflow rows show only while the HUD is expanded.
+        core={d['id']:d for d in self.regions}
+        for overflow in ('Native cooldowns','Native utility','Native items'):
+            gate=core[f'ForeverHUD | Core | {overflow} | Entries']['triggers'][2]['trigger']['custom']
+            self.assertIn('and ForeverHUD.LayoutVisible() or false end',gate,overflow)
         shadowburn=by_id['ForeverHUD | Warlock | Primary | Shadowburn']['triggers'][2]['trigger']['custom']
         self.assertIn('Gate("primary", "WARLOCK") and ForeverHUD.WingShown("ForeverHUD | Warlock | Primary | Shadowburn") or false end',shadowburn)
         # 0.10: one list per spec; Leveling keeps the 0.9 display IDs.

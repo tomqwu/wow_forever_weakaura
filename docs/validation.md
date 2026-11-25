@@ -1,6 +1,17 @@
-# Validation for 0.14.24
+# Validation for 0.14.25
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.25 (prerelease) — no stray overflow icons while folded
+
+- **Game evidence:** a user screenshot (Warlock, Stay folded, in combat, 0.14.24). A lone 1:27 cooldown icon sat far below and left of the folded seal. Its place matches the Native cooldowns overflow row's expanded spot (x=-138, y=-110).
+- **Cause:** the overflow rows use the `primary` and `utility` gates. The mini layout passes `primary`, and `utility` has no expanded check, so a cooldown in those rows drew at its expanded-HUD position while the HUD was folded.
+- **Change:** the entries of the three overflow rows (Native cooldowns, Native utility, Native items) add `ForeverHUD.LayoutVisible()` to their gate. They show only while the HUD is expanded or previewed.
+- **Also in the screenshot, unchanged:**
+  - The three timed icons above-left of the seal are the DoT row on the target.
+  - The small 1:43 icon is the mini damage wing.
+- **Tests:** `tests/test_pack.py` checks the gate on all three rows.
+- **Not yet checked in game.**
 
 ## 0.14.24 (prerelease) — Ctrl-drag to move
 

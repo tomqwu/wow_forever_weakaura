@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.25 — 2026-11-24 (prerelease)
+
+User screenshot: a lone cooldown icon far from the folded seal.
+
+- **No stray overflow icons while folded.** The Cooldown Manager overflow rows (extra cooldowns, utility and item cooldowns) show only while the HUD is expanded.
+- Choose **Update Auras** in `/fa` for **ForeverHUD | Core** (and your class).
+
 ## 0.14.24 — 2026-11-22 (prerelease)
 
 User: "can we make ctrl+click is movable?"
