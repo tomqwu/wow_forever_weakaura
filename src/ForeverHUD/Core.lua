@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.14.26"
+E.releaseVersion = "0.14.27"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -354,11 +354,20 @@ end
 -- Matches RANGE_DROP in scripts/build.py.
 E.RANGE_DROP = 31
 -- "28-30 yd", or "40+ yd" past the last range LibRangeCheck can tell.
-function E.RangeText(low, high)
+-- 0.14.27: Warlocks pass E.HELLFIRE_YD; within it the text leads with the
+-- client's own Hellfire name ("Hellfire 8-10 yd").
+E.HELLFIRE_YD = 10
+E.HELLFIRE_SPELL = 1949
+function E.RangeText(low, high, hellfire)
     if type(low) ~= "number" then return "" end
     local yd = E.L("yd")
     if type(high) ~= "number" or high >= 999 then return math.floor(low) .. "+ " .. yd end
-    return math.floor(low) .. "-" .. math.floor(high) .. " " .. yd
+    local text = math.floor(low) .. "-" .. math.floor(high) .. " " .. yd
+    if type(hellfire) == "number" and high <= hellfire then
+        local name = GetSpellInfo and GetSpellInfo(E.HELLFIRE_SPELL)
+        text = (name or E.L("Hellfire")) .. " " .. text
+    end
+    return text
 end
 function E.ApplyLayout()
     if E.InCombat() then E.pending = true; return end

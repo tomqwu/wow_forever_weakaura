@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.26"
+VERSION = "0.14.27"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -268,6 +268,8 @@ RANGE_SAFE_COLOR = '#8CF07A'
 RANGE_CLOSE_COLOR = '#FFA640'
 RANGE_DANGER_COLOR = '#FF4D4D'
 RANGE_FAR_COLOR = '#9A9A9A'
+RANGE_HELLFIRE = 10
+RANGE_HELLFIRE_COLOR = '#B57CFF'
 TRAY_ICON = 34
 # The native aura buttons' dark inner ring, copied on the ordinary tray icon.
 TRAY_RING = 3
@@ -845,10 +847,15 @@ def generate():
                 font="Friz Quadrata TT",fontSize=11,outline="OUTLINE",color=rgba(RANGE_SAFE_COLOR),justify="CENTER",
                 automaticWidth="Auto",fixedWidth=90,wordWrap="WordWrap",customTextUpdate='event',
                 customText='function() local s=ForeverHUD and ForeverHUD.RangeText and aura_env and aura_env.state; '
-                    'return s and ForeverHUD.RangeText(s.minRange,s.maxRange) or "" end')
+                    'return s and ForeverHUD.RangeText(s.minRange,s.maxRange'+(f',{RANGE_HELLFIRE}' if cls=='WARLOCK' else '')+') or "" end')
             p.triggers(dist,[dict(type='unit',event='Range Check',unit='target',use_unit=True)],cls,'range')
+            # 0.14.27 ("10 yard range?"): Warlocks also see Hellfire's 10 yd
+            # reach in purple; later conditions win, so melee stays red.
+            bands=[('<=',RANGE_CLOSE,RANGE_CLOSE_COLOR)]
+            if cls=='WARLOCK': bands.append(('<=',RANGE_HELLFIRE,RANGE_HELLFIRE_COLOR))
+            bands+=[('<=',danger,RANGE_DANGER_COLOR),('>=',reach,RANGE_FAR_COLOR)]
             dist['conditions']=[dict(check=dict(trigger=1,variable='range',op=op,value=value),changes=[dict(property='color',value=rgba(color))])
-                for op,value,color in (('<=',RANGE_CLOSE,RANGE_CLOSE_COLOR),('<=',danger,RANGE_DANGER_COLOR),('>=',reach,RANGE_FAR_COLOR))]
+                for op,value,color in bands]
         # ForeverAuras compiles custom actions only for non-group displays and
         # fails when a group with an Init action is activated (for example by
         # a dynamic-group sort during import). The companion bind and the

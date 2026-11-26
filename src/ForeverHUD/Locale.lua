@@ -43,7 +43,7 @@ local strings = {
     ["Stay folded off: the HUD expands in combat again."]="已关闭“始终保持收起”：战斗中界面会再次展开。",
     ["Shift-click: Stay folded on or off."]="Shift+点击：开启或关闭“始终保持收起”。",
     ["Ctrl-drag to move."]="按住 Ctrl 拖动即可移动。",
-    ["Target distance"]="目标距离", ["yd"]="码",
+    ["Target distance"]="目标距离", ["yd"]="码", ["Hellfire"]="地狱烈焰",
     ["Right-click for settings."]="右键打开设置。", ["Resource flow"]="资源流动效果",
     ["Hide default cast bar"]="隐藏系统施法条", ["Prefer Cleave in Fury"]="狂怒方案优先顺劈斩",
     ["Talent school"]="天赋方案", ["Swing mode"]="攻击计时布局",
