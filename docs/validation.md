@@ -1,6 +1,13 @@
-# Validation for 0.14.26
+# Validation for 0.14.27
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.27 (prerelease) — Hellfire range for Warlocks
+
+- **Request:** "10 yard range?" The user chose a Warlock-only Hellfire marker.
+- **Change:** the Warlock Target distance display gets one more native `range` condition, `<= 10` yd, which turns it purple. It comes after the 20 yd orange condition and before the 5 yd red one, so melee stays red. The custom text passes 10 to `E.RangeText`. At or within that distance, the text leads with the client's own name for Hellfire (`GetSpellInfo(1949)`, with a locale fallback).
+- **Tests:** `tests/test_pack.py` (Warlock condition order and custom text; other classes unchanged), `tests/state.lua` (text format with and without the Hellfire band).
+- **Not yet checked in game.** Whether LibRangeCheck reports a 10 yd step depends on the client.
 
 ## 0.14.26 (prerelease) — target distance on the seal
 

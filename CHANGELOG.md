@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.27 — 2026-11-26 (prerelease)
+
+User: "10 yard range?"
+
+- **Warlock Hellfire range:** within 10 yd the distance text turns purple and reads "Hellfire 8-10 yd". Melee range stays red; other classes are unchanged.
+- Choose **Update Auras** in `/fa` for Warlock.
+
 ## 0.14.26 — 2026-11-25 (prerelease)
 
 User: "can we add a distance track on the addon, somewhere you think fit? e.g. hunter and warlock range for hellfire (safest)".

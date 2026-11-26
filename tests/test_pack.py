@@ -929,7 +929,7 @@ class PackTests(unittest.TestCase):
             gate=by_id[f'ForeverHUD | Warlock | Primary | Native {slot} | Entry']['triggers'][2]['trigger']['custom']
             self.assertIn('Gate("rightWing",' if slot>4 else 'Gate("primary",',gate,slot)
         # 0.14.26: target distance on the seal for ranged classes, native Range Check.
-        from build import RANGE_CLASSES, RANGE_CLOSE, RANGE_DROP
+        from build import RANGE_CLASSES, RANGE_CLOSE, RANGE_DROP, RANGE_HELLFIRE
         for cls,name in (('WARLOCK','Warlock'),('HUNTER','Hunter'),('MAGE','Mage'),('PRIEST','Priest'),('DRUID','Druid'),('SHAMAN','Shaman')):
             d=by_id[f'ForeverHUD | {name} | Target distance']
             self.assertEqual(d['triggers'][1]['trigger']['event'],'Range Check')
@@ -937,7 +937,9 @@ class PackTests(unittest.TestCase):
             self.assertIn(f'Gate("range", "{cls}")',d['triggers'][2]['trigger']['custom'])
             self.assertEqual(d['yOffset'] if 'yOffset' in d else None, 13-RANGE_DROP)
             reach,danger=RANGE_CLASSES[cls]
-            self.assertEqual([(c['check']['op'],c['check']['value']) for c in d['conditions']],[('<=',RANGE_CLOSE),('<=',danger),('>=',reach)])
+            hellfire=[('<=',RANGE_HELLFIRE)] if cls=='WARLOCK' else []
+            self.assertEqual([(c['check']['op'],c['check']['value']) for c in d['conditions']],[('<=',RANGE_CLOSE)]+hellfire+[('<=',danger),('>=',reach)])
+            self.assertEqual(f'maxRange,{RANGE_HELLFIRE})' in d['customText'],cls=='WARLOCK')
         for name in ('Warrior','Rogue','Paladin'):
             self.assertNotIn(f'ForeverHUD | {name} | Target distance',by_id)
         self.assertEqual(RANGE_CLASSES['HUNTER'],(35,8),'Hunter: 35 yd reach, 8 yd dead zone')

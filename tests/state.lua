@@ -183,6 +183,8 @@ do
     check(root.y==13-31,'Folded: the target distance is on the folded seal')
     check(E.RangeText(28,30)=='28-30 yd' and E.RangeText(40,999)=='40+ yd' and E.RangeText(nil,nil)=='' and E.RangeText(5.0,8)=='5-8 yd',
         'Distance text: min-max yards, or N+ past the last known range')
+    check(E.RangeText(8,10,10):match('^%S.* 8%-10 yd$') and E.RangeText(8,10,10)~='8-10 yd' and E.RangeText(10,15,10)=='10-15 yd',
+        'Warlock: within 10 yd the distance leads with the Hellfire name')
     E.Hover(false);E.SetPeek(false)
     p.stayFolded=true
     E.Hover(true)
