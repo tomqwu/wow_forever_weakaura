@@ -16,7 +16,7 @@ from catalog import (CLASSES, candidates, RANKS, PLANS, SCHOOLS, PREPARATION, EF
     HEATING_UP, FINGERS_OF_FROST, MISSILE_BARRAGE, MAELSTROM_WEAPON,
     HEALTH_COLOR, PET_HEALTH_COLOR, UNKNOWN_RESOURCE_COLOR, RESOURCE_STYLES)
 
-VERSION = "0.14.27"
+VERSION = "0.14.28"
 TITLE = "ForeverHUD"
 MEDIA = "Interface\\AddOns\\ForeverHUD\\Media\\"
 EVENTS = "PLAYER_ENTERING_WORLD PLAYER_REGEN_DISABLED PLAYER_REGEN_ENABLED PLAYER_TARGET_CHANGED UPDATE_SHAPESHIFT_FORM FOREVERHUD_UPDATE FA_OPTIONS_CLOSED"
@@ -981,6 +981,10 @@ def generate():
                 d=icon(p,prefix+' | Upkeep reminder | '+name+(' expiring' if expiring else ' missing'),maintenance,cls,'maintenance',
                     reminder,24,modern=True)
                 if learned: p.eligibility[d['id']]['seeds']=learned
+                # 0.14.28 (user: "you don't have an option to set it"): one
+                # Reminders switch, "Missing buff reminders", for every upkeep
+                # reminder (expanded row and folded tray).
+                p.eligibility[d['id']]['requires']='upkeep'
                 if not expiring: breathe(d)
         for i,(seeds,name,missing) in enumerate(UPKEEP.get(cls,[])):
             if missing:
@@ -1140,6 +1144,7 @@ def generate():
             trigger=aura_trigger(seeds);trigger.update(nativeFilters={},secretShowOn='showOnMissing')
             d=breathe(icon(p,f'{row} | Upkeep reminder | {name} missing',row,cls,'tray',trigger,TRAY_ICON,modern=True))
             if learned: p.eligibility[d['id']]['seeds']=learned
+            p.eligibility[d['id']]['requires']='upkeep'
         for module,hand,kind,name,known,art in weapon_enchants(cls):
             breathe_plain(tray_look(class_reminder(f'{row} | Weapon reminder | {name} missing',row,module,'tray',enchant_trigger(hand,kind),known,art,TRAY_ICON)))
         if cls in PET_REMINDER:

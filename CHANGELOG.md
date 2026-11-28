@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.28 — 2026-11-27 (prerelease)
+
+User: "you used to track those missing buffs, now it's not, and you don't have an option to set it".
+
+- **Settings → Reminders → Missing buff reminders:** one switch for every breathing reminder of your own upkeep buffs (Demon Armor, Soul Link, Demonic Sacrifice, Arcane Intellect, Mage armor, Fortitude, Inner Fire, Mark of the Wild, Aspect, Blessing, Shield), in the folded tray and the expanded upkeep row. On by default.
+- After login or `/reload` the reminders appear once ForeverHUD has read your spellbook (a few seconds).
+- Choose **Update Auras** in `/fa` for your class.
+
 ## 0.14.27 — 2026-11-26 (prerelease)
 
 User: "10 yard range?"

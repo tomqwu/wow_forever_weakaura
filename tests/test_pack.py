@@ -945,6 +945,14 @@ class PackTests(unittest.TestCase):
         self.assertEqual(RANGE_CLASSES['HUNTER'],(35,8),'Hunter: 35 yd reach, 8 yd dead zone')
         lua_core=(ROOT/'src/ForeverHUD/Core.lua').read_text(encoding='utf-8')
         self.assertIn(f'E.RANGE_DROP = {RANGE_DROP}',lua_core)
+        # 0.14.28: every upkeep reminder (row and tray) answers to one switch.
+        upkeep=[id for id in self.eligibility if '| Upkeep reminder |' in id]
+        self.assertGreater(len(upkeep),20)
+        for id in upkeep: self.assertEqual(self.eligibility[id].get('requires'),'upkeep',id)
+        self.assertIn('upkeep=true',lua_core)
+        lua_locale=(ROOT/'src/ForeverHUD/Locale.lua').read_text(encoding='utf-8')
+        self.assertIn('{"upkeep", "Missing buff reminders"}',lua_locale)
+        self.assertIn('upkeep=true',(ROOT/'src/ForeverHUD/Options.lua').read_text(encoding='utf-8'))
         # 0.14.25: the overflow rows show only while the HUD is expanded.
         core={d['id']:d for d in self.regions}
         for overflow in ('Native cooldowns','Native utility','Native items'):

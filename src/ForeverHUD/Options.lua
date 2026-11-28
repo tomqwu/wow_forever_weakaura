@@ -60,7 +60,7 @@ local categories = {
     {key='Layout', icon='Interface\\Icons\\INV_Misc_Map_01', text='Size, opacity and position. Drag the center seal to move it while unlocked.'},
     {key='Minimap', icon='Interface\\Icons\\INV_Misc_Spyglass_03', text='The ForeverHUD minimap button and its tray of other addons\' buttons.'},
 }
-local reminderKeys = {imbue=true, oil=true, petMissing=true, fedMissing=true, alerts=true}
+local reminderKeys = {upkeep=true, imbue=true, oil=true, petMissing=true, fedMissing=true, alerts=true}
 local function build()
     local p = CreateFrame("Frame", "ForeverHUDOptions", UIParent, "BackdropTemplate")
     p:SetSize(W, H); p:SetPoint("CENTER"); p:SetFrameStrata("DIALOG")
