@@ -43,7 +43,7 @@ local strings = {
     ["Stay folded off: the HUD expands in combat again."]="已关闭“始终保持收起”：战斗中界面会再次展开。",
     ["Shift-click: Stay folded on or off."]="Shift+点击：开启或关闭“始终保持收起”。",
     ["Ctrl-drag to move."]="按住 Ctrl 拖动即可移动。",
-    ["Target distance"]="目标距离", ["yd"]="码", ["Hellfire"]="地狱烈焰",
+    ["Target distance"]="目标距离", ["yd"]="码", ["Hellfire"]="地狱烈焰", ["Missing buff reminders"]="缺失增益提醒",
     ["Right-click for settings."]="右键打开设置。", ["Resource flow"]="资源流动效果",
     ["Hide default cast bar"]="隐藏系统施法条", ["Prefer Cleave in Fury"]="狂怒方案优先顺劈斩",
     ["Talent school"]="天赋方案", ["Swing mode"]="攻击计时布局",
@@ -164,9 +164,12 @@ E.modules = {
     {"petMissing", "Pet reminder"},
     -- 0.13.13: Well Fed missing, opt-in for every class.
     {"fedMissing", "Well Fed reminder"},
+    -- 0.14.28: the upkeep reminders (armor, Soul Link, aspects, shields...).
+    {"upkeep", "Missing buff reminders"},
     -- 0.14.26: distance to the target on the seal (ranged classes).
     {"range", "Target distance"},
 }
 -- Modules only some classes have; the settings list hides them elsewhere.
 E.moduleClasses = {imbue = {WARLOCK = true, SHAMAN = true}, petMissing = {WARLOCK = true, HUNTER = true},
+    upkeep = {WARLOCK = true, MAGE = true, PRIEST = true, DRUID = true, HUNTER = true, PALADIN = true, SHAMAN = true},
     range = {HUNTER = true, WARLOCK = true, MAGE = true, PRIEST = true, DRUID = true, SHAMAN = true}}

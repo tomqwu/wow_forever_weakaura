@@ -1,6 +1,14 @@
-# Validation for 0.14.27
+# Validation for 0.14.28
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.28 (prerelease) — a switch for missing buff reminders
+
+- **Request:** "you used to track those missing buffs, now it's not, and you don't have an option to set it". Before this release, the upkeep reminders followed only the Retracted tray and Maintenance buffs modules, so the Reminders page had no switch for them.
+- **Change:** a new module, `upkeep` ("Missing buff reminders"), on by default and listed on the Reminders page for the seven classes with upkeep reminders. Every `Upkeep reminder` display, in both the expanded row and the folded tray, gets `requires='upkeep'`. The discovery load flag unloads them when the module is off. Aura IDs and triggers are unchanged.
+- **Game evidence (2026-11-27, user screenshots):** the Warlock tray first showed only the shard count and an active buff. A later capture showed the Soul Link, weapon enchant and Well Fed reminders. The reminders load after discovery has read the spellbook. A capture taken in the first seconds after login can miss them.
+- **Tests:** `tests/test_pack.py` (every upkeep reminder requires `upkeep`; default, module list and Reminders page).
+- **Not yet checked in game:** the switch itself.
 
 ## 0.14.27 (prerelease) — Hellfire range for Warlocks
 

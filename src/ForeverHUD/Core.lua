@@ -5,7 +5,7 @@ ForeverHUD = E
 -- v0.3.2 strings compare this field literally. Preserve that bridge while
 -- allowing class imports to update independently with this compatible helper.
 E.version = "0.3.2"
-E.releaseVersion = "0.14.27"
+E.releaseVersion = "0.14.28"
 E.importAPI = 2
 E.rootID = "ForeverHUD"
 -- Since 0.5.0 displays every class shares live in one Core group; each class
@@ -33,7 +33,7 @@ local defaults = {
     alerts=true,
     resources=true, primary=true, utility=true, dots=true, buffs=true, maintenance=true, trackedBars=false,
     cast=false, pet=true, art=true, motion=true, nameplates=false,
-    tray=true, suggest=true, range=true,
+    tray=true, suggest=true, range=true, upkeep=true,
     -- 0.14.6: "Bars" (the sculpted bar chassis) or "Globes" (round health
     -- and resource globes either side of a band).
     frameStyle="Bars",
