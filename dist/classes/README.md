@@ -11,14 +11,14 @@ Use the combined import for a fresh nine-class installation or to update an exis
 | Group | Import | Characters | Displays |
 | --- | --- | ---: | ---: |
 | Core | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 7,446 | 20 |
-| Warlock | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 19,921 | 168 |
+| Warlock | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 19,920 | 168 |
 | Warrior | [ForeverHUD-Warrior.txt](ForeverHUD-Warrior.txt) | 20,013 | 189 |
 | Mage | [ForeverHUD-Mage.txt](ForeverHUD-Mage.txt) | 14,993 | 123 |
-| Priest | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 14,896 | 122 |
+| Priest | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 14,894 | 122 |
 | Rogue | [ForeverHUD-Rogue.txt](ForeverHUD-Rogue.txt) | 15,122 | 123 |
 | Druid | [ForeverHUD-Druid.txt](ForeverHUD-Druid.txt) | 16,626 | 137 |
 | Hunter | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 17,380 | 139 |
-| Shaman | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 15,081 | 120 |
+| Shaman | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 15,086 | 120 |
 | Paladin | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 14,509 | 120 |
 
 ## 简体中文
@@ -32,12 +32,12 @@ Use the combined import for a fresh nine-class installation or to update an exis
 | 分组 | 导入文件 | 字符数 | 显示数量 |
 | --- | --- | ---: | ---: |
 | 核心 | [ForeverHUD-Core.txt](ForeverHUD-Core.txt) | 7,446 | 20 |
-| 术士 | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 19,921 | 168 |
+| 术士 | [ForeverHUD-Warlock.txt](ForeverHUD-Warlock.txt) | 19,920 | 168 |
 | 战士 | [ForeverHUD-Warrior.txt](ForeverHUD-Warrior.txt) | 20,013 | 189 |
 | 法师 | [ForeverHUD-Mage.txt](ForeverHUD-Mage.txt) | 14,993 | 123 |
-| 牧师 | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 14,896 | 122 |
+| 牧师 | [ForeverHUD-Priest.txt](ForeverHUD-Priest.txt) | 14,894 | 122 |
 | 盗贼 | [ForeverHUD-Rogue.txt](ForeverHUD-Rogue.txt) | 15,122 | 123 |
 | 德鲁伊 | [ForeverHUD-Druid.txt](ForeverHUD-Druid.txt) | 16,626 | 137 |
 | 猎人 | [ForeverHUD-Hunter.txt](ForeverHUD-Hunter.txt) | 17,380 | 139 |
-| 萨满祭司 | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 15,081 | 120 |
+| 萨满祭司 | [ForeverHUD-Shaman.txt](ForeverHUD-Shaman.txt) | 15,086 | 120 |
 | 圣骑士 | [ForeverHUD-Paladin.txt](ForeverHUD-Paladin.txt) | 14,509 | 120 |

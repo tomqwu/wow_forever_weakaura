@@ -148,6 +148,20 @@ check(#tray.cells==4 and tray.height==66,'a hidden button leaves the grid')
 
 questie.scripts.OnClick(questie)
 check(questie.Clicks()==1 and not tray.shown,'clicking a borrowed button runs it and closes the tray')
+-- 0.14.29: a right-click opens the borrowed button's own menu, so the tray stays under it.
+Tray.Open();questie.scripts.OnClick(questie,'RightButton')
+check(questie.Clicks()==2 and tray.shown,'right-clicking a borrowed button runs it and keeps the tray open')
+DropDownList1=object('Frame','DropDownList1');DropDownList1.shown=true
+tray.over=false;anchor.over=false;tray.scripts.OnUpdate(tray,3)
+check(tray.shown and Tray.MenuOpen(),'the tray stays while the button menu is open, even with the pointer on the menu')
+questie.scripts.OnClick(questie,'LeftButton')
+check(tray.shown,'a left-click that opens a menu keeps the tray too')
+DropDownList1.shown=false
+tray.scripts.OnUpdate(tray,1.5);check(tray.shown,'after the menu closes the tray waits as usual')
+tray.scripts.OnUpdate(tray,1);check(not tray.shown,'and then closes')
+Menu={GetManager=function() return {GetOpenMenu=function() return {} end} end}
+check(Tray.MenuOpen(),'the newer menu system counts as an open menu')
+Menu=nil;check(not Tray.MenuOpen(),'no menu is open afterwards')
 Tray.Open();tray.cells[1].scripts.OnClick(tray.cells[1])
 check(optionsOpened==1 and not tray.shown,'the first cell opens ForeverHUD settings')
 anchor.scripts.OnMouseDown(anchor);anchor.scripts.OnClick(anchor,'LeftButton')

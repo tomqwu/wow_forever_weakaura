@@ -38,4 +38,10 @@ project's folder names, SavedVariables, installation script or release tags here
   release notes current. Label illustrative captures separately from game evidence.
 - Runtime releases must update the TOC, generator, package checks, workflow
   artifact name, README and changelog together. Existing releases are immutable.
-- Do not modify the user's game installation or SavedVariables unless requested.
+- Standing approval (user, 2026-11-27: "you can always open PR and merge and
+  publish without asking me, always install local"): for a finished change, open
+  the PR, merge it once CI passes, publish the prerelease, upload to CurseForge
+  and install the addon into the local game client, all without asking. Back up
+  the installed folder first.
+- Do not modify SavedVariables, or any other part of the game installation,
+  unless requested.

@@ -1,6 +1,14 @@
-# Validation for 0.14.28
+# Validation for 0.14.29
 
 Sections below 0.4.0 describe releases made under the Eclipse name and keep the names those releases used.
+
+## 0.14.29 (prerelease) — right-click menus in the addon button tray
+
+- **Request:** "right click in mini map addon (other) will not work, basically it disappear again instead of showing addon right click option".
+- **Cause:** every click on a borrowed button closed the tray (`MinimapTray.lua`, the `OnClick` hook). The borrowed button is a child of the tray, so it was hidden with it, and the menu it had just opened went away.
+- **Change:** a right-click, or any click after which a menu is open, keeps the tray and resets its close timer. While a menu is open the tray does not time out, even with the pointer on the menu. Menus are detected by the shown state of `DropDownList1` and the common library copies (`L_DropDownList1`, `Lib_DropDownList1`, `LibDropDownMenu_List1`, `MSA_DropDownList1`), and by `Menu.GetManager():GetOpenMenu()` where the client has it. A left-click that opens no menu still closes the tray. Companion only: imports and aura IDs are unchanged.
+- **Tests:** `tests/minimap.lua` (right-click keeps the tray; the tray stays while a menu is open and closes afterwards; both menu systems are detected). These run against a mock client.
+- **Not yet checked in game:** that each addon's menu now stays. A menu drawn by an addon's own frame is not detected, so after a right-click the tray still closes two seconds after the pointer leaves it.
 
 ## 0.14.28 (prerelease) — a switch for missing buff reminders
 

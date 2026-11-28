@@ -68,6 +68,25 @@ end
 
 local function visible(b) return call(b.IsShown, b) == true end
 
+-- 0.14.29 (user: "right click in mini map addon (other) will not work ... it
+-- disappear again instead of showing addon right click option"): a borrowed
+-- button's context menu belongs to that button, so hiding the tray under it
+-- took the menu away. The tray now stays while such a menu is open.
+local menuLists = {"DropDownList1", "L_DropDownList1", "Lib_DropDownList1", "LibDropDownMenu_List1", "MSA_DropDownList1"}
+local function menuOpen()
+    for _, name in ipairs(menuLists) do
+        local list = _G[name]
+        if type(list) == "table" and call(list.IsShown, list) == true then return true end
+    end
+    -- The newer Blizzard menu system, where the client has it.
+    if type(Menu) == "table" and type(Menu.GetManager) == "function" then
+        local ok, manager = pcall(Menu.GetManager)
+        if ok and type(manager) == "table" and call(manager.GetOpenMenu, manager) then return true end
+    end
+    return false
+end
+Tray.MenuOpen = menuOpen
+
 local function Layout()
     if not tray then return end
     placing = true
@@ -107,7 +126,12 @@ local function Grab(b)
         end
         b:HookScript("OnShow", function(self) if records[self] then Layout() end end)
         b:HookScript("OnHide", function(self) if records[self] then Layout() end end)
-        b:HookScript("OnClick", function(self) if records[self] then Tray.Close() end end)
+        -- A left-click runs the addon and closes the tray. A right-click, or
+        -- any click that opened a menu, keeps the tray under that menu.
+        b:HookScript("OnClick", function(self, which)
+            if not records[self] then return end
+            if which == "RightButton" or menuOpen() then closeElapsed = 0 else Tray.Close() end
+        end)
     end
 end
 
@@ -161,7 +185,8 @@ local function Place()
 end
 
 -- Hovering the ForeverHUD minimap button opens the tray; it closes two
--- seconds after the pointer leaves both, on Escape, or on any click.
+-- seconds after the pointer leaves both, on Escape, or on a left-click. It
+-- stays while a borrowed button's right-click menu is open.
 function Tray.Open()
     if not wanted or not tray then return false end
     closeElapsed = 0
@@ -215,7 +240,7 @@ local function CreateTray()
     -- Close after the pointer has been away from the tray and its button for
     -- two seconds. This runs only while the tray is open.
     tray:SetScript("OnUpdate", function(self, delta)
-        local over = call(self.IsMouseOver, self) == true or (button and call(button.IsMouseOver, button) == true)
+        local over = call(self.IsMouseOver, self) == true or (button and call(button.IsMouseOver, button) == true) or menuOpen()
         closeElapsed = over and 0 or closeElapsed + delta
         if closeElapsed >= 2 then self:Hide() end
     end)
