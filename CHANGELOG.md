@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.29 — 2026-11-27 (prerelease)
+
+User: "right click in mini map addon (other) will not work, basically it disappear again instead of showing addon right click option".
+
+- **Addon button tray:** right-clicking another addon's button in the ForeverHUD minimap tray now keeps the tray open, so that addon's right-click menu stays on screen. The tray also stays while such a menu is open, and closes two seconds after the pointer leaves once the menu is gone. A left-click still runs the addon and closes the tray.
+- Companion addon only; no aura update is needed.
+
 ## 0.14.28 — 2026-11-27 (prerelease)
 
 User: "you used to track those missing buffs, now it's not, and you don't have an option to set it".
